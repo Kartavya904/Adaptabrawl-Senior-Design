@@ -1,0 +1,360 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0" version="28.2.3" pages="3">
+  <diagram name="Design Diagram Level 1" id="2f075119-299d-4ecd-98f8-59d2829cfed7">
+    <mxGraphModel dx="1753" dy="1645" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1080" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sys1" value="ADAPTABRAWL&lt;br/&gt;(Game System)" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666;" parent="1" vertex="1">
+          <mxGeometry x="600" y="433" width="670" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="in1" value="Player Controls" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="448" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="eL1_0" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="in1" target="sys1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="in2" value="Menu / Settings" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="518" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="eL1_1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="in2" target="sys1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="in3" value="Match Context / Conditions" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="588" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="eL1_2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="in3" target="sys1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="in4" value="Network In" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="658" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="eL1_3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="in4" target="sys1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="in5" value="System Clock" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="728" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="eL1_4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="in5" target="sys1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="out1" value="Visual Output&lt;br/&gt;(Scene + HUD + Menus)" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1380" y="448" width="300" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="eR1_0" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="sys1" target="out1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="out2" value="Audio Output&lt;br/&gt;(BGM / SFX / VO)" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1380" y="518" width="300" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="eR1_1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="sys1" target="out2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="out3" value="Haptics" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1380" y="588" width="300" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="eR1_2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="sys1" target="out3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="out4" value="Network Out&lt;br/&gt;(Inputs / State)" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1380" y="658" width="300" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="eR1_3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="sys1" target="out4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="out5" value="Data Artifacts (opt-in)&lt;br/&gt;Telemetry / Replays / Logs" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1380" y="728" width="300" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="eR1_4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="sys1" target="out5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="actor1" value="Local Player" style="shape=ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="328" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="actor2" value="Remote Player / Relay" style="shape=ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1440" y="328" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="actor3" value="Platform / OS + Hardware" style="shape=ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="820" y="288" width="280" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="Design Diagram Level 2" id="8f5f4703-9146-4996-b468-23ba8b00400f">
+    <mxGraphModel dx="2337" dy="2193" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1080" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="L2_in" value="Input Layer&lt;br/&gt;(devices / mapping)" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="230" y="330" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="L2_settings" value="Settings &amp; Accessibility&lt;br/&gt;(video / audio / UI)" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="230" y="400" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="L2_match" value="Match Config&lt;br/&gt;(stage / conditions)" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="230" y="480" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="L2_net" value="Networking&lt;br/&gt;(session I/O)" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="230" y="560" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="L2_clock" value="Clock&lt;br/&gt;(ticks)" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="230" y="700" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="L2_ui" value="UI &amp; HUD&lt;br/&gt;(menus / overlays)" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="630" y="320" width="260" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="L2_rules" value="Game State / Rules Engine" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="630" y="440" width="260" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="L2_phys" value="Physics / Collision" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="930" y="440" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="L2_netsync" value="Net Sync / Authority / Lag" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1190" y="440" width="280" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="L2_timing" value="Timing&lt;br/&gt;(delta)" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1510" y="700" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="L2_bus" value="Event Bus&lt;br/&gt;(game events)" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="930" y="320" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="L2_render" value="Rendering (2D/VFX)" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="630" y="620" width="260" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="L2_audio" value="Audio (BGM/SFX)" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="930" y="620" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="L2_tele" value="Telemetry / Replays / Logs" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1190" y="620" width="280" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="L2_store" value="Storage (opt-in)" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1510" y="630" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_in_ui" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L2_in" target="L2_ui" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_set_rules" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L2_settings" target="L2_rules" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_match_rules" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L2_match" target="L2_rules" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_net_netsync" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L2_net" target="L2_netsync" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_clock_timing" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L2_clock" target="L2_timing" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_ui_rules" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L2_ui" target="L2_rules" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_rules_phys" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L2_rules" target="L2_phys" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_phys_netsync" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L2_phys" target="L2_netsync" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_rules_bus" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L2_rules" target="L2_bus" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="910" y="480" />
+              <mxPoint x="910" y="420" />
+              <mxPoint x="1040" y="420" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_bus_render" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L2_bus" target="L2_render" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="910" y="360" />
+              <mxPoint x="910" y="550" />
+              <mxPoint x="760" y="550" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_bus_audio" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L2_bus" target="L2_audio" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1170" y="360" />
+              <mxPoint x="1170" y="660" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_tele_store" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L2_tele" target="L2_store" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="Design Diagram Level 3" id="ceba418a-6cb0-4895-b73a-0bffd5e7c422">
+    <mxGraphModel dx="1753" dy="1645" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1080" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="L3_devices" value="[Devices]" style="shape=rectangle;rounded=0;whiteSpace=wrap;html=1;strokeDasharray=2 2;" parent="1" vertex="1">
+          <mxGeometry x="240" y="270" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_input" value="Input Layer • Adapters (XInput/KB/M) • Map / Buffer / Anti-ghost" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="440" y="245" width="260" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="e3_dev_in" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L3_devices" target="L3_input" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_menu" value="[Menu / Settings]" style="shape=rectangle;rounded=0;whiteSpace=wrap;html=1;strokeDasharray=2 2;" parent="1" vertex="1">
+          <mxGeometry x="240" y="390" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="j6CHvBkSHnz4e72Yo61W-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="L3_settings" target="L3_rules">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="720" y="415" />
+              <mxPoint x="720" y="375" />
+              <mxPoint x="1030" y="375" />
+              <mxPoint x="1030" y="405" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="L3_settings" value="Settings &amp; Accessibility • Video/Audio/UI • Control profiles" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="440" y="365" width="260" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="e3_menu_set" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L3_menu" target="L3_settings" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_bus" value="Event Bus • InputAccepted • HitLanded • StatusApplied • KO/RoundEnd" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="740" y="225" width="260" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_ui" value="UI &amp; HUD • Menus • HUD (HP, timers)" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="740" y="385" width="260" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_rules" value="Rules Engine • FSM • Hit/Hurt • Status Logic • Round Flow" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1060" y="345" width="260" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_content" value="Content DB • Fighters • Moves • Hitboxes • Stages • Status FX • Frame Data" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1060" y="505" width="260" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_phys" value="Physics / Collision • Kinematics • Hit Resolve" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1360" y="355" width="240" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_audio" value="Audio Engine • BGM/SFX/VO • Ducking" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1360" y="505" width="240" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_timing" value="Timing • Fixed Ticks • Frame Scheduler" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="740" y="525" width="260" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_render" value="Rendering (2D/VFX) • Sprites / FX • Camera • HUD Overlays" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1060" y="185" width="260" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_net1" value="Transport (UDP/TCP/Relay)" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="440" y="665" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_net2" value="Session Manager • Room Code • Heartbeats" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="680" y="665" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_net3" value="Sync / Authority" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="940" y="665" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_net4" value="Prediction / Correction" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1190" y="695" width="240" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="e3_net12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L3_net1" target="L3_net2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3_net23" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L3_net2" target="L3_net3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3_net34" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L3_net3" target="L3_net4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_tel" value="Telemetry (opt-in) • Match meta, FPS, RTT" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1440" y="665" width="240" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_rep" value="Replays • Circular Buffer • Save on Demand" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1440" y="745" width="240" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_crash" value="Crash Logs • Minidump • Last N Events" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1440" y="825" width="240" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_creator1" value="Template Project" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="825" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_creator2" value="Author Moves/Hitboxes/ Status Scripts" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="440" y="825" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_creator3" value="Lint / Validate" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="700" y="825" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_creator4" value="Test Arena" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="880" y="825" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_creator5" value="Package / Export" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1060" y="825" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e3_c12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L3_creator1" target="L3_creator2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3_c23" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L3_creator2" target="L3_creator3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3_c34" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L3_creator3" target="L3_creator4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3_c45" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L3_creator4" target="L3_creator5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3_c_to_content" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="L3_creator5" target="L3_content" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1150" y="685" />
+              <mxPoint x="1190" y="685" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3_input_bus" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L3_input" target="L3_bus" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3_bus_rules" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L3_bus" target="L3_rules" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3_rules_content" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L3_rules" target="L3_content" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3_rules_phys" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L3_rules" target="L3_phys" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3_timing_render" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L3_timing" target="L3_render" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="870" y="495" />
+              <mxPoint x="1340" y="495" />
+              <mxPoint x="1340" y="245" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3_render_ui" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L3_render" target="L3_ui" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1040" y="245" />
+              <mxPoint x="1040" y="375" />
+              <mxPoint x="870" y="375" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3_rules_audio" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="L3_rules" target="L3_audio" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1340" y="405" />
+              <mxPoint x="1340" y="555" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3_net_to_rules" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" parent="1" source="L3_net4" target="L3_rules" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1310" y="675" />
+              <mxPoint x="1340" y="675" />
+              <mxPoint x="1340" y="405" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

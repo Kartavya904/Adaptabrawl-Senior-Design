@@ -8,6 +8,7 @@ _Adaptabrawl is a 2D fighting game that refuses to over‑index on a single styl
 | Kartavya Singh | Computer Science | **singhk6@mail.uc.edu**  | Netcode & Infrastructure |
 | Saarthak Sinha | Computer Science | **sinhas6@mail.uc.edu**  | Combat/Systems & Tooling |
 | Kanav Shetty   | Computer Science | **shettykv@mail.uc.edu** | UX/UI, VFX/SFX, Stages   |
+| Yash Ballabh   | Computer Science | **ballabyh@mail.uc.edu** | Tools, CI/CD & QA        | 
 
 ## Vision
 Most fighters over-index on a single style. Adaptabrawl blends attack, defense, and evasion, then layers in **adaptive conditions** (stage/weather/match modifiers) and **clear status effects** (e.g., poisoned, staggered/punched, heavy-attack state, low-HP state).

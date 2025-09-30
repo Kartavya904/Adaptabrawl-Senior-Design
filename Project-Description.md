@@ -14,7 +14,7 @@
 | Kartavya Singh | Computer Science | **singhk6@mail.uc.edu**  | Netcode & Infrastructure |
 | Saarthak Sinha | Computer Science | **sinhas6@mail.uc.edu**  | Combat/Systems & Tooling |
 | Kanav Shetty   | Computer Science | **shettykv@mail.uc.edu** | UX/UI, VFX/SFX, Stages   |
-
+| Yash Ballabh   | Computer Science | **ballabyh@mail.uc.edu** | Tools, CI/CD & QA        | 
 ---
 
 ## Project Topic Area

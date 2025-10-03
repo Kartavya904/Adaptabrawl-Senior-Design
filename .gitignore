@@ -1,0 +1,71 @@
+# ==========================
+# Unity .gitignore (project-local)
+# Place this file in: Adaptabrawl/Adaptabrawl/
+# Keeps Assets/ + ProjectSettings/ + Packages/; ignores generated junk.
+# ==========================
+
+# --- Unity generated caches (huge, safe to delete) ---
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emory[Cc]aptures/
+[Rr]ecordings/
+[Cc]rash[Rr]eports/
+
+# Per-user editor state (do not share)
+[Uu]ser[Ss]ettings/
+
+# Legacy/optional store tooling
+[Aa]ssets/[Aa]sset[S]tore-5.x/
+
+# --- IDE / editor artifacts ---
+.vs/
+.idea/
+*.sln.iml
+.Rider*/
+
+# VS Code: ignore the folder but allow common shared configs
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# --- Unity/IDE generated project files (regenerate anytime) ---
+*.csproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.opendb
+*.VC.db
+*.mdb
+*.pdb
+*.meta
+
+# --- Platform build artifacts ---
+# Android / Gradle
+.gradle/
+[Gg]radle/
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# (iOS/Xcode intermediates end up under Build/ which is already ignored)
+
+# --- General OS junk ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --- Optional: local env files ---
+*.env
+*.env.local

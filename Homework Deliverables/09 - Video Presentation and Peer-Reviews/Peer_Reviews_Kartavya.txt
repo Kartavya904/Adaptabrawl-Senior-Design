@@ -1,0 +1,8 @@
+Title 1: Crosley Tower Defense
+Peer Review 1: Fun, UC-themed tower defense concept with a clear goal and scope. I like the public leaderboard idea and the focus on intuitive controls—those will help it spread on campus. Near-term, dialing in the placement/upgrade UI and doing quick playtests for wave pacing feels smart. Curious how you’ll handle UC imagery safely and keep the difficulty welcoming for new players. singhk6@mail.uc.edu
+
+Title 2: Secure Online Marketplace for Short-Term Work (Team SupaWorkers)
+Peer Review 2: Solid problem pick and clean framing—user stories, roles, and security focus all line up. React/Node/Mongo is a practical stack, and the admin monitoring piece shows you’re thinking about safety. I’d love to see how you’ll verify users/jobs and prevent spam, plus a simple first notification flow. Excited to try a demo once login, posting, and basic search are wired. singhk6@mail.uc.edu
+
+Title 3: Recipe Share — Microservice Cookbook for UC
+Peer Review 3: Nice community angle with a modern microservice approach—auth, recipe CRUD, search, and personal cookbooks make sense together. Architecture and data model progress looks on track; CI/CD and a small alpha UI will make feedback faster. I’m interested in search quality (tags, dietary filters) and light moderation so the content stays helpful. Looking forward to trying a first pass of search + save-to-cookbook. singhk6@mail.uc.edu

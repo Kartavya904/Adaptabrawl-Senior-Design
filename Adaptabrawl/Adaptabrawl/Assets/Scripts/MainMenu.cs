@@ -3,13 +3,12 @@ using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
-    public void playGame()
+    public void PlayGame()
     {
-        // Add logic to start the game
         SceneManager.LoadScene("GameScene");
     }
 
-    public void quitGame()
+    public void QuitGame()
     {
         Application.Quit();
     }

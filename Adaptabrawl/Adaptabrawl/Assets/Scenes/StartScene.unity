@@ -204,7 +204,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 908525282}
         m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
-        m_MethodName: playGame
+        m_MethodName: PlayGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -678,7 +678,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 908525280}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6771891d1664f384cbb3c2a61f3d96d8, type: 3}
+  m_Script: {fileID: 11500000, guid: 97875c175a0098a40a18ced4e7617000, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenu
 --- !u!1 &1162991926
@@ -1163,7 +1163,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 908525282}
         m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
-        m_MethodName: quitGame
+        m_MethodName: QuitGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1347,7 +1347,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -7908305730012935737, guid: 3bb60202e5f849a4f9128fa09c74108b, type: 3}
+  m_Sprite: {fileID: -7908305730012935737, guid: 2f6e3065eaffab842be33b3a37a16f01, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

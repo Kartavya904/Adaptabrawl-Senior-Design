@@ -1,0 +1,1589 @@
+[Licensing::Module] Trying to connect to existing licensing client channel...
+Built from '6000.2/respin/6000.2.6f2-cc51a95c03' branch; Version is '6000.2.6f2 (4a4dcaec6541) revision 4869578'; Using compiler version '194234433'; Build Type 'Release'
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-saart" at "2025-10-27T02:35:07.7902666Z"
+OS: 'Windows 11  (10.0.26100) 64bit Core' Language: 'en' Physical Memory: 31934 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+Date: 2025-10-27T02:35:07Z
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\6000.2.6f2\Editor\Unity.exe
+-adb2
+-batchMode
+-noUpm
+-name
+AssetImportWorker1
+-projectPath
+C:/Users/saart/Documents/Adaptabrawl-Senior-Design/Adaptabrawl/Adaptabrawl
+-logFile
+Logs/AssetImportWorker1.log
+-srvPort
+58165
+-licensingIpc
+LicenseClient-saart
+-job-worker-count
+7
+-background-job-worker-count
+8
+-gc-helper-count
+1
+-name
+AssetImport
+Successfully changed project path to: C:/Users/saart/Documents/Adaptabrawl-Senior-Design/Adaptabrawl/Adaptabrawl
+C:/Users/saart/Documents/Adaptabrawl-Senior-Design/Adaptabrawl/Adaptabrawl
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gfx=262144"
+Player connection [11236]  Target information:
+
+Player connection [11236]  * "[IP] 192.168.0.102 [Port] 0 [Flags] 2 [Guid] 1882290744 [EditorId] 1882290744 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-M3GTP15) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [11236] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [11236] Host joined alternative multi-casting on [225.0.0.222:34997]...
+JobSystem: Creating JobQueue using job-worker-count value 7
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+[Licensing::Client] Code 10 while verifying Licensing Client signature (process Id: 760, path: "C:/Program Files/Unity Hub/UnityLicensingClient_V1/Unity.Licensing.Client.exe")
+[Licensing::Module] LicensingClient has failed validation; ignoring
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.17.3+a4e98f1
+  Session Id:              41b65336374843459dc884706ae9af96
+  Correlation Id:          fb08e55990cccad5e6841639367e4773
+  External correlation Id: 7448421819898667327
+  Machine Id:              oEDwi4MiTpEAsT5f8h1BJAMqZCA=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-saart" (connect: 0.00s, validation: 0.00s, handshake: 0.02s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-saart-notifications" at "2025-10-27T02:35:07.8153954Z"
+[Licensing::Module] Licensing Background thread has ended after 0.03s
+Library Redirect Path: Library/
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+Refreshing native plugins compatible for Editor in 2.06 ms, found 4 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 6000.2.6f2 (4a4dcaec6541)
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.2.6f2/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path C:/Users/saart/Documents/Adaptabrawl-Senior-Design/Adaptabrawl/Adaptabrawl/Assets
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+d3d12: failed to query info queue interface (0x80004002).
+Direct3D:
+    Version:         Direct3D 12 [level 12.1]
+    Renderer:        AMD Radeon RX 7900 GRE (ID=0x744c)
+    Vendor:          ATI
+    VRAM:            16368 MB
+    App VRAM Budget: 15553 MB
+    Driver:          32.0.21025.1024
+Initialize mono
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.2.6f2/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.2.6f2/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.2.6f2/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56872
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.2.6f2/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.001134 seconds.
+- Loaded All Assemblies, in  0.250 seconds
+Native extension for WindowsStandalone target not found
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.226 seconds
+Domain Reload Profiling: 476ms
+	BeginReloadAssembly (86ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (0ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (0ms)
+	RebuildCommonClasses (24ms)
+	RebuildNativeTypeToScriptingClass (8ms)
+	initialDomainReloadingComplete (30ms)
+	LoadAllAssembliesAndSetupDomain (102ms)
+		LoadAssemblies (85ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (100ms)
+			TypeCache.Refresh (98ms)
+				TypeCache.ScanAssembly (89ms)
+			BuildScriptInfoCaches (0ms)
+			ResolveRequiredComponents (0ms)
+	FinalizeReload (227ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (196ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (33ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (44ms)
+			ProcessInitializeOnLoadAttributes (84ms)
+			ProcessInitializeOnLoadMethodAttributes (33ms)
+			AfterProcessingInitializeOnLoad (0ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (0ms)
+========================================================================
+Worker process is ready to serve import requests
+Import Worker Mode flag is 0x00
+Begin MonoManager ReloadAssembly
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: 18966711878683-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+- Loaded All Assemblies, in  0.539 seconds
+Refreshing native plugins compatible for Editor in 1.24 ms, found 4 plugins.
+Native extension for WindowsStandalone target not found
+Package Manager log level set to [2]
+[Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
+[Package Manager] Unable to send message (not connected to server process).
+[Package Manager] Cannot connect to Unity Package Manager local server
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.451 seconds
+Domain Reload Profiling: 987ms
+	BeginReloadAssembly (130ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (5ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (28ms)
+	RebuildCommonClasses (23ms)
+	RebuildNativeTypeToScriptingClass (8ms)
+	initialDomainReloadingComplete (23ms)
+	LoadAllAssembliesAndSetupDomain (352ms)
+		LoadAssemblies (235ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (179ms)
+			TypeCache.Refresh (127ms)
+				TypeCache.ScanAssembly (117ms)
+			BuildScriptInfoCaches (42ms)
+			ResolveRequiredComponents (7ms)
+	FinalizeReload (451ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (378ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (1ms)
+			SetLoadedEditorAssemblies (2ms)
+			BeforeProcessingInitializeOnLoad (89ms)
+			ProcessInitializeOnLoadAttributes (240ms)
+			ProcessInitializeOnLoadMethodAttributes (42ms)
+			AfterProcessingInitializeOnLoad (3ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (4ms)
+WARNING: Shader Unsupported: 'Hidden/Universal Render Pipeline/Terrain/Lit (Base Pass)' - All subshaders removed
+WARNING: Shader Did you use #pragma only_renderers and omit this platform?
+WARNING: Shader If subshaders removal was intentional, you may have forgotten turning Fallback off?
+WARNING: Shader Unsupported: 'Hidden/Universal Render Pipeline/Terrain/Lit (Base Pass)' - All subshaders removed
+WARNING: Shader Did you use #pragma only_renderers and omit this platform?
+WARNING: Shader If subshaders removal was intentional, you may have forgotten turning Fallback off?
+WARNING: Shader Unsupported: 'Universal Render Pipeline/Terrain/Lit' - All subshaders removed
+WARNING: Shader Did you use #pragma only_renderers and omit this platform?
+WARNING: Shader If subshaders removal was intentional, you may have forgotten turning Fallback off?
+WARNING: Shader Unsupported: 'Universal Render Pipeline/Terrain/Lit' - All subshaders removed
+WARNING: Shader Did you use #pragma only_renderers and omit this platform?
+WARNING: Shader If subshaders removal was intentional, you may have forgotten turning Fallback off?
+Launched and connected shader compiler UnityShaderCompiler.exe after 0.01 seconds
+Refreshing native plugins compatible for Editor in 1.69 ms, found 4 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 33 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 6764 unused Assets / (6.8 MB). Loaded Objects now: 7331.
+Memory consumption went from 139.1 MB to 132.3 MB.
+Total: 9.504600 ms (FindLiveObjects: 0.798100 ms CreateObjectMapping: 0.875500 ms MarkObjects: 4.397300 ms  DeleteObjects: 3.432900 ms)
+
+========================================================================
+Received Import Request.
+  Time since last request: 842558.816207 seconds.
+  path: Assets/FightingMotionsVolume1/Prefabs/Plane.prefab
+  artifactKey: Guid(e0eba113fe1019f4cba978dac0d7c965) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/FightingMotionsVolume1/Prefabs/Plane.prefab using Guid(e0eba113fe1019f4cba978dac0d7c965) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '3fee1e17a6f7adf0be4b572c7b50372f') in 0.2428816 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 9
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000027 seconds.
+  path: Assets/FightingMotionsVolume1/Prefabs/BlueGuy.prefab
+  artifactKey: Guid(3bf11e47adbdd4542a4be54c81dac563) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/FightingMotionsVolume1/Prefabs/BlueGuy.prefab using Guid(3bf11e47adbdd4542a4be54c81dac563) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '3555655ca9f0edd5bd0356d18c7c4cde') in 0.0349491 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 186
+
+========================================================================
+Received Import Request.
+  Time since last request: 10.361769 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Models/Avatar Masks/Human Head Mask.mask
+  artifactKey: Guid(cba496d351611c54494800debaf419f7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Kevin Iglesias/Human Animations/Models/Avatar Masks/Human Head Mask.mask using Guid(cba496d351611c54494800debaf419f7) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '421a7b9540e72f67d6ea43256e4a0c85') in 0.0008023 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Prepare
+Begin MonoManager ReloadAssembly
+[Licensing::Client] Successfully resolved entitlement details
+- Loaded All Assemblies, in  0.490 seconds
+Refreshing native plugins compatible for Editor in 1.05 ms, found 4 plugins.
+Native extension for WindowsStandalone target not found
+[Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
+[Package Manager] Unable to send message (not connected to server process).
+[Package Manager] Cannot connect to Unity Package Manager local server
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.477 seconds
+Domain Reload Profiling: 969ms
+	BeginReloadAssembly (151ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (10ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (44ms)
+	RebuildCommonClasses (23ms)
+	RebuildNativeTypeToScriptingClass (9ms)
+	initialDomainReloadingComplete (18ms)
+	LoadAllAssembliesAndSetupDomain (292ms)
+		LoadAssemblies (221ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (129ms)
+			TypeCache.Refresh (4ms)
+				TypeCache.ScanAssembly (0ms)
+			BuildScriptInfoCaches (113ms)
+			ResolveRequiredComponents (8ms)
+	FinalizeReload (477ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (393ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (1ms)
+			SetLoadedEditorAssemblies (2ms)
+			BeforeProcessingInitializeOnLoad (90ms)
+			ProcessInitializeOnLoadAttributes (255ms)
+			ProcessInitializeOnLoadMethodAttributes (41ms)
+			AfterProcessingInitializeOnLoad (3ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (5ms)
+WARNING: Shader Unsupported: 'Hidden/Universal Render Pipeline/Terrain/Lit (Base Pass)' - All subshaders removed
+WARNING: Shader Did you use #pragma only_renderers and omit this platform?
+WARNING: Shader If subshaders removal was intentional, you may have forgotten turning Fallback off?
+WARNING: Shader Unsupported: 'Hidden/Universal Render Pipeline/Terrain/Lit (Base Pass)' - All subshaders removed
+WARNING: Shader Did you use #pragma only_renderers and omit this platform?
+WARNING: Shader If subshaders removal was intentional, you may have forgotten turning Fallback off?
+WARNING: Shader Unsupported: 'Universal Render Pipeline/Terrain/Lit' - All subshaders removed
+WARNING: Shader Did you use #pragma only_renderers and omit this platform?
+WARNING: Shader If subshaders removal was intentional, you may have forgotten turning Fallback off?
+WARNING: Shader Unsupported: 'Universal Render Pipeline/Terrain/Lit' - All subshaders removed
+WARNING: Shader Did you use #pragma only_renderers and omit this platform?
+WARNING: Shader If subshaders removal was intentional, you may have forgotten turning Fallback off?
+Refreshing native plugins compatible for Editor in 1.95 ms, found 4 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 33 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 6762 unused Assets / (6.9 MB). Loaded Objects now: 7346.
+Memory consumption went from 148.5 MB to 141.5 MB.
+Total: 8.700700 ms (FindLiveObjects: 0.639500 ms CreateObjectMapping: 0.656300 ms MarkObjects: 4.427100 ms  DeleteObjects: 2.977200 ms)
+
+Prepare: number of updated asset objects reloaded= 0
+========================================================================
+Received Import Request.
+  Time since last request: 141.136501 seconds.
+  path: Assets/TextMesh Pro/Examples & Extras/Resources/Fonts & Materials/Bangers SDF Logo - URP.mat
+  artifactKey: Guid(6751ce1a4611b3940812c13a6847d94f) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/TextMesh Pro/Examples & Extras/Resources/Fonts & Materials/Bangers SDF Logo - URP.mat using Guid(6751ce1a4611b3940812c13a6847d94f) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'bebc8d9ac3feb63cfb604fc369425879') in 0.189533 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 5
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000017 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Strafe/StrafeRun/HumanM@StrafeRun01_BackwardLeft.fbx
+  artifactKey: Guid(51bdc1cd12e2d1a489d0eefb275b3cb6) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Strafe/StrafeRun/HumanM@StrafeRun01_BackwardLeft.fbx using Guid(51bdc1cd12e2d1a489d0eefb275b3cb6) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'dcfaf281b085d5ec6ebbfc338db01fa7') in 0.0543539 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000023 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/Polearm/HumanM@RunStrafe01_ForwardLeft - Polearm.controller
+  artifactKey: Guid(d4780be61e4af8f4191f213919d55279) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/Polearm/HumanM@RunStrafe01_ForwardLeft - Polearm.controller using Guid(d4780be61e4af8f4191f213919d55279) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '4b287929a26a0109aa2639cb559c9b2f') in 0.0135226 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 8
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/RootMotion/HumanM@Run01_BackwardLeft [RM].fbx
+  artifactKey: Guid(d4ad07e9a02ec4241a5110960579fb59) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/RootMotion/HumanM@Run01_BackwardLeft [RM].fbx using Guid(d4ad07e9a02ec4241a5110960579fb59) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'e68bdf5617ebdeac47ef6bfc340d0f40') in 0.0155926 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000017 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Models/Avatar Masks/Hands/Human Hand Left Mask.mask
+  artifactKey: Guid(b7a9bc6acd2eaa941ab64d230864a316) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Models/Avatar Masks/Hands/Human Hand Left Mask.mask using Guid(b7a9bc6acd2eaa941ab64d230864a316) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '30389a798d198550fe00cbcfaac19ff1') in 0.0096853 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes
+  artifactKey: Guid(85f0e47a261332e4fa451ebb323c8921) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes using Guid(85f0e47a261332e4fa451ebb323c8921) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'ef66907e2f5b9a03589d85c1ff3672d0') in 0.0081646 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000041 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Characters/HumanF_Dummy_Red - Dual Wield.prefab
+  artifactKey: Guid(e50d8f3bdcd56ad4b969dda5422e9099) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Characters/HumanF_Dummy_Red - Dual Wield.prefab using Guid(e50d8f3bdcd56ad4b969dda5422e9099) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '012c8fd1cec5a57ffc63f1d5da58b751') in 0.0189205 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 265
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/1H/HumanF@Run_Forward - 1H.overrideController
+  artifactKey: Guid(ff8ed1d425d839a4b90e152c06da931a) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/1H/HumanF@Run_Forward - 1H.overrideController using Guid(ff8ed1d425d839a4b90e152c06da931a) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '407b2a740ec059f1b9204ef21c2d0047') in 0.0162643 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 6
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Weapons/Human_Warhammer.prefab
+  artifactKey: Guid(b0b1d50816a46b14eb6752db3588fec9) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Weapons/Human_Warhammer.prefab using Guid(b0b1d50816a46b14eb6752db3588fec9) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'd17a233cec0fb5ac8191e41c4bb1461a') in 0.0281531 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 14
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/1H/HumanM@RunStrafe01_ForwardLeft - 1H.controller
+  artifactKey: Guid(672ce26fc526f1042a5c2d1f64d903a4) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/1H/HumanM@RunStrafe01_ForwardLeft - 1H.controller using Guid(672ce26fc526f1042a5c2d1f64d903a4) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '4661188df7310a55ff865295703349e4') in 0.0149445 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 4
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Models/HumanF_Model.fbx
+  artifactKey: Guid(1841c298173cdad4db8df8602c8f1c8d) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Models/HumanF_Model.fbx using Guid(1841c298173cdad4db8df8602c8f1c8d) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'dd5827ff1915eefab1d0550c062828c5') in 0.0269794 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 124
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000016 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Models/Human_Greatsword.fbx
+  artifactKey: Guid(a774989d24c2ed24ba4475823067ad82) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Models/Human_Greatsword.fbx using Guid(a774989d24c2ed24ba4475823067ad82) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'ff56659f336fc6c25fb5e9f6b60fa6d9') in 0.019895 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 7
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000041 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/HumanM@CombatIdle01.fbx
+  artifactKey: Guid(f136ef28d67ab0f4f8e00c33ed181abb) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/HumanM@CombatIdle01.fbx using Guid(f136ef28d67ab0f4f8e00c33ed181abb) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '51f662aa8fb3444578dcf7523a5985a8') in 0.0219622 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000018 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/HumanM@Run01_Backward.fbx
+  artifactKey: Guid(a8e6c7cf678a13541a726c2ae9ec00e3) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/HumanM@Run01_Backward.fbx using Guid(a8e6c7cf678a13541a726c2ae9ec00e3) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'a1955b3ef6ef630f34814105db405b6b') in 0.0250585 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/2H/HumanM@RunStrafe01_Left - 2H.controller
+  artifactKey: Guid(ef06e89f488721a4c866dd9931c53f43) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/2H/HumanM@RunStrafe01_Left - 2H.controller using Guid(ef06e89f488721a4c866dd9931c53f43) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '0de3b4f151308f8a737a80c225bcad47') in 0.0135343 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 8
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000016 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/1H/HumanM@RunStrafe01_ForwardRight - 1H.controller
+  artifactKey: Guid(95ba368b8dfd5fe41ab3b805d7b0887c) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/1H/HumanM@RunStrafe01_ForwardRight - 1H.controller using Guid(95ba368b8dfd5fe41ab3b805d7b0887c) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'd2c17a6b26fad5fe7ba078edf4d282bc') in 0.013317 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 4
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000020 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Run/RootMotion/HumanF@Run01_BackwardLeft [RM].fbx
+  artifactKey: Guid(06db7ead6cfa3054aaa7cf24fa1d249b) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Run/RootMotion/HumanF@Run01_BackwardLeft [RM].fbx using Guid(06db7ead6cfa3054aaa7cf24fa1d249b) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '81f5d08734a6b5fc23b167f1c60f10f8') in 0.0166396 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/TextMesh Pro/Examples & Extras/Materials/Ground - URP.mat
+  artifactKey: Guid(71529b88994c1a341b22bc57c038674a) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/TextMesh Pro/Examples & Extras/Materials/Ground - URP.mat using Guid(71529b88994c1a341b22bc57c038674a) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '5ee44dfbd99656069f4510ce58b79093') in 0.0319554 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/Polearm/HumanF@RunStrafe01_BackwardLeft - Polearm.overrideController
+  artifactKey: Guid(dc19351b45006754794d859e0d4e4866) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/Polearm/HumanF@RunStrafe01_BackwardLeft - Polearm.overrideController using Guid(dc19351b45006754794d859e0d4e4866) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '3a46f2f25de6885ef61e277ab055efa7') in 0.0125826 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 11
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/Polearm/HumanM@RunStrafe01_Left - Polearm.controller
+  artifactKey: Guid(36f0d0956db2aa241b2b206a90030fde) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/Polearm/HumanM@RunStrafe01_Left - Polearm.controller using Guid(36f0d0956db2aa241b2b206a90030fde) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'fa39d88846474790aa6943b240d95042') in 0.0105337 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 8
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000011 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/RootMotion/HumanM@Run01_Right [RM].fbx
+  artifactKey: Guid(c94ea603add67b745a5c6198446707fb) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/RootMotion/HumanM@Run01_Right [RM].fbx using Guid(c94ea603add67b745a5c6198446707fb) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '34135dd9f0fa8c4d94c10e7ad00c5e84') in 0.0175273 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000021 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/1H/HumanF@RunStrafe01_ForwardLeft - 1H.overrideController
+  artifactKey: Guid(ab16fc3570a0f68419f151a8592b7d19) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/1H/HumanF@RunStrafe01_ForwardLeft - 1H.overrideController using Guid(ab16fc3570a0f68419f151a8592b7d19) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'a7aca1ed14e38285c67ec67b6e5acb6c') in 0.0152661 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 6
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000022 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/Polearm/HumanM@RunStrafe01_ForwardRight - Polearm.controller
+  artifactKey: Guid(82517993520f4db48952b2ecff30f5ef) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/Polearm/HumanM@RunStrafe01_ForwardRight - Polearm.controller using Guid(82517993520f4db48952b2ecff30f5ef) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '346d67dd0da0b69ad58ad4b86690eeae') in 0.0099395 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 8
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000010 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Run/RootMotion/HumanF@Run01_Forward [RM].fbx
+  artifactKey: Guid(b5aa46a35563ed44bb6dc4be5dabd918) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Run/RootMotion/HumanF@Run01_Forward [RM].fbx using Guid(b5aa46a35563ed44bb6dc4be5dabd918) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '264017d3100c5fdb78d84d316d5fd11a') in 0.0160666 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/1H/HumanF@RunStrafe01_ForwardRight - 1H.overrideController
+  artifactKey: Guid(77ba38988385da54387fd06f76c1009a) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/1H/HumanF@RunStrafe01_ForwardRight - 1H.overrideController using Guid(77ba38988385da54387fd06f76c1009a) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '122262d135dc6036f8d87d598ee5bbf2') in 0.0107036 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 6
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Characters
+  artifactKey: Guid(4213fa0ae433fae4b82fa8b9d9103cf4) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Characters using Guid(4213fa0ae433fae4b82fa8b9d9103cf4) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'e24c91c421df9a707c0ac230a689d35a') in 0.0092253 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/2H/HumanF@Run_Forward - 2H.overrideController
+  artifactKey: Guid(8beea1dde22bee24aa9b7b6379c03a44) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/2H/HumanF@Run_Forward - 2H.overrideController using Guid(8beea1dde22bee24aa9b7b6379c03a44) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '4ac390bbe89e814a3275513073e2319c') in 0.0128786 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 11
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000015 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/Polearm/HumanM@Run_BackwardRight - Polearm.controller
+  artifactKey: Guid(88b5f4d62e8664544a855b0486ca7357) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/Polearm/HumanM@Run_BackwardRight - Polearm.controller using Guid(88b5f4d62e8664544a855b0486ca7357) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'c11d048fcbe456eb428c5d84a275de20') in 0.0113995 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 8
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/RootMotion/HumanM@Run01_BackwardRight [RM].fbx
+  artifactKey: Guid(4751c211b658f37459b5165f3a027e22) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/RootMotion/HumanM@Run01_BackwardRight [RM].fbx using Guid(4751c211b658f37459b5165f3a027e22) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '7a867027362a0d14521df7299332cdd0') in 0.0151872 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/2H/HumanF@RunStrafe01_Right - 2H.overrideController
+  artifactKey: Guid(7c220e4a68bec6449b92243b0f940fa5) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/2H/HumanF@RunStrafe01_Right - 2H.overrideController using Guid(7c220e4a68bec6449b92243b0f940fa5) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '9a2c96bf038ab6836b2a3addd4b2b0dd') in 0.0131225 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 11
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000018 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Scripts/UpperBodyAnimations-SpineProxy.url
+  artifactKey: Guid(600f7cf1c6250e84687d018d42666742) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Scripts/UpperBodyAnimations-SpineProxy.url using Guid(600f7cf1c6250e84687d018d42666742) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '10945d6111fc9aa77b252707dfeb051d') in 0.0101332 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/TextMesh Pro/Examples & Extras/Resources/Fonts & Materials/Roboto-Bold SDF - URP.mat
+  artifactKey: Guid(90722b8bd74d9aa49958562aff7bdf76) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/TextMesh Pro/Examples & Extras/Resources/Fonts & Materials/Roboto-Bold SDF - URP.mat using Guid(90722b8bd74d9aa49958562aff7bdf76) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '55f30bcdfb3a2376d0ad95ee66d28875') in 0.0286825 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000015 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Strafe/StrafeRun/HumanF@StrafeRun01_ForwardLeft.fbx
+  artifactKey: Guid(7ded478c86f5f3c47870819768dd67e3) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Strafe/StrafeRun/HumanF@StrafeRun01_ForwardLeft.fbx using Guid(7ded478c86f5f3c47870819768dd67e3) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '0fea8d01916f87b316f9a2d6cb300928') in 0.0160744 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000015 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/Polearm/HumanM@Run_Forward - Polearm.controller
+  artifactKey: Guid(3006f459dfb07f946b33e09940839091) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/Polearm/HumanM@Run_Forward - Polearm.controller using Guid(3006f459dfb07f946b33e09940839091) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '459e1fe101df05bf9d2fe7e2b2212120') in 0.0115369 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 8
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000020 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/Polearm/HumanM@Combat Movement - Polearm.controller
+  artifactKey: Guid(8c9166bb01bff9646987627670a7675f) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/Polearm/HumanM@Combat Movement - Polearm.controller using Guid(8c9166bb01bff9646987627670a7675f) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '9cb922455acd2cffee8832f83be71e4f') in 0.0139191 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 30
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000010 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/2H/HumanM@Combat - 2H.controller
+  artifactKey: Guid(f9e89ec160eab4542b06995586c22dd4) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/2H/HumanM@Combat - 2H.controller using Guid(f9e89ec160eab4542b06995586c22dd4) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'd01be32b4306ab7fc493ad72cac7989b') in 0.013198 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 23
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Characters/HumanM_Dummy_Red - Dual Wield.prefab
+  artifactKey: Guid(a6c0ffbfdc555a2498daa513befe0bb3) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Characters/HumanM_Dummy_Red - Dual Wield.prefab using Guid(a6c0ffbfdc555a2498daa513befe0bb3) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '87a907992956a209701e8dacd5576774') in 0.0129182 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 265
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/1H/HumanF@Run_Left - 1H.overrideController
+  artifactKey: Guid(70407d8f22beae74ea9f8134c8822b83) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/1H/HumanF@Run_Left - 1H.overrideController using Guid(70407d8f22beae74ea9f8134c8822b83) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '5787898ec1314ff66dbd28f84b765a33') in 0.0118496 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 6
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000020 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/2H/HumanF@Combat Movement - 2H.overrideController
+  artifactKey: Guid(ea1e881da3cbb6649991e09be0a94054) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/2H/HumanF@Combat Movement - 2H.overrideController using Guid(ea1e881da3cbb6649991e09be0a94054) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'd25d1e9cda51a8f5bab4bb63104b74dc') in 0.0226995 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 35
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000018 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/Polearm/HumanF@Run_BackwardRight - Polearm.overrideController
+  artifactKey: Guid(45479f127e69fcc4ab172dc92cf9446b) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/Polearm/HumanF@Run_BackwardRight - Polearm.overrideController using Guid(45479f127e69fcc4ab172dc92cf9446b) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'f1f8cfce76788cdb0192c433d47ed047') in 0.0145993 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 11
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000017 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/1H
+  artifactKey: Guid(a1896da8ed23ddb4190071d86aaf9279) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/1H using Guid(a1896da8ed23ddb4190071d86aaf9279) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'a0b27bda135bb67694594c7ace6296dd') in 0.0111769 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.038431 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Masked Poses/HumanM@WeaponHoldPolearm01.fbx
+  artifactKey: Guid(4c457101953390e428f3996252f89ce6) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Masked Poses/HumanM@WeaponHoldPolearm01.fbx using Guid(4c457101953390e428f3996252f89ce6) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '4c72a63f11867050c57d5ba9e3db3f3d') in 0.0181034 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000037 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/2H
+  artifactKey: Guid(677b4b00f18203b4b9cffbb3afa2667e) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/2H using Guid(677b4b00f18203b4b9cffbb3afa2667e) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'b326d0df98957c110e6bf8cfba4d388a') in 0.0110177 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000028 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/2H/HumanF@Combat - 2H.overrideController
+  artifactKey: Guid(a122385519b34b84896f4765717c590b) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/2H/HumanF@Combat - 2H.overrideController using Guid(a122385519b34b84896f4765717c590b) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '1cdbd795b37d32bf6401836e33cd8548') in 0.0190613 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 29
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000018 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Masked Poses/HumanM@ObjectGripShoulder02_L.fbx
+  artifactKey: Guid(c8320a17fc9a23d4799e01e61b428394) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Masked Poses/HumanM@ObjectGripShoulder02_L.fbx using Guid(c8320a17fc9a23d4799e01e61b428394) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'f14903931dfe1c8b7a4cd11524f5beed') in 0.0186087 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/Polearm/HumanM@CombatIdlePolearm01.fbx
+  artifactKey: Guid(ba910604ba8bc7941bbd1905f1dcc09e) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/Polearm/HumanM@CombatIdlePolearm01.fbx using Guid(ba910604ba8bc7941bbd1905f1dcc09e) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'b856fa2bd0400d4e1491592a3c826ea4') in 0.0166534 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/2H/HumanF@Run_BackwardLeft - 2H.overrideController
+  artifactKey: Guid(815d417d8d2aee04aa9b2567b578415b) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/2H/HumanF@Run_BackwardLeft - 2H.overrideController using Guid(815d417d8d2aee04aa9b2567b578415b) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '2a8eba0a3e149701d884de751fdde876') in 0.0142318 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 11
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Models/Avatar Masks/Hands
+  artifactKey: Guid(4ff39103735d8aa4cb2b923e50e2d165) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Models/Avatar Masks/Hands using Guid(4ff39103735d8aa4cb2b923e50e2d165) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'e145e799008c07a27caf9d8a2b4368e0') in 0.0098977 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000011 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Run/HumanF@Run01_Right.fbx
+  artifactKey: Guid(e4554e344c29aeb4087271d927e625f2) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Run/HumanF@Run01_Right.fbx using Guid(e4554e344c29aeb4087271d927e625f2) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'b42e63e60194d3f25c91028ecc61eadd') in 0.0184422 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/HumanM@CombatDamage01.fbx
+  artifactKey: Guid(e191b1e6013333f4f8fcf7db4018a4d2) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/HumanM@CombatDamage01.fbx using Guid(e191b1e6013333f4f8fcf7db4018a4d2) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '355fb83a6db751e5a1bdac8e0f99069e') in 0.0165917 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/RootMotion/HumanM@Run01_ForwardLeft [RM].fbx
+  artifactKey: Guid(56d8ff19983f1de47a7aef7fb3a2d2e3) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/RootMotion/HumanM@Run01_ForwardLeft [RM].fbx using Guid(56d8ff19983f1de47a7aef7fb3a2d2e3) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '785f6ad2b9fbd2a0d65bf6b39413ee86') in 0.0157586 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000912 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement
+  artifactKey: Guid(26074c6ffeec361468aadfc3955c8a9f) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement using Guid(26074c6ffeec361468aadfc3955c8a9f) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '1390a728830a117eabfca4bbfbf5400f') in 0.0099331 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Strafe/StrafeRun/HumanF@StrafeRun01_BackwardLeft.fbx
+  artifactKey: Guid(d4ea2ec9518f92442a0c1c2ab0dc9780) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Strafe/StrafeRun/HumanF@StrafeRun01_BackwardLeft.fbx using Guid(d4ea2ec9518f92442a0c1c2ab0dc9780) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '8f858c0e30bd33bdeefb41aafd018cf8') in 0.026958 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Strafe/StrafeRun/HumanF@StrafeRun01_Left.fbx
+  artifactKey: Guid(170eb8694c2f28e4080b789b627f6ce6) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Strafe/StrafeRun/HumanF@StrafeRun01_Left.fbx using Guid(170eb8694c2f28e4080b789b627f6ce6) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'e419271863ecbf63cfed1e0b5d0dcfb2') in 0.021994 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000023 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/1H/HumanM@RunStrafe01_Right - 1H.controller
+  artifactKey: Guid(1a586091404530347a88477483e47a40) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/1H/HumanM@RunStrafe01_Right - 1H.controller using Guid(1a586091404530347a88477483e47a40) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'c380fac5e0450ea89d063db117866f66') in 0.0127594 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 4
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/Polearm/HumanF@RunStrafe01_ForwardRight - Polearm.overrideController
+  artifactKey: Guid(1220f1443f943864fb600930e506ab13) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/Polearm/HumanF@RunStrafe01_ForwardRight - Polearm.overrideController using Guid(1220f1443f943864fb600930e506ab13) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '3706400347ad06b3e0d1b06fa1e3a7a6') in 0.0144496 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 11
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/Polearm/HumanM@Run_Backward - Polearm.controller
+  artifactKey: Guid(c34004696b217d545bf06def66d4c833) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/Polearm/HumanM@Run_Backward - Polearm.controller using Guid(c34004696b217d545bf06def66d4c833) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '96655f137026813f2eac514050dc540b') in 0.0125501 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 8
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/Polearm/HumanF@RunStrafe01_Left - Polearm.overrideController
+  artifactKey: Guid(40a7ca6461ce60f4691a6fce9bffdf21) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/Polearm/HumanF@RunStrafe01_Left - Polearm.overrideController using Guid(40a7ca6461ce60f4691a6fce9bffdf21) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '380709100e7009444ab1f2f83e2538f8') in 0.0133431 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 11
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/2H
+  artifactKey: Guid(0dd0bf12aac74b24084b5e5f7f3ebdc3) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/2H using Guid(0dd0bf12aac74b24084b5e5f7f3ebdc3) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '7b5be53f2339e4d0fee4d7a6cb304161') in 0.0116146 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Strafe/StrafeRun/RootMotion/HumanF@StrafeRun01_Right [RM].fbx
+  artifactKey: Guid(79ec3d009f9255249b75b544620196a4) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Strafe/StrafeRun/RootMotion/HumanF@StrafeRun01_Right [RM].fbx using Guid(79ec3d009f9255249b75b544620196a4) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '0b80e6fa2484983821b69c6689bc80fb') in 0.0195383 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement
+  artifactKey: Guid(14b354c87e646e24b84a04de67edf8a1) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement using Guid(14b354c87e646e24b84a04de67edf8a1) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '3a8ccdd92f8802703dc75e1a030e3fda') in 0.0099136 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000034 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Materials/HumanMeleeAnimations_Floor.mat
+  artifactKey: Guid(8b55fd248dd5aa140a1142754a64dc18) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Materials/HumanMeleeAnimations_Floor.mat using Guid(8b55fd248dd5aa140a1142754a64dc18) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '1e31f861a870721dd2dafb7a2ab62835') in 0.0119073 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000018 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Idles
+  artifactKey: Guid(4646e5be5f2ffd3418a99cddf4e49b85) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Idles using Guid(4646e5be5f2ffd3418a99cddf4e49b85) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'c042507f07c83e68a0b98d13373e78bb') in 0.0126231 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/Polearm/HumanM@Combat - Polearm.controller
+  artifactKey: Guid(17443ee122df721439efa518d3858ca0) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/Polearm/HumanM@Combat - Polearm.controller using Guid(17443ee122df721439efa518d3858ca0) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '1006b1bac90233f04fb1d0bce2638f80') in 0.015943 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 25
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Run
+  artifactKey: Guid(094f6c3ed3d2b0848959b794afc83f8f) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Run using Guid(094f6c3ed3d2b0848959b794afc83f8f) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '69c6ef13afc7d25a63107531e17beacc') in 0.0110044 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/2H/HumanF@Run_Backward - 2H.overrideController
+  artifactKey: Guid(775b9d4fea4c6b7428ca3bf92a658b76) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/2H/HumanF@Run_Backward - 2H.overrideController using Guid(775b9d4fea4c6b7428ca3bf92a658b76) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'b9d5130651558773a4e13831369f3d14') in 0.0161823 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 11
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000029 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Strafe/StrafeRun/RootMotion
+  artifactKey: Guid(e0ddaa623de74874a9885f9faa8a9314) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Strafe/StrafeRun/RootMotion using Guid(e0ddaa623de74874a9885f9faa8a9314) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '4878b6556dbc90abff87cd74f4612e91') in 0.0097999 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/1H/HumanF@RunStrafe01_Left - 1H.overrideController
+  artifactKey: Guid(31811ada60a1d454e9fe5657d431e1fc) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/1H/HumanF@RunStrafe01_Left - 1H.overrideController using Guid(31811ada60a1d454e9fe5657d431e1fc) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '7396a8aca116baf75df0e7cbee6bf2e1') in 0.0136088 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 6
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/HumanM@Run01_BackwardRight.fbx
+  artifactKey: Guid(ca7bf50d255ff5749a3a9ff602076af8) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/HumanM@Run01_BackwardRight.fbx using Guid(ca7bf50d255ff5749a3a9ff602076af8) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '1ef26f5354f6e061daf74c16159d1688') in 0.0173622 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/Polearm/HumanF@Combat - Polearm.overrideController
+  artifactKey: Guid(6a3c91662e1e56b47b06da725763f1ff) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/Polearm/HumanF@Combat - Polearm.overrideController using Guid(6a3c91662e1e56b47b06da725763f1ff) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'caf795d4ad34547a8493f579451e39be') in 0.0230065 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 31
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/Shield
+  artifactKey: Guid(debcffbdece727340b29092bb9ff9faa) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/Shield using Guid(debcffbdece727340b29092bb9ff9faa) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '5199e9450c3c7e9a3bd94845d62bab62') in 0.0117203 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000015 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/2H/HumanM@RunStrafe01_ForwardRight - 2H.controller
+  artifactKey: Guid(31790383950a0c04f8281d43283fc9bb) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/2H/HumanM@RunStrafe01_ForwardRight - 2H.controller using Guid(31790383950a0c04f8281d43283fc9bb) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '5f08f080f347e99a524c8ca33b414e6c') in 0.0143468 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 8
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Strafe/StrafeRun/RootMotion/HumanM@StrafeRun01_BackwardRight [RM].fbx
+  artifactKey: Guid(32a619b04d843b1469dc3a0df13bc78d) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Strafe/StrafeRun/RootMotion/HumanM@StrafeRun01_BackwardRight [RM].fbx using Guid(32a619b04d843b1469dc3a0df13bc78d) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'a3f7c9a899fb6bc3109383956df95489') in 0.0176242 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male
+  artifactKey: Guid(c5bbf5d5947ba6243841d59f971f4fa7) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male using Guid(c5bbf5d5947ba6243841d59f971f4fa7) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '33b14f658702d64d054189e6994db8da') in 0.0117969 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000011 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Masked Poses/HumanM@WeaponHold2H01.fbx
+  artifactKey: Guid(3d694a1e4e41a3346b76b6f2a46a6037) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Masked Poses/HumanM@WeaponHold2H01.fbx using Guid(3d694a1e4e41a3346b76b6f2a46a6037) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'db6965eb5483ab5d831f5e2fcafce3aa') in 0.0229528 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000016 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Scripts
+  artifactKey: Guid(e64c16a1da5b84c4488d02899ba2e527) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Scripts using Guid(e64c16a1da5b84c4488d02899ba2e527) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '297c01e0fcd5a1bdc84fd86c6d2730c3') in 0.0124846 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/Polearm/HumanF@Combat Movement - Polearm.overrideController
+  artifactKey: Guid(fe961c6598dcff447859c651f742fa8c) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/Polearm/HumanF@Combat Movement - Polearm.overrideController using Guid(fe961c6598dcff447859c651f742fa8c) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '0556951eac64fbea64ccbbe326884ab0') in 0.0180548 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 35
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000022 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Idles/HumanF@Idle01.fbx
+  artifactKey: Guid(0f69fd4f4ad106447896fb775199ed37) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Idles/HumanF@Idle01.fbx using Guid(0f69fd4f4ad106447896fb775199ed37) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '6e7ceca2bb6d781e6e51d2bad34b1b20') in 0.0206723 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Strafe/StrafeRun/RootMotion/HumanF@StrafeRun01_BackwardRight [RM].fbx
+  artifactKey: Guid(815cadadb5a883e4d86a6114fab02125) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Strafe/StrafeRun/RootMotion/HumanF@StrafeRun01_BackwardRight [RM].fbx using Guid(815cadadb5a883e4d86a6114fab02125) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'ca1168a485d89a4e6fded1c7d96fd6f9') in 0.016348 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Idles
+  artifactKey: Guid(e6594c847f8afc14d9221105e31658cd) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Idles using Guid(e6594c847f8afc14d9221105e31658cd) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'd2ccbad0f4665a91ce2f07dbb9d2c68d') in 0.00904 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000011 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Strafe
+  artifactKey: Guid(2999632eb052cfc4f9d137e836e0ac9d) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Strafe using Guid(2999632eb052cfc4f9d137e836e0ac9d) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '813c5f68f20a4c0e830c9fba79d29ee0') in 0.0123794 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000011 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Strafe/StrafeRun/RootMotion/HumanM@StrafeRun01_ForwardRight [RM].fbx
+  artifactKey: Guid(0e6f263346d74c94d864a5de9d9cb9f0) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Strafe/StrafeRun/RootMotion/HumanM@StrafeRun01_ForwardRight [RM].fbx using Guid(0e6f263346d74c94d864a5de9d9cb9f0) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'fab1d4165496bf3221b8d5fd2da5106d') in 0.0165594 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/HumanM@Run01_ForwardLeft.fbx
+  artifactKey: Guid(2d491dc6ab8cc5045919954fe2601203) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/HumanM@Run01_ForwardLeft.fbx using Guid(2d491dc6ab8cc5045919954fe2601203) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'c2fd0c9536824637fe3fc0b61037843f') in 0.0183485 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000016 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/Polearm/HumanM@AttackPolearm01.fbx
+  artifactKey: Guid(04d7996e4b80c684a97630c930541aff) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/Polearm/HumanM@AttackPolearm01.fbx using Guid(04d7996e4b80c684a97630c930541aff) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '1ce3f5587cd99f333e1064ff3869cc3f') in 0.017131 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/2H
+  artifactKey: Guid(e176f526684f2ec4fb317396f76e915d) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/2H using Guid(e176f526684f2ec4fb317396f76e915d) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'f87cf664c5118911ed693fb1f0ecdf37') in 0.009617 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/Polearm/HumanF@Run_Left - Polearm.overrideController
+  artifactKey: Guid(8871abb45308b494fa18e17e9a814e3a) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/Polearm/HumanF@Run_Left - Polearm.overrideController using Guid(8871abb45308b494fa18e17e9a814e3a) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '9a34bfff5feef3fe3591b019f24d1e5a') in 0.0134525 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 11
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000011 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/1H/HumanM@Combat - Sword and Shield.controller
+  artifactKey: Guid(d4176e2452e42014e8781c3984967dfe) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/1H/HumanM@Combat - Sword and Shield.controller using Guid(d4176e2452e42014e8781c3984967dfe) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '4c2c312132cd3703b3d2c1e0daad2232') in 0.0165018 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 27
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/1H/HumanM@CombatIdle1H01.fbx
+  artifactKey: Guid(d4532f1415d75034a8a42ade4be07f5c) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/1H/HumanM@CombatIdle1H01.fbx using Guid(d4532f1415d75034a8a42ade4be07f5c) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'eb26d2b255acf9b83737e4c952ce6c6e') in 0.017611 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000020 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Strafe/StrafeRun/RootMotion/HumanF@StrafeRun01_ForwardRight [RM].fbx
+  artifactKey: Guid(78cf87d23cc6a1547af79ad81e510c5c) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Strafe/StrafeRun/RootMotion/HumanF@StrafeRun01_ForwardRight [RM].fbx using Guid(78cf87d23cc6a1547af79ad81e510c5c) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '9a3afcc0a0964e4ecfa83a241a2fac4f') in 0.0181591 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Weapons/Human_Dagger.prefab
+  artifactKey: Guid(90e49dcb8d4095d499a8c16d9fd770a4) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Weapons/Human_Dagger.prefab using Guid(90e49dcb8d4095d499a8c16d9fd770a4) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '00c6473d5b9426a78e8259354cebda9d') in 0.0135591 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 14
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/HumanM@Run01_Right.fbx
+  artifactKey: Guid(846fff649819bcf49b933d00ef6f703f) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/HumanM@Run01_Right.fbx using Guid(846fff649819bcf49b933d00ef6f703f) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '93a1b00547f899556136d84056cce908') in 0.0163996 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/1H/HumanM@Combat Movement - Sword and Shield.controller
+  artifactKey: Guid(633fcd5e32131e948a31a6b83c06ad1d) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/1H/HumanM@Combat Movement - Sword and Shield.controller using Guid(633fcd5e32131e948a31a6b83c06ad1d) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'a525e7f7ba879a8dc191e0d221c00055') in 0.0172074 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 30
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000015 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/2H/HumanF@Run_ForwardRight - 2H.overrideController
+  artifactKey: Guid(c6899a5da7d2bdf40a301b9e7c0f57f9) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/2H/HumanF@Run_ForwardRight - 2H.overrideController using Guid(c6899a5da7d2bdf40a301b9e7c0f57f9) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'd5f31a58b4a61974f9fb8efbb4046d34') in 0.014038 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 11
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Combat/HumanF@Death01.fbx
+  artifactKey: Guid(b09be4f98e05fa7489d148a376fc0f1c) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Combat/HumanF@Death01.fbx using Guid(b09be4f98e05fa7489d148a376fc0f1c) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '4312448ced796fa8c9c5a6583cbee2ae') in 0.0193263 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Masked Poses/Human@HandsClosed01.fbx
+  artifactKey: Guid(5e9b37dd2b8b41648a4731a21c853b2f) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Masked Poses/Human@HandsClosed01.fbx using Guid(5e9b37dd2b8b41648a4731a21c853b2f) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '7f1303aa283e480da6e2bc1ff957ab05') in 0.0181127 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Models/Human_Dagger.fbx
+  artifactKey: Guid(6621997c29e39374fb059ab949e34f94) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Models/Human_Dagger.fbx using Guid(6621997c29e39374fb059ab949e34f94) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '7701e172e152cbcfa0e154d9efc91b07') in 0.0174249 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 7
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Materials/HumanAnimations_Dummy-Red.mat
+  artifactKey: Guid(a701906382a540c4ba0c5ad8559e9a5c) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Materials/HumanAnimations_Dummy-Red.mat using Guid(a701906382a540c4ba0c5ad8559e9a5c) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '56b8cb1f33e2c5995a7b2838508fc0c5') in 0.0133926 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/2H/HumanM@Run_BackwardLeft - 2H.controller
+  artifactKey: Guid(12ddb1488934bdd42a9cb2975da27544) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/2H/HumanM@Run_BackwardLeft - 2H.controller using Guid(12ddb1488934bdd42a9cb2975da27544) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'eb14b6233cb6c9ab6b408325143e52e5') in 0.0122246 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 8
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Characters/HumanF_Dummy_Red - Polearm.prefab
+  artifactKey: Guid(0d1dc15b702800b41900704ee66dac39) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Characters/HumanF_Dummy_Red - Polearm.prefab using Guid(0d1dc15b702800b41900704ee66dac39) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'd8f8f2d29f717b45b67fc55e60dd3c66') in 0.0164352 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 252
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000021 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Characters/HumanF_Dummy_Red - Greatsword.prefab
+  artifactKey: Guid(2c23c941dbdc1534eb6c7302246d6b29) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Characters/HumanF_Dummy_Red - Greatsword.prefab using Guid(2c23c941dbdc1534eb6c7302246d6b29) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '0a05a6b1d976369ba7408e7265019de0') in 0.0153525 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 252
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/Polearm/HumanF@RunStrafe01_BackwardRight - Polearm.overrideController
+  artifactKey: Guid(43da086ec52de7a4c8958a250f84984e) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/Polearm/HumanF@RunStrafe01_BackwardRight - Polearm.overrideController using Guid(43da086ec52de7a4c8958a250f84984e) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '2270d820ebf2cb32b15fd0cd756e34f8') in 0.0142585 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 11
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000015 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Combat/1H
+  artifactKey: Guid(2a8871b9ab0ba0841b6bd3e47e267021) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Combat/1H using Guid(2a8871b9ab0ba0841b6bd3e47e267021) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '344794f7c1151eaad4c02da27928b00a') in 0.0120728 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Strafe/StrafeRun/RootMotion/HumanM@StrafeRun01_Left [RM].fbx
+  artifactKey: Guid(d76213e9ae7231c4dbaf2b5d0c34edfc) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Strafe/StrafeRun/RootMotion/HumanM@StrafeRun01_Left [RM].fbx using Guid(d76213e9ae7231c4dbaf2b5d0c34edfc) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '29f76afc20ab61a7dc0c6de756e2da59') in 0.0185012 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000015 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Strafe/StrafeRun
+  artifactKey: Guid(50213f877314370499a712afd977256f) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Strafe/StrafeRun using Guid(50213f877314370499a712afd977256f) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '81e3655fe182f4158ec77fffb3643126') in 0.0132342 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000031 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Models/HumanM_Model.fbx
+  artifactKey: Guid(2faa610713d3b3c439473daa55e8c60a) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Models/HumanM_Model.fbx using Guid(2faa610713d3b3c439473daa55e8c60a) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '9dc4d35887a475e03ca6aa1bd41161f8') in 0.0173342 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 124
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Run/RootMotion/HumanF@Run01_ForwardLeft [RM].fbx
+  artifactKey: Guid(bf3d864026a7e1146a27e29a8626bc69) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Run/RootMotion/HumanF@Run01_ForwardLeft [RM].fbx using Guid(bf3d864026a7e1146a27e29a8626bc69) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '633613994a6e3e8d0b26c333995fba01') in 0.0166168 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Run/HumanF@Run01_ForwardLeft.fbx
+  artifactKey: Guid(cdb2264de10c42b4799822b736b5de9c) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Run/HumanF@Run01_ForwardLeft.fbx using Guid(cdb2264de10c42b4799822b736b5de9c) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'fd628c3decfab6606f0e81320fcb7cba') in 0.0166279 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/2H/HumanM@Run_Right - 2H.controller
+  artifactKey: Guid(e44ebb478a865884c8d0df481263c2ec) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/2H/HumanM@Run_Right - 2H.controller using Guid(e44ebb478a865884c8d0df481263c2ec) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '0d6094daa698a69b9ed7fe08c6b0b764') in 0.0138238 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 8
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/2H/HumanM@Run_BackwardRight - 2H.controller
+  artifactKey: Guid(8e60e831458057c48aa9304d4e85d7d0) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/2H/HumanM@Run_BackwardRight - 2H.controller using Guid(8e60e831458057c48aa9304d4e85d7d0) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'c677c2c46ea5cc10e9339adf6377d0b4') in 0.0121707 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 8
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/1H
+  artifactKey: Guid(48f483abde893484baafa930fc8f7ccb) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/1H using Guid(48f483abde893484baafa930fc8f7ccb) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'cf815d3e1ab9cc7c57ed82f840ff17fe') in 0.0106839 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000020 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Combat/Polearm/HumanF@AttackPolearm01.fbx
+  artifactKey: Guid(8427f593ea039e74fb73c8088e896c9a) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Combat/Polearm/HumanF@AttackPolearm01.fbx using Guid(8427f593ea039e74fb73c8088e896c9a) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'a4ba5ea8dc36212051570e03876f210f') in 0.0181377 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000016 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Characters/HumanM_Dummy_Red - Sword and Shield.prefab
+  artifactKey: Guid(e76e3a3af8c9c5e42968c424e2b49ef2) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Characters/HumanM_Dummy_Red - Sword and Shield.prefab using Guid(e76e3a3af8c9c5e42968c424e2b49ef2) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '802f0b6c4f6ffae22c917a65d710f5f9') in 0.015341 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 257
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000017 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Characters/HumanM_Dummy_Red.prefab
+  artifactKey: Guid(b4deeecceffb78942b88322de05e1f7b) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Characters/HumanM_Dummy_Red.prefab using Guid(b4deeecceffb78942b88322de05e1f7b) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'b1ee961474eebe17d85eeefc97620117') in 0.0143162 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 247
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Masked Poses/HumanF@WeaponHoldPolearm01.fbx
+  artifactKey: Guid(40f0c0342e006424190c3c65989cc8ed) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Masked Poses/HumanF@WeaponHoldPolearm01.fbx using Guid(40f0c0342e006424190c3c65989cc8ed) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '669e6a37eb728587ad763f32faf94d6c') in 0.0174094 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/2H/HumanM@Combat Movement - 2H.controller
+  artifactKey: Guid(08bf4b85aff13574e9824c881c880446) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/2H/HumanM@Combat Movement - 2H.controller using Guid(08bf4b85aff13574e9824c881c880446) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'a3b8374aff830cb55c354bf1a5bb2ce3') in 0.015355 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 30
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000016 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations
+  artifactKey: Guid(c401ced3e774fe2468cb211fb486eb15) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations using Guid(c401ced3e774fe2468cb211fb486eb15) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '65d862b1661512298c95f4b1283ad315') in 0.0098917 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000022 seconds.
+  path: Assets/FightingMotionsVolume1/FBX/nomove/bp_upper_left_A2.fbx
+  artifactKey: Guid(d28a799ed3743fb459cf17cd032e7d95) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/FightingMotionsVolume1/FBX/nomove/bp_upper_left_A2.fbx using Guid(d28a799ed3743fb459cf17cd032e7d95) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'e85552b153de49daf914faa17096ae29') in 0.0213618 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 54
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/Polearm/HumanM@RunStrafe01_Right - Polearm.controller
+  artifactKey: Guid(277a79835da8bb845bf1085e8eb2c7b3) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/Polearm/HumanM@RunStrafe01_Right - Polearm.controller using Guid(277a79835da8bb845bf1085e8eb2c7b3) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'f7db5dfd140fd8a10f07ac35660ecd2c') in 0.0177371 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 8
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/FightingMotionsVolume1/FBX/hd_front_B.fbx
+  artifactKey: Guid(3875ee494c5527c40a1c44833d2202d3) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/FightingMotionsVolume1/FBX/hd_front_B.fbx using Guid(3875ee494c5527c40a1c44833d2202d3) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '511b67a76b937be4332a6f4e38f161da') in 0.0244844 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 54
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000023 seconds.
+  path: Assets/FightingMotionsVolume1/FBX/knockdown_loop_A.fbx
+  artifactKey: Guid(3ff1228a6fef1834f96812bc96c1d41b) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/FightingMotionsVolume1/FBX/knockdown_loop_A.fbx using Guid(3ff1228a6fef1834f96812bc96c1d41b) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '9e8b8d13461b91ddafd3e57208df65af') in 0.0162886 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 54
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/FightingMotionsVolume1/FBX/nomove
+  artifactKey: Guid(2145f78739ae3574ea9e462d5c45b535) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/FightingMotionsVolume1/FBX/nomove using Guid(2145f78739ae3574ea9e462d5c45b535) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '3b45a923ddd7666b435167593c17394a') in 0.0101414 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/Polearm/HumanF@Run_ForwardRight - Polearm.overrideController
+  artifactKey: Guid(fb9b4f87cc1d9b74ea0ebb8ed7eaeaa2) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/Polearm/HumanF@Run_ForwardRight - Polearm.overrideController using Guid(fb9b4f87cc1d9b74ea0ebb8ed7eaeaa2) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '9a6f7823a5e6cb2539a329a99577675b') in 0.0146424 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 11
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/FightingMotionsVolume1/FBX/bk_push_left_A.fbx
+  artifactKey: Guid(e4f3ef320ac0e124fbd5766ab8a38cde) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/FightingMotionsVolume1/FBX/bk_push_left_A.fbx using Guid(e4f3ef320ac0e124fbd5766ab8a38cde) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '2743d80c2d297b0e40c18f99c44417b1') in 0.0166667 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 54
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/FightingMotionsVolume1/FBX/bb_front_A.fbx
+  artifactKey: Guid(0282c4d4925893d41928a32222f24b11) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/FightingMotionsVolume1/FBX/bb_front_A.fbx using Guid(0282c4d4925893d41928a32222f24b11) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '93b8a4b9966c72bcce04ae7c8e9ad9de') in 0.0174901 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 54
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female
+  artifactKey: Guid(879a90bd36e9372489d0e55efab96966) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female using Guid(879a90bd36e9372489d0e55efab96966) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '9445a5cbc22147f6b2c2064b54a21de4') in 0.010064 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/FightingMotionsVolume1/Prefabs/RedGuy.prefab
+  artifactKey: Guid(fd79887f970ff394c92966c76af78a10) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/FightingMotionsVolume1/Prefabs/RedGuy.prefab using Guid(fd79887f970ff394c92966c76af78a10) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '68918bd1edda7c8de06e22e89e00d24b') in 0.0248077 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 184
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000017 seconds.
+  path: Assets/FightingMotionsVolume1/FBX/hd_front_A.fbx
+  artifactKey: Guid(b1d836fe66d68fe4b9921d0d510eee15) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/FightingMotionsVolume1/FBX/hd_front_A.fbx using Guid(b1d836fe66d68fe4b9921d0d510eee15) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '54c70a6da6801fcda7d450cf12f4c93c') in 0.0183944 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 54
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/FightingMotionsVolume1/FBX/hp_upper_right_A.fbx
+  artifactKey: Guid(59c7dab75889cc747a38565aacf425cb) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/FightingMotionsVolume1/FBX/hp_upper_right_A.fbx using Guid(59c7dab75889cc747a38565aacf425cb) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '4cf5b524fd20a46e73a1e1694b14de35') in 0.0225031 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 54
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000017 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Characters/HumanF_Dummy_Red.prefab
+  artifactKey: Guid(c73a0a72483e00b4f8e6a2728f9ebcf0) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Characters/HumanF_Dummy_Red.prefab using Guid(c73a0a72483e00b4f8e6a2728f9ebcf0) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '23b1b0472d8bce4c63f3c0150bb927e4') in 0.0180447 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 247
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000023 seconds.
+  path: Assets/FightingMotionsVolume1/FBX/nomove/lk_rh_right_A2.fbx
+  artifactKey: Guid(7b2ee5b5217b0fb4188ff8ab278ec625) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/FightingMotionsVolume1/FBX/nomove/lk_rh_right_A2.fbx using Guid(7b2ee5b5217b0fb4188ff8ab278ec625) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '7b6a1b8f163ed1b1f20c9330d6fbbc36') in 0.0184282 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 54
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/2H/HumanF@RunStrafe01_ForwardLeft - 2H.overrideController
+  artifactKey: Guid(b4dcd2fc1e9c70048a05bbca09c35c3f) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/2H/HumanF@RunStrafe01_ForwardLeft - 2H.overrideController using Guid(b4dcd2fc1e9c70048a05bbca09c35c3f) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '1e0de64c99154c492b5651d4c6006f1b') in 0.0123987 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 11
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Models
+  artifactKey: Guid(348fc28ca0ac6254bb682bcad6b39d4a) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Models using Guid(348fc28ca0ac6254bb682bcad6b39d4a) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '86ffa7e455e549f0db1ef627751452f2') in 0.0101882 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/1H/HumanM@RunStrafe01_BackwardLeft - 1H.controller
+  artifactKey: Guid(72c21d2e64256ed48b41424cebb63cdd) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/1H/HumanM@RunStrafe01_BackwardLeft - 1H.controller using Guid(72c21d2e64256ed48b41424cebb63cdd) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '0406c26f5abe7c0ca0f904632922de7b') in 0.0121151 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 4
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Strafe/StrafeRun/HumanF@StrafeRun01_BackwardRight.fbx
+  artifactKey: Guid(1fa469bdb64dcf443ad00e0663110f41) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Strafe/StrafeRun/HumanF@StrafeRun01_BackwardRight.fbx using Guid(1fa469bdb64dcf443ad00e0663110f41) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'b96e03a88e9b749bcf7b09385dc8bb42') in 0.0157512 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000018 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/Shield/HumanM@AttackShield01.fbx
+  artifactKey: Guid(39df77266a31a2547b7cc6c67a54a62c) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/Shield/HumanM@AttackShield01.fbx using Guid(39df77266a31a2547b7cc6c67a54a62c) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '93cb2d49003ea89ed733f34ee54c2521') in 0.0197341 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/FightingMotionsVolume1/Prefabs/Plane.prefab
+  artifactKey: Guid(e0eba113fe1019f4cba978dac0d7c965) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/FightingMotionsVolume1/Prefabs/Plane.prefab using Guid(e0eba113fe1019f4cba978dac0d7c965) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'f71e946fed0386525bf9ccbf22d66c98') in 0.0176701 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 8
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000015 seconds.
+  path: Assets/FightingMotionsVolume1/Scenes/AllMotionsSettings.lighting
+  artifactKey: Guid(3f0cf1bcddfeca54abadfd20dd24d26d) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/FightingMotionsVolume1/Scenes/AllMotionsSettings.lighting using Guid(3f0cf1bcddfeca54abadfd20dd24d26d) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '275b2ef9c6e1db39e64e95e3aa2c404b') in 0.0159312 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000024 seconds.
+  path: Assets/FightingMotionsVolume1/FBX/lb_front_A.fbx
+  artifactKey: Guid(095c255e0c1c0744d9160d43cdc9e041) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/FightingMotionsVolume1/FBX/lb_front_A.fbx using Guid(095c255e0c1c0744d9160d43cdc9e041) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'd092c8a624b08b7722e0a50a65d7429b') in 0.0187635 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 54
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/FightingMotionsVolume1/Textures/plane.png
+  artifactKey: Guid(36e7256bb4f35584b836ec06ca50caeb) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/FightingMotionsVolume1/Textures/plane.png using Guid(36e7256bb4f35584b836ec06ca50caeb) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'eb90e261d74f074baa64a54883a452df') in 0.0329766 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000011 seconds.
+  path: Assets/FightingMotionsVolume1/FBX/bp_hook_right_A.fbx
+  artifactKey: Guid(8b6ca66cf21170749b7c0644ee77cc39) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/FightingMotionsVolume1/FBX/bp_hook_right_A.fbx using Guid(8b6ca66cf21170749b7c0644ee77cc39) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'ecdb575eebf23d99833bfa83cbca8ba8') in 0.0163497 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 54
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/FightingMotionsVolume1/FBX/lk_rh_right_A.fbx
+  artifactKey: Guid(eea3a4476bab05b458d87a5b376889c8) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/FightingMotionsVolume1/FBX/lk_rh_right_A.fbx using Guid(eea3a4476bab05b458d87a5b376889c8) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '0060e7a5b42b37df2ed86b46ea03208e') in 0.0167756 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 54
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/FightingMotionsVolume1/FBX/nomove/hp_upper_right_A2.fbx
+  artifactKey: Guid(0064cb92ace128248a50326a9abf6dd2) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/FightingMotionsVolume1/FBX/nomove/hp_upper_right_A2.fbx using Guid(0064cb92ace128248a50326a9abf6dd2) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '178b16c54498bf4e97417a2f7470227e') in 0.0137738 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 54
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/FightingMotionsVolume1/FBX/nomove/bk_rh_right_A2.fbx
+  artifactKey: Guid(fed828ab310f1144e96c82e797cb98b3) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/FightingMotionsVolume1/FBX/nomove/bk_rh_right_A2.fbx using Guid(fed828ab310f1144e96c82e797cb98b3) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '41b1a88ce70bf71b810938a45c7c40c0') in 0.0157444 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 54
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000015 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/1H/HumanF@Run_Right - 1H.overrideController
+  artifactKey: Guid(8aedf445eec6b844aa475e2eafe79247) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/1H/HumanF@Run_Right - 1H.overrideController using Guid(8aedf445eec6b844aa475e2eafe79247) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'cbdaf176e5320176222e1f736df08b00') in 0.0123585 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 6
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/1H/HumanM@Run_ForwardLeft - 1H.controller
+  artifactKey: Guid(432277e674c908b41b6aa76b554920f7) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Male/1H/HumanM@Run_ForwardLeft - 1H.controller using Guid(432277e674c908b41b6aa76b554920f7) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '3422ecc2a9a47c3450fa85cc6bdc558b') in 0.010734 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 4
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000011 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Combat/HumanF@CombatIdle01.fbx
+  artifactKey: Guid(6abe61edacb78c74489739f89ec126bc) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Combat/HumanF@CombatIdle01.fbx using Guid(6abe61edacb78c74489739f89ec126bc) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '5ff8ae36c2c9202f42f6f504b18f27ba') in 0.016991 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/2H/HumanF@Run_Left - 2H.overrideController
+  artifactKey: Guid(44f6aa9f2c704d54da8a88d0a04e1f92) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/2H/HumanF@Run_Left - 2H.overrideController using Guid(44f6aa9f2c704d54da8a88d0a04e1f92) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '8677fb5b528ae94b3587e6ab51797e25') in 0.0135097 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 11
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/RootMotion
+  artifactKey: Guid(5ca09be614981804ab3e7b144f0ac0fc) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/RootMotion using Guid(5ca09be614981804ab3e7b144f0ac0fc) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '38d63b80eae2ed7b9b0f45190448c26f') in 0.0107671 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/FightingMotionsVolume1/FBX/idle_Tiramis.fbx
+  artifactKey: Guid(243b013a8548d9344b2e92934493d476) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/FightingMotionsVolume1/FBX/idle_Tiramis.fbx using Guid(243b013a8548d9344b2e92934493d476) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'ba7b5aaaf51690767c9da927eba62a58') in 0.01855 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 54
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000015 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Masked Poses/HumanF@ObjectGripShoulder01_R.fbx
+  artifactKey: Guid(855d2ef280d7b2143bae774a3fe45259) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Masked Poses/HumanF@ObjectGripShoulder01_R.fbx using Guid(855d2ef280d7b2143bae774a3fe45259) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '9d8699fce0be7aa6ad4f553480d7f175') in 0.0174481 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/Polearm
+  artifactKey: Guid(35191ff879d790d48908efbbf44a4851) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/Polearm using Guid(35191ff879d790d48908efbbf44a4851) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'a83d31d19729f56f6d6547bb6242af1f') in 0.0090264 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000042 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Models/Avatar Masks/Hands/Human Hands Mask.mask
+  artifactKey: Guid(69b447faf5895f1428a1131028d8893c) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Models/Avatar Masks/Hands/Human Hands Mask.mask using Guid(69b447faf5895f1428a1131028d8893c) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'a1d184bf9c814e12a903997983e47cfb') in 0.0126474 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000015 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Female/Combat/2H/HumanF@Attack2H01.fbx
+  artifactKey: Guid(48fa84abc2c3a744e8561044d83beb93) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Female/Combat/2H/HumanF@Attack2H01.fbx using Guid(48fa84abc2c3a744e8561044d83beb93) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '120b4e92afd5b80bd6bf5f4a5c8dadfa') in 0.0181161 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 9.621385 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Strafe/StrafeRun/HumanM@StrafeRun01_Left.fbx
+  artifactKey: Guid(8345db46ec1fd9246874dfd961c7acec) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Strafe/StrafeRun/HumanM@StrafeRun01_Left.fbx using Guid(8345db46ec1fd9246874dfd961c7acec) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'eb6f40a961351954574b1714448e7510') in 0.0146808 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 120
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000013 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/1H/HumanF@Run_ForwardLeft - 1H.overrideController
+  artifactKey: Guid(bef6b84033569684ebae49632632c3d4) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/AnimatorControllers/Female/1H/HumanF@Run_ForwardLeft - 1H.overrideController using Guid(bef6b84033569684ebae49632632c3d4) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '5b34b20349f230dfdc53e29d639d6458') in 0.0128608 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 6
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000012 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Characters/HumanM_Dummy_Red - Polearm.prefab
+  artifactKey: Guid(5e02feb93337456458b0267308c59947) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Characters/HumanM_Dummy_Red - Polearm.prefab using Guid(5e02feb93337456458b0267308c59947) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '72a3f9ecd83f9feccbefb9d8b0ddfe3b') in 0.0135469 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 252
+
+========================================================================
+Received Import Request.
+  Time since last request: 23.061465 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Masked Poses/HumanF@ObjectGripShoulder01_L.fbx
+  artifactKey: Guid(d6b2169b39d1b2c409b3ba6f7d63b837) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Masked Poses/HumanF@ObjectGripShoulder01_L.fbx using Guid(d6b2169b39d1b2c409b3ba6f7d63b837) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'f370d4af1b8b1950c6e67f6c8bbedbc9') in 0.0194311 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 119
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000009 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Masked Poses/HumanM@ObjectGripShoulder01_R.fbx
+  artifactKey: Guid(5da90ac229036a74798d1b6af61b871f) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Masked Poses/HumanM@ObjectGripShoulder01_R.fbx using Guid(5da90ac229036a74798d1b6af61b871f) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'cd468efcd463a1676ff1e5d4a6bb2266') in 0.0030996 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 119
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000011 seconds.
+  path: Assets/Kevin Iglesias/Human Animations/Animations/Masked Poses/HumanM@ObjectGripShoulder01_L.fbx
+  artifactKey: Guid(34c82bacd0fd8e3479e180b4e5aca0a0) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Kevin Iglesias/Human Animations/Animations/Masked Poses/HumanM@ObjectGripShoulder01_L.fbx using Guid(34c82bacd0fd8e3479e180b4e5aca0a0) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '1e4e793b3825152ee72340426a74becc') in 0.0025353 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 119
+
+Editor requested this worker to shutdown with reason: Scaling down because of idle timeout
+AssetImportWorker is now disconnected from the server
+Process exiting
+Exiting without the bug reporter. Application will terminate with return code 0

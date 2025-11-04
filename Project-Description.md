@@ -29,6 +29,24 @@
 
 ---
 
+## Core Features (MVP → Beta)
+
+- Local & **online** 1v1 (modes beyond 1v1 in stretch)
+- Movement, light/heavy attacks, block/parry, dodge
+- Status effects with readable UI (icons + timers)
+- Adaptive conditions that modify stats/moves in fair, disclosed ways
+- Controller + keyboard support
+
+---
+
+## Getting Started
+
+```bash
+git clone https://github.com/Kartavya904/Adaptabrawl-Senior-Design.git
+# Unity: Open the cloned folder with Unity Hub (LTS recommended). Open a scene from `Adaptabrawl/Assets/Scenes/` and press Play.
+# Requirements: Unity Hub + Unity LTS (matching project version), Git.
+```
+
 ## Semester Plan (high level)
 
 * **Semester 1:**

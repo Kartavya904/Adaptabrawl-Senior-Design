@@ -1,3 +1,7 @@
+
+Link to Video: https://mailuc-my.sharepoint.com/:v:/g/personal/singhk6_mail_uc_edu/EXGjxCtJwDZItOrCYMpF62EBUTKeQDorh-2p6X5jP-91yA?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=KGL6Vq
+
+Peer Reviews:
 Title 1: Crosley Tower Defense
 Peer Review 1: Fun, UC-themed tower defense concept with a clear goal and scope. I like the public leaderboard idea and the focus on intuitive controls—those will help it spread on campus. Near-term, dialing in the placement/upgrade UI and doing quick playtests for wave pacing feels smart. Curious how you’ll handle UC imagery safely and keep the difficulty welcoming for new players. singhk6@mail.uc.edu
 

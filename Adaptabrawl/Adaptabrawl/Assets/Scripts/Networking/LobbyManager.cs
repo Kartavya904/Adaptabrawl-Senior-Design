@@ -8,8 +8,8 @@ namespace Adaptabrawl.Networking
         [Header("Lobby Settings")]
         #pragma warning disable CS0414 // Field is assigned but never used (placeholder for future use)
         [SerializeField] private int maxPlayers = 2;
-        #pragma warning restore CS0414
         [SerializeField] private string gameSceneName = "GameScene";
+        #pragma warning restore CS0414
         
         [Header("Room Code")]
         private string currentRoomCode = "";
@@ -86,8 +86,10 @@ namespace Adaptabrawl.Networking
         {
             OnMatchStart?.Invoke();
             
-            // Load game scene
-            SceneManager.LoadScene(gameSceneName);
+            // For online matches, we might want to go to character select first
+            // or directly to game scene if characters are already selected
+            // For now, load character select for online matches too
+            SceneManager.LoadScene("CharacterSelect");
         }
         
         private string GenerateRoomCode()

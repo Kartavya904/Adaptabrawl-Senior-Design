@@ -18,6 +18,7 @@ namespace Adaptabrawl.Gameplay
         [Header("Round State")]
         private int currentRound = 1;
         private Dictionary<FighterController, int> roundWins = new Dictionary<FighterController, int>();
+        private List<FighterController> roundWinners = new List<FighterController>();
         private float roundTimer = 0f;
         private bool roundActive = false;
         private FighterController roundWinner = null;
@@ -158,6 +159,9 @@ namespace Adaptabrawl.Gameplay
                 roundWins[winner]++;
             }
             
+            // Track round winner
+            roundWinners.Add(winner);
+            
             OnRoundEnd?.Invoke(winner);
             
             // Check if match is over
@@ -183,8 +187,29 @@ namespace Adaptabrawl.Gameplay
         {
             OnMatchEnd?.Invoke(winner);
             
-            // Show match end UI, rematch option, etc.
-            // This would trigger UI to show
+            // Create match results
+            var matchResults = new Adaptabrawl.UI.MatchResults
+            {
+                player1 = players.Count > 0 ? players[0] : null,
+                player2 = players.Count > 1 ? players[1] : null,
+                winner = winner,
+                player1Wins = players.Count > 0 && roundWins.ContainsKey(players[0]) ? roundWins[players[0]] : 0,
+                player2Wins = players.Count > 1 && roundWins.ContainsKey(players[1]) ? roundWins[players[1]] : 0,
+                roundWinners = new System.Collections.Generic.List<FighterController>(roundWinners),
+                totalRounds = currentRound
+            };
+            
+            // Store results
+            Adaptabrawl.UI.MatchResultsData.SetResults(matchResults, true);
+            
+            // Transition to results scene after delay
+            StartCoroutine(TransitionToResultsAfterDelay());
+        }
+        
+        private System.Collections.IEnumerator TransitionToResultsAfterDelay()
+        {
+            yield return new WaitForSeconds(roundEndDelay);
+            SceneManager.LoadScene("MatchResults");
         }
         
         public void Rematch()
@@ -192,6 +217,7 @@ namespace Adaptabrawl.Gameplay
             // Reset match
             currentRound = 1;
             roundWins.Clear();
+            roundWinners.Clear();
             foreach (var player in players)
             {
                 roundWins[player] = 0;

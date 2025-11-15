@@ -28,12 +28,12 @@ namespace Adaptabrawl.Camera
         {
             cam = GetComponent<UnityEngine.Camera>();
             if (cam == null)
-                cam = Camera.main;
+                cam = UnityEngine.Camera.main;
             
             // Find players if not assigned
             if (player1 == null || player2 == null)
             {
-                var fighters = FindObjectsOfType<FighterController>();
+                var fighters = FindObjectsByType<FighterController>(FindObjectsSortMode.None);
                 if (fighters.Length >= 2)
                 {
                     player1 = fighters[0];

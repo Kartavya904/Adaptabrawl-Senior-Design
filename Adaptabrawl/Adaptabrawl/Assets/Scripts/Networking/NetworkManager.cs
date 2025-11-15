@@ -8,13 +8,17 @@ namespace Adaptabrawl.Networking
     public class NetworkManager : MonoBehaviour // : Mirror.NetworkManager
     {
         [Header("Network Settings")]
+        #pragma warning disable CS0414 // Field is assigned but never used (placeholder for Mirror integration)
         [SerializeField] private string networkAddress = "localhost";
         [SerializeField] private int networkPort = 7777;
         [SerializeField] private int maxConnections = 2;
+        #pragma warning restore CS0414
         
         [Header("Scene Settings")]
+        #pragma warning disable CS0414 // Field is assigned but never used (placeholder for Mirror integration)
         [SerializeField] private string lobbyScene = "StartScene";
         [SerializeField] private string gameScene = "GameScene";
+        #pragma warning restore CS0414
         
         private void Start()
         {

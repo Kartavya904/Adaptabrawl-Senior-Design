@@ -23,9 +23,9 @@ namespace Adaptabrawl.UI
             statusDef = status;
             currentStacks = stacks;
             
-            if (iconImage != null && status.icon != null)
+            if (iconImage != null && status.statusIcon != null)
             {
-                iconImage.sprite = status.icon;
+                iconImage.sprite = status.statusIcon;
                 iconImage.color = status.statusColor;
             }
             

@@ -46,7 +46,7 @@ namespace Adaptabrawl.Gameplay
         {
             // Find all fighters
             players.Clear();
-            players.AddRange(FindObjectsOfType<FighterController>());
+            players.AddRange(FindObjectsByType<FighterController>(FindObjectsSortMode.None));
             
             // Initialize round wins
             foreach (var player in players)

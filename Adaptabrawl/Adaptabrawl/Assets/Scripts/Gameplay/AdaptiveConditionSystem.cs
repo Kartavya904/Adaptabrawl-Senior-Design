@@ -21,7 +21,7 @@ namespace Adaptabrawl.Gameplay
         private void Start()
         {
             // Find all fighters in scene
-            fighters.AddRange(FindObjectsOfType<FighterController>());
+            fighters.AddRange(FindObjectsByType<FighterController>(FindObjectsSortMode.None));
         }
         
         public void ActivateCondition(ConditionDef conditionDef)

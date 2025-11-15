@@ -33,7 +33,7 @@ namespace Adaptabrawl.UI
         private void Start()
         {
             if (lobbyManager == null)
-                lobbyManager = FindObjectOfType<LobbyManager>();
+                lobbyManager = FindFirstObjectByType<LobbyManager>();
             
             if (lobbyManager != null)
             {

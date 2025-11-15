@@ -46,7 +46,7 @@ namespace Adaptabrawl.UI
             }
             
             // Subscribe to condition system
-            var conditionSystem = FindObjectOfType<AdaptiveConditionSystem>();
+            var conditionSystem = FindFirstObjectByType<AdaptiveConditionSystem>();
             if (conditionSystem != null)
             {
                 conditionSystem.OnConditionBanner += ShowConditionBanner;

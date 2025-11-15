@@ -57,23 +57,6 @@ namespace Adaptabrawl.Data
     }
     
     [System.Serializable]
-    public class StatModifier
-    {
-        public string statName;
-        public ModifierOperation operation;
-        public float value;
-    }
-    
-    [System.Serializable]
-    public class MoveModifier
-    {
-        public string moveName; // "All" or specific move name
-        public float damageMultiplier = 1f;
-        public float speedMultiplier = 1f;
-        public int additionalArmorFrames = 0;
-    }
-    
-    [System.Serializable]
     public class ConditionTrigger
     {
         public TriggerType triggerType;
@@ -88,13 +71,6 @@ namespace Adaptabrawl.Data
         OnHPBelow,
         OnTimeElapsed,
         OnConditionMet
-    }
-    
-    public enum ModifierOperation
-    {
-        Add,
-        Multiply,
-        Set
     }
 }
 

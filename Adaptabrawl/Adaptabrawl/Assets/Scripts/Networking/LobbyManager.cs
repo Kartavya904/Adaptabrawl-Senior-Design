@@ -6,7 +6,9 @@ namespace Adaptabrawl.Networking
     public class LobbyManager : MonoBehaviour
     {
         [Header("Lobby Settings")]
+        #pragma warning disable CS0414 // Field is assigned but never used (placeholder for future use)
         [SerializeField] private int maxPlayers = 2;
+        #pragma warning restore CS0414
         [SerializeField] private string gameSceneName = "GameScene";
         
         [Header("Room Code")]

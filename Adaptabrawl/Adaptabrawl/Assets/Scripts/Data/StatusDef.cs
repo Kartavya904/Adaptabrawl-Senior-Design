@@ -45,19 +45,5 @@ namespace Adaptabrawl.Data
         Debuff
     }
     
-    [System.Serializable]
-    public class StatModifier
-    {
-        public string statName;
-        public ModifierOperation operation;
-        public float value;
-    }
-    
-    public enum ModifierOperation
-    {
-        Add,
-        Multiply,
-        Set
-    }
 }
 

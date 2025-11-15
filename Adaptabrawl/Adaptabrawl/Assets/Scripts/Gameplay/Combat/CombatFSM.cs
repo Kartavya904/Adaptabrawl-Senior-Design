@@ -1,5 +1,6 @@
 using UnityEngine;
 using Adaptabrawl.Data;
+using Adaptabrawl.Gameplay;
 using System.Collections;
 
 namespace Adaptabrawl.Combat

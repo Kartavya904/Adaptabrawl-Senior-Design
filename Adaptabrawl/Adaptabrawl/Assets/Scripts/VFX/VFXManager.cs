@@ -1,6 +1,7 @@
 using UnityEngine;
 using Adaptabrawl.Combat;
 using Adaptabrawl.Data;
+using Adaptabrawl.Gameplay;
 
 namespace Adaptabrawl.VFX
 {
@@ -22,14 +23,14 @@ namespace Adaptabrawl.VFX
         private void Start()
         {
             // Subscribe to combat events
-            var fighters = FindObjectsOfType<FighterController>();
+            var fighters = FindObjectsByType<FighterController>(FindObjectsSortMode.None);
             foreach (var fighter in fighters)
             {
                 var damageSystem = fighter.GetComponent<DamageSystem>();
                 if (damageSystem != null)
                 {
                     damageSystem.OnDamageDealt += OnDamageDealt;
-                    damageSystem.OnBlocked += OnBlocked;
+                    damageSystem.OnBlocked += OnBlockedFromDamage;
                 }
                 
                 var hitboxManager = fighter.GetComponent<HitboxManager>();
@@ -62,6 +63,15 @@ namespace Adaptabrawl.VFX
             
             // Spawn block effect
             Vector3 blockPosition = hurtbox.transform.position;
+            SpawnEffect(blockEffectPrefab, blockPosition);
+        }
+        
+        private void OnBlockedFromDamage(FighterController target, MoveDef move)
+        {
+            if (target == null || move == null) return;
+            
+            // Spawn block effect at target position
+            Vector3 blockPosition = target.transform.position;
             SpawnEffect(blockEffectPrefab, blockPosition);
         }
         

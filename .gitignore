@@ -76,6 +76,16 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 # End of https://www.toptal.com/developers/gitignore/api/unity
+
+# Additional patterns for nested Unity project structure
+Adaptabrawl/Adaptabrawl/Library/
+Adaptabrawl/Adaptabrawl/Temp/
+Adaptabrawl/Adaptabrawl/Logs/
+Adaptabrawl/Adaptabrawl/UserSettings/
+Adaptabrawl/Adaptabrawl/obj/
+Adaptabrawl/Adaptabrawl/Build/
+Adaptabrawl/Adaptabrawl/Builds/
+
+# Specific Library exclusions
 Adaptabrawl/Adaptabrawl/Library/PackageCache/com.unity.collections@d49facba0036/Unity.Collections.LowLevel.ILSupport/source~/Unity.Collections.LowLevel.ILSupport.CodeGen/CollectionsUnsafeUtilityPostProcessor.cs
 Adaptabrawl/Adaptabrawl/Library/PackageCache/com.unity.collections@d49facba0036/Unity.Collections.LowLevel.ILSupport/source~/Unity.Collections.LowLevel.ILSupport.CodeGen/CollectionsUnsafeUtilityPostProcessor.cs.meta
-/Adaptabrawl/Adaptabrawl/Library

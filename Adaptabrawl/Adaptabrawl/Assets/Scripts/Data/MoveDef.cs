@@ -24,8 +24,24 @@ namespace Adaptabrawl.Data
         public int hitstunFrames = 15; // Frames opponent is stunned when hit
         
         [Header("Hitbox")]
+        [Tooltip("Use legacy single hitbox (backwards compatible) or leave empty to use hitboxDefinitions")]
         public Vector2 hitboxOffset = Vector2.zero;
         public Vector2 hitboxSize = new Vector2(1f, 1f);
+        
+        [Tooltip("Multiple hitboxes for complex attacks - overrides single hitbox if defined")]
+        public HitboxDefinition[] hitboxDefinitions = new HitboxDefinition[]
+        {
+            new HitboxDefinition 
+            { 
+                name = "Primary", 
+                offset = Vector2.zero, 
+                size = new Vector2(1f, 1f),
+                activeStartFrame = 0,
+                activeEndFrame = -1, // -1 means use move's activeFrames
+                damageMultiplier = 1f
+            }
+        };
+        
         public bool isProjectile = false;
         public GameObject projectilePrefab; // If projectile
         
@@ -71,6 +87,42 @@ namespace Adaptabrawl.Data
         public StatusDef statusDef;
         public int stacks = 1;
         public float duration = 5f;
+    }
+    
+    [System.Serializable]
+    public class HitboxDefinition
+    {
+        [Tooltip("Name for identification")]
+        public string name = "Hitbox";
+        
+        [Tooltip("Offset from fighter position")]
+        public Vector2 offset;
+        
+        [Tooltip("Size of the hitbox")]
+        public Vector2 size = new Vector2(1f, 1f);
+        
+        [Tooltip("Frame when this hitbox becomes active (relative to move start)")]
+        public int activeStartFrame = 0;
+        
+        [Tooltip("Frame when this hitbox deactivates (-1 = use move's active frames)")]
+        public int activeEndFrame = -1;
+        
+        [Tooltip("Damage multiplier for this specific hitbox (1.0 = normal, 1.5 = sweetspot)")]
+        [Range(0.5f, 2f)]
+        public float damageMultiplier = 1f;
+        
+        [Tooltip("Knockback direction override (leave zero to use move's default)")]
+        public Vector2 knockbackDirectionOverride = Vector2.zero;
+        
+        [Tooltip("Knockback force multiplier")]
+        [Range(0.5f, 2f)]
+        public float knockbackMultiplier = 1f;
+        
+        [Tooltip("Is this a sweetspot (plays different effects)?")]
+        public bool isSweetspot = false;
+        
+        [Tooltip("Color to display in editor")]
+        public Color gizmoColor = new Color(0f, 1f, 0f, 0.3f);
     }
 }
 

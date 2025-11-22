@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6c396d8fbcecfa498efb2d8358f073d, type: 3}
+  m_Name: Fighter_DualBlades
+  m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.Data.FighterDef
+  fighterPrefab: {fileID: 6900316762121470257, guid: 962d9ac19021456429111a1cbea6a4c0, type: 3}
+  fighterName: DualBlades
+  description: 
+  portrait: {fileID: 0}
+  maxHealth: 90
+  moveSpeed: 7.5
+  jumpForce: 14
+  dashSpeed: 18
+  dashDuration: 0.2
+  weight: 0.8
+  baseDamageMultiplier: 0.9
+  baseDefenseMultiplier: 0.9
+  armorBreakThreshold: 3
+  hurtboxes:
+  - name: Body
+    offset: {x: 0, y: 0}
+    size: {x: 1, y: 2}
+    isActive: 1
+    damageMultiplier: 1
+    gizmoColor: {r: 1, g: 0, b: 0, a: 0.3}
+  - name: Head
+    offset: {x: 7.891887, y: 3.9888144}
+    size: {x: 0.5, y: 0.5}
+    isActive: 1
+    damageMultiplier: 1.2
+    gizmoColor: {r: 1, g: 0, b: 0, a: 0.3}
+  lightAttack: {fileID: 11400000, guid: 5d0225eaf16f2754fb8e32357b641ee5, type: 2}
+  heavyAttack: {fileID: 11400000, guid: ff739ec410f8d1143a04e0a173b38ca9, type: 2}
+  specialMoves: []
+  canAdaptToConditions: 1
+  adaptationRules: []

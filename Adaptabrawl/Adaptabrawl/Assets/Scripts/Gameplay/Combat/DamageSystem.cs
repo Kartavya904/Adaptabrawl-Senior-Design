@@ -23,13 +23,16 @@ namespace Adaptabrawl.Combat
                 combatFSM = GetComponent<CombatFSM>();
         }
         
-        public void DealDamage(FighterController target, MoveDef move)
+        public void DealDamage(FighterController target, MoveDef move, float hurtboxMultiplier = 1f)
         {
             if (target == null || move == null) return;
             
             // Calculate damage
             float baseDamage = move.damage;
             float damageMultiplier = fighterController.FighterDef.baseDamageMultiplier;
+            
+            // Apply hurtbox multiplier (e.g., headshot bonus)
+            damageMultiplier *= hurtboxMultiplier;
             
             // Apply status effect modifiers
             var statusSystem = GetComponent<StatusEffectSystem>();

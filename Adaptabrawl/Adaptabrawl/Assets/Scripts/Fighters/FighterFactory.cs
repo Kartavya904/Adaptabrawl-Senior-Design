@@ -14,46 +14,92 @@ namespace Adaptabrawl.Fighters
                 return null;
             }
             
-            // Create fighter GameObject
-            GameObject fighterObj = new GameObject(fighterDef.fighterName);
-            fighterObj.transform.position = position;
+            GameObject fighterObj;
             
-            // Add required components
-            Rigidbody2D rb = fighterObj.AddComponent<Rigidbody2D>();
+            // Use prefab if assigned, otherwise create from scratch
+            if (fighterDef.fighterPrefab != null)
+            {
+                // Instantiate from Shinabro prefab
+                fighterObj = Object.Instantiate(fighterDef.fighterPrefab, position, Quaternion.identity);
+                fighterObj.name = fighterDef.fighterName;
+                
+                Debug.Log($"FighterFactory: Created fighter '{fighterDef.fighterName}' from prefab '{fighterDef.fighterPrefab.name}'");
+            }
+            else
+            {
+                // Create empty GameObject as fallback
+                fighterObj = new GameObject(fighterDef.fighterName);
+                fighterObj.transform.position = position;
+                
+                // Add visual representation (placeholder)
+                SpriteRenderer spriteRenderer = fighterObj.AddComponent<SpriteRenderer>();
+                spriteRenderer.color = Color.white;
+                
+                Debug.LogWarning($"FighterFactory: No prefab assigned for '{fighterDef.fighterName}', creating placeholder.");
+            }
+            
+            // Ensure Rigidbody2D exists and is configured
+            Rigidbody2D rb = fighterObj.GetComponent<Rigidbody2D>();
+            if (rb == null)
+            {
+                rb = fighterObj.AddComponent<Rigidbody2D>();
+            }
             rb.freezeRotation = true;
             rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
             
-            FighterController fighterController = fighterObj.AddComponent<FighterController>();
+            // Add FighterController (main component)
+            FighterController fighterController = fighterObj.GetComponent<FighterController>();
+            if (fighterController == null)
+            {
+                fighterController = fighterObj.AddComponent<FighterController>();
+            }
             fighterController.SetFighterDef(fighterDef);
             
             // Add combat components
-            fighterObj.AddComponent<Combat.CombatFSM>();
-            fighterObj.AddComponent<Combat.HitboxManager>();
-            fighterObj.AddComponent<Combat.DamageSystem>();
-            fighterObj.AddComponent<Combat.Hurtbox>();
+            EnsureComponent<Combat.CombatFSM>(fighterObj);
+            EnsureComponent<Combat.HitboxManager>(fighterObj);
+            EnsureComponent<Combat.DamageSystem>(fighterObj);
+            
+            // Add automatic hitbox/hurtbox spawner (replaces manual Hurtbox component)
+            EnsureComponent<Combat.HitboxHurtboxSpawner>(fighterObj);
             
             // Add movement
-            fighterObj.AddComponent<MovementController>();
+            EnsureComponent<MovementController>(fighterObj);
             
             // Add systems
-            fighterObj.AddComponent<StatusEffectSystem>();
-            fighterObj.AddComponent<Attack.AttackSystem>();
-            fighterObj.AddComponent<Defend.DefenseSystem>();
-            fighterObj.AddComponent<Evade.EvadeSystem>();
-            fighterObj.AddComponent<Input.PlayerInputHandler>();
+            EnsureComponent<StatusEffectSystem>(fighterObj);
+            EnsureComponent<Attack.AttackSystem>(fighterObj);
+            EnsureComponent<Defend.DefenseSystem>(fighterObj);
+            EnsureComponent<Evade.EvadeSystem>(fighterObj);
+            EnsureComponent<Input.PlayerInputHandler>(fighterObj);
+            
+            // Add animation bridge for Shinabro animation integration
+            EnsureComponent<AnimationBridge>(fighterObj);
+            
+            // Ensure collider for ground detection
+            if (fighterObj.GetComponent<Collider2D>() == null)
+            {
+                BoxCollider2D collider = fighterObj.AddComponent<BoxCollider2D>();
+                collider.size = new Vector2(1f, 2f);
+            }
             
             // Set facing
             fighterController.SetFacing(facingRight);
             
-            // Add visual representation (placeholder)
-            SpriteRenderer spriteRenderer = fighterObj.AddComponent<SpriteRenderer>();
-            spriteRenderer.color = Color.white;
-            
-            // Create a simple box collider for ground detection
-            BoxCollider2D collider = fighterObj.AddComponent<BoxCollider2D>();
-            collider.size = new Vector2(1f, 2f);
-            
             return fighterController;
+        }
+        
+        /// <summary>
+        /// Ensures a component exists on the GameObject, adding it if necessary.
+        /// </summary>
+        private static T EnsureComponent<T>(GameObject obj) where T : Component
+        {
+            T component = obj.GetComponent<T>();
+            if (component == null)
+            {
+                component = obj.AddComponent<T>();
+            }
+            return component;
         }
         
         public static FighterDef CreateStrikerFighter()

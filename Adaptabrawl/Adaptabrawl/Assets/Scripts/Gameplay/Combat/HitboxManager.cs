@@ -12,8 +12,10 @@ namespace Adaptabrawl.Combat
         [SerializeField] private LayerMask hitLayers;
         
         private MoveDef activeMove = null;
-        private BoxCollider2D hitboxCollider = null;
+        private BoxCollider2D hitboxCollider = null; // Legacy support
         private List<Collider2D> hitTargets = new List<Collider2D>();
+        private HitboxHurtboxSpawner spawner;
+        private int currentFrame = 0;
         
         [Header("Events")]
         public System.Action<Collider2D, MoveDef> OnHit;
@@ -21,8 +23,10 @@ namespace Adaptabrawl.Combat
         
         private void Awake()
         {
-            // Create hitbox collider if it doesn't exist
-            if (hitboxCollider == null)
+            spawner = GetComponent<HitboxHurtboxSpawner>();
+            
+            // Legacy hitbox creation for backwards compatibility
+            if (hitboxCollider == null && spawner == null)
             {
                 GameObject hitboxObj = new GameObject("Hitbox");
                 hitboxObj.transform.SetParent(hitboxParent != null ? hitboxParent : transform);
@@ -39,10 +43,16 @@ namespace Adaptabrawl.Combat
             
             activeMove = move;
             hitTargets.Clear();
+            currentFrame = 0;
             
-            if (hitboxCollider != null)
+            // Use new spawner system if available
+            if (spawner != null)
             {
-                // Set hitbox size and position
+                spawner.SpawnHitboxesForMove(move);
+            }
+            else if (hitboxCollider != null)
+            {
+                // Legacy fallback
                 hitboxCollider.size = move.hitboxSize;
                 hitboxCollider.offset = move.hitboxOffset;
                 hitboxCollider.enabled = true;
@@ -52,11 +62,32 @@ namespace Adaptabrawl.Combat
         public void DeactivateHitbox()
         {
             activeMove = null;
-            if (hitboxCollider != null)
+            currentFrame = 0;
+            
+            // Clear spawned hitboxes
+            if (spawner != null)
+            {
+                spawner.ClearHitboxes();
+            }
+            else if (hitboxCollider != null)
             {
                 hitboxCollider.enabled = false;
             }
+            
             hitTargets.Clear();
+        }
+        
+        /// <summary>
+        /// Updates hitbox state based on current frame. Call this each frame during an attack.
+        /// </summary>
+        public void UpdateFrame(int frame)
+        {
+            currentFrame = frame;
+            
+            if (spawner != null && activeMove != null)
+            {
+                spawner.UpdateHitboxes(currentFrame);
+            }
         }
         
         private void OnTriggerEnter2D(Collider2D other)
@@ -99,7 +130,14 @@ namespace Adaptabrawl.Combat
             var damageSystem = GetComponent<DamageSystem>();
             if (damageSystem != null)
             {
-                damageSystem.DealDamage(target, activeMove);
+                // Get damage multiplier from hurtbox if spawner is available
+                float hurtboxMultiplier = 1f;
+                if (spawner != null)
+                {
+                    hurtboxMultiplier = spawner.GetHurtboxDamageMultiplier(hurtbox);
+                }
+                
+                damageSystem.DealDamage(target, activeMove, hurtboxMultiplier);
             }
             
             OnHit?.Invoke(hurtbox, activeMove);

@@ -353,12 +353,6 @@ This project has been developed entirely with free and open-source tools, requir
 | GitHub Repository Hosting        | $0 (Free Tier)        | GitHub                |
 | **Total Value**                  | **$0**                | —                     |
 
-### In-Kind Contributions
-
-- **Development Time:** 180+ hours (4 team members × 45 hours minimum)
-- **Advisory Support:** Provided by Faculty Advisor Vikas Rishishwar
-- **University Resources:** Lab space, equipment, and educational support
-
 ---
 
 ## 📚 Appendix
@@ -380,7 +374,7 @@ This project has been developed entirely with free and open-source tools, requir
 <details>
 <summary><b>Team Meeting Schedule & Notes</b></summary>
 
-**Regular Meetings:** Every Tuesday & Thursday, 3:00 PM - 4:30 PM
+**Regular Meetings:** Almost Every Friday & Sunday, 12:00 PM - 8:00 PM
 
 #### Meeting Log
 
@@ -391,46 +385,36 @@ This project has been developed entirely with free and open-source tools, requir
 - **Week 11-12:** Integration and testing
 - **Week 13-14:** Documentation and presentation preparation
 
-_Detailed meeting minutes available in team shared drive_
-
 </details>
 
 ### ⏱️ Effort Justification
 
-Each team member has contributed **45+ hours minimum** as evidenced by:
+Each team member has contributed **numerous hours** throughout the Fall 2025 semester across multiple project activities:
 
-#### Kartavya Singh (Netcode & Infrastructure)
+**Types of Contributions:**
 
-- Git commit history: 80+ commits
-- Network implementation: 25 hours
-- Infrastructure setup: 15 hours
-- Documentation: 10 hours
-- **Total: 50+ hours**
+- Requirements analysis and design documentation
+- Software implementation and coding
+- Testing, debugging, and quality assurance
+- Documentation preparation (essays, diagrams, presentations)
+- Team meetings and coordination
+- Research and learning new technologies
+- Code reviews and collaboration
 
-#### Saarthak Sinha (Combat/Systems & Tooling)
+**Evidence Sources:**
 
-- Combat system implementation: 30 hours
-- ScriptableObject architecture: 12 hours
-- Code reviews and debugging: 8 hours
-- **Total: 50+ hours**
+- **Git Repository:** Commit history showing individual contributions ([GitHub Insights](https://github.com/Kartavya904/Adaptabrawl-Senior-Design/graphs/contributors))
+- **Homework Deliverables:** Individual assignments and essays documented in this repository
+- **Meeting Attendance:** Regular Friday/Sunday team meetings throughout the semester
+- **Assignment Submissions:** Timestamps and contribution records for all 9 assignments
+- **Self-Assessment Essays:** Individual reflections detailing personal contributions and time investment
 
-#### Kanav Shetty (UX/UI, VFX/SFX)
+**Team Contribution Areas:**
 
-- UI/UX design: 20 hours
-- Visual effects implementation: 15 hours
-- Stage design: 10 hours
-- Documentation: 8 hours
-- **Total: 53+ hours**
-
-#### Yash Ballabh (Tools, CI/CD & QA)
-
-- Testing framework setup: 15 hours
-- Quality assurance: 20 hours
-- CI/CD pipeline: 12 hours
-- Documentation: 8 hours
-- **Total: 55+ hours**
-
-**Evidence:** Git commits, time tracking logs, task completion records, meeting attendance
+- **Kartavya Singh:** Netcode, infrastructure, repository management
+- **Saarthak Sinha:** Combat systems, core architecture, tooling
+- **Kanav Shetty:** UI/UX design, visual effects, stage design
+- **Yash Ballabh:** Testing frameworks, CI/CD, quality assurance
 
 ---
 

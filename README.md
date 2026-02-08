@@ -9,7 +9,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-In%20Development-orange?style=for-the-badge)]()
 
-**Senior Design Project | University of Cincinnati | Fall 2025**
+**Senior Design Project | University of Cincinnati | Fall 2025 - Spring 2026**
 
 [📹 Watch Demo](#-demo-video) • [🚀 Quick Start](#-quick-start) • [📚 Documentation](#-table-of-contents) • [👥 Team](#-team)
 

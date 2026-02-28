@@ -45,6 +45,19 @@ public class PlayerController_Platform : MonoBehaviour
     [Tooltip("How far through the attack animation (0.0 to 1.0) before you can chain the next attack without hitting Idle. E.g., 0.85 = 85% complete.")]
     public float comboChainPoint = 0.85f;
 
+    [Header("Combat & Health System")]
+    public float maxHealth = 100f;
+    public float currentHealth;
+    [Tooltip("The center point of this character's attack hitboxes")]
+    public Transform attackPoint;
+    public float attackRange = 0.5f;
+    public float attackDamage = 10f;
+    public float skillDamage = 20f;
+    [Tooltip("Put the opposing player's layer here, or default 'Player' if everyone is on the same layer.")]
+    public LayerMask enemyLayers;
+    [Tooltip("The exact name of the Death state/animation in the Animator window.")]
+    public string deathAnimationState = "Death";
+
     private float attackBufferTimer = 0f;
     private float transitionDelay = 0f;
 
@@ -53,6 +66,7 @@ public class PlayerController_Platform : MonoBehaviour
     // Status lock trackers
     private bool isAttacking;
     private bool canChainAttack;
+    public bool isDead;
 
     // --- Input Helper Methods ---
     private Gamepad GetGamepad()
@@ -154,10 +168,140 @@ public class PlayerController_Platform : MonoBehaviour
     private void Start()
     {
         anim = GetComponent<Animator>();
+        currentHealth = maxHealth;
+
+        // Auto-create attack point if not assigned
+        if (attackPoint == null)
+        {
+            GameObject ap = new GameObject("AttackPoint");
+            ap.transform.SetParent(this.transform);
+            // Default offset slightly in front and up
+            ap.transform.localPosition = new Vector3(0, 1f, 1f); 
+            attackPoint = ap.transform;
+        }
+
+        // Automatically map detailed bone-based hitboxes to the character if missing
+        if (GetComponentsInChildren<Collider>().Length == 0)
+        {
+            GenerateBoneColliders();
+        }
+    }
+
+    private void GenerateBoneColliders()
+    {
+        SkinnedMeshRenderer smr = GetComponentInChildren<SkinnedMeshRenderer>();
+        if (smr != null && smr.bones != null && smr.bones.Length > 0)
+        {
+            foreach (Transform bone in smr.bones)
+            {
+                // Skip if this bone already has a collider
+                if (bone.GetComponent<Collider>() != null) continue;
+
+                CapsuleCollider col = bone.gameObject.AddComponent<CapsuleCollider>();
+                col.isTrigger = true; // Trigger prevents them from breaking gravity/physics
+
+                // Calculate size based on distance to child bone
+                if (bone.childCount > 0)
+                {
+                    Transform child = bone.GetChild(0);
+                    Vector3 localChildPos = bone.InverseTransformPoint(child.position);
+                    float localLength = localChildPos.magnitude;
+                    
+                    // Prevent infinitely small or zero-length colliders
+                    if (localLength < 0.01f)
+                    {
+                        col.radius = 0.05f;
+                        col.height = 0.1f;
+                        col.center = Vector3.zero;
+                        continue;
+                    }
+
+                    col.height = localLength;
+                    col.radius = Mathf.Max(0.05f, localLength * 0.25f);
+                    col.center = localChildPos / 2f; // Center the capsule halfway down the bone
+                    
+                    // Determine which way the capsule should face (X=0, Y=1, Z=2)
+                    float absX = Mathf.Abs(localChildPos.x);
+                    float absY = Mathf.Abs(localChildPos.y);
+                    float absZ = Mathf.Abs(localChildPos.z);
+
+                    if (absX >= absY && absX >= absZ) col.direction = 0;
+                    else if (absY >= absX && absY >= absZ) col.direction = 1;
+                    else col.direction = 2;
+                }
+                else
+                {
+                    // Leaf nodes (like fingertips or toes)
+                    col.radius = 0.05f;
+                    col.height = 0.1f;
+                    col.center = Vector3.zero;
+                }
+            }
+            Debug.Log($"Automatically generated a precise skeletal hitbox mapping for: {gameObject.name}");
+        }
+        else
+        {
+            // Fallback to a single blocky body shape if no skeleton exists
+            CapsuleCollider capsule = gameObject.AddComponent<CapsuleCollider>();
+            capsule.height = 2f;
+            capsule.radius = 0.4f;
+            capsule.center = new Vector3(0, 1f, 0);
+            capsule.isTrigger = true;
+            Debug.Log($"Generated fallback default body hitbox for: {gameObject.name}");
+        }
+    }
+
+    public void TakeDamage(float damage)
+    {
+        if (isDead) return;
+
+        // Block logic: if currently blocking, negate or reduce damage (e.g., take 0 damage or 10% damage)
+        if (anim.GetBool("Block"))
+        {
+            Debug.Log($"{gameObject.name} BLOCKED the attack!");
+            // Optional: You can still take chip damage here, e.g., damage *= 0.1f;
+            return; 
+        }
+
+        currentHealth -= damage;
+        Debug.Log($"{gameObject.name} took {damage} damage! HP left: {currentHealth}/{maxHealth}");
+
+        // If you had a Hurt animation, you could trigger it here.
+        // anim.SetTrigger("Hurt");
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    private void Die()
+    {
+        isDead = true;
+        Debug.Log($"{gameObject.name} has DIED!");
+        
+        // Force the animator to transition to the Death state, ignoring triggers/lines map
+        anim.CrossFadeInFixedTime(deathAnimationState, 0.15f); 
+
+        // Turn off colliders so they don't block attacks/players while dead
+        Collider[] colliders = GetComponentsInChildren<Collider>();
+        foreach (Collider col in colliders)
+        {
+            col.enabled = false;
+        }
+
+        // Disable rigidbodies from moving
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null) rb.isKinematic = true;
+
+        // Leave this script enabled ONLY if we needed it to run death countdowns, 
+        // otherwise we just return early in Update(). 
     }
 
     private void Update()
     {
+        if (isDead) return;
+
         Rotate();
         transform.position = new Vector3(transform.position.x, transform.position.y, 0f);
 
@@ -282,26 +426,85 @@ public class PlayerController_Platform : MonoBehaviour
             attackBufferTimer = 0f;
             transitionDelay = 0.15f; // Prevent 1-frame transition skips
             
+            // Adjust damage based on combo hit (e.g., hit 3 does more damage)
+            float currentDmg = attackDamage;
+            
             switch (clickCount)
             {
                 case 0:
                     anim.SetTrigger("Attack1");
                     isTimer = true;
                     clickCount = 1;
+                    StartCoroutine(DealDamageAfterDelay(0.2f, currentDmg));
                     break;
                 case 1:
                     anim.SetTrigger("Attack2");
                     clickCount = 2;
+                    StartCoroutine(DealDamageAfterDelay(0.2f, currentDmg * 1.2f));
                     break;
                 case 2:
                     anim.SetTrigger("Attack3");
                     clickCount = 0;
                     isTimer = false;
+                    StartCoroutine(DealDamageAfterDelay(0.3f, currentDmg * 1.5f));
                     break;
             }
             
             // Reset combo timer upon executing a new attack
             timer = 0f;
+        }
+    }
+
+    private IEnumerator DealDamageAfterDelay(float delay, float damage)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (isDead) yield break;
+
+        // Perform checks against actual character Colliders to perfectly match their shape
+        if (attackPoint != null)
+        {
+            // Find all players in the scene directly
+            PlayerController_Platform[] allPlayers = FindObjectsOfType<PlayerController_Platform>();
+
+            foreach (PlayerController_Platform enemy in allPlayers)
+            {
+                // Ensure we don't hit ourselves and they aren't already dead
+                if (enemy == this || enemy.isDead) continue;
+
+                bool hit = false;
+                Collider[] enemyColliders = enemy.GetComponentsInChildren<Collider>();
+
+                if (enemyColliders.Length > 0)
+                {
+                    // Check if our attack sphere overlaps with ANY of their physical shaped hitboxes (limbs, body, etc)
+                    foreach (Collider col in enemyColliders)
+                    {
+                        // ClosestPoint returns the exact point on the surface of their collider closest to our attack.
+                        Vector3 closestPoint = col.ClosestPoint(attackPoint.position);
+                        
+                        if (Vector3.Distance(attackPoint.position, closestPoint) <= attackRange)
+                        {
+                            hit = true;
+                            break; 
+                        }
+                    }
+                }
+                else
+                {
+                    // Fallback to center distance if they somehow have zero colliders
+                    Vector3 enemyCenter = enemy.transform.position + Vector3.up * 1f;
+                    if (Vector3.Distance(attackPoint.position, enemyCenter) <= attackRange)
+                    {
+                        hit = true;
+                    }
+                }
+
+                if (hit)
+                {
+                    enemy.TakeDamage(damage);
+                }
+            }
         }
     }
     
@@ -347,12 +550,21 @@ public class PlayerController_Platform : MonoBehaviour
         isJump = false;
     }
 
-    void Skill1() { if (WasSkillPressed(0)) anim.SetTrigger("Skill1"); }
-    void Skill2() { if (WasSkillPressed(1)) anim.SetTrigger("Skill2"); }
-    void Skill3() { if (WasSkillPressed(2)) anim.SetTrigger("Skill3"); }
-    void Skill4() { if (WasSkillPressed(3)) anim.SetTrigger("Skill4"); }
-    void Skill5() { if (WasSkillPressed(4)) anim.SetTrigger("Skill5"); }
-    void Skill6() { if (WasSkillPressed(5)) anim.SetTrigger("Skill6"); }
-    void Skill7() { if (WasSkillPressed(6)) anim.SetTrigger("Skill7"); }
-    void Skill8() { if (WasSkillPressed(7)) anim.SetTrigger("Skill8"); }
+    void Skill1() { if (WasSkillPressed(0)) { anim.SetTrigger("Skill1"); StartCoroutine(DealDamageAfterDelay(0.4f, skillDamage)); } }
+    void Skill2() { if (WasSkillPressed(1)) { anim.SetTrigger("Skill2"); StartCoroutine(DealDamageAfterDelay(0.4f, skillDamage)); } }
+    void Skill3() { if (WasSkillPressed(2)) { anim.SetTrigger("Skill3"); StartCoroutine(DealDamageAfterDelay(0.4f, skillDamage)); } }
+    void Skill4() { if (WasSkillPressed(3)) { anim.SetTrigger("Skill4"); StartCoroutine(DealDamageAfterDelay(0.4f, skillDamage)); } }
+    void Skill5() { if (WasSkillPressed(4)) { anim.SetTrigger("Skill5"); StartCoroutine(DealDamageAfterDelay(0.4f, skillDamage)); } }
+    void Skill6() { if (WasSkillPressed(5)) { anim.SetTrigger("Skill6"); StartCoroutine(DealDamageAfterDelay(0.4f, skillDamage)); } }
+    void Skill7() { if (WasSkillPressed(6)) { anim.SetTrigger("Skill7"); StartCoroutine(DealDamageAfterDelay(0.4f, skillDamage)); } }
+    void Skill8() { if (WasSkillPressed(7)) { anim.SetTrigger("Skill8"); StartCoroutine(DealDamageAfterDelay(0.4f, skillDamage)); } }
+
+    private void OnDrawGizmosSelected()
+    {
+        // Visualize the hitbox in the Unity Editor
+        if (attackPoint == null) return;
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(attackPoint.position, attackRange);
+    }
 }

@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6c396d8fbcecfa498efb2d8358f073d, type: 3}
+  m_Name: Fighter_Echo
+  m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.Data.FighterDef
+  fighterPrefab: {fileID: 5313851073859823426, guid: 578ffbf3020f28c408a2aa7db8568af8, type: 3}
+  fighterName: Echo
+  description: Twin weapons with distinct timing. Mix of quick hits and heavier follow-ups.
+  portrait: {fileID: 0}
+  maxHealth: 100
+  moveSpeed: 5
+  jumpForce: 10
+  dashSpeed: 12
+  dashDuration: 0.3
+  weight: 1
+  baseDamageMultiplier: 1
+  baseDefenseMultiplier: 1
+  armorBreakThreshold: 3
+  hurtboxes:
+  - name: Body
+    offset: {x: 0, y: 0}
+    size: {x: 1, y: 2}
+    shape: 0
+    capsuleDirection: 0
+    isActive: 1
+    damageMultiplier: 1
+    gizmoColor: {r: 1, g: 0, b: 0, a: 0.3}
+  - name: Head
+    offset: {x: 0, y: 1.5}
+    size: {x: 0.5, y: 0.5}
+    shape: 0
+    capsuleDirection: 0
+    isActive: 1
+    damageMultiplier: 1.2
+    gizmoColor: {r: 1, g: 0, b: 0, a: 0.3}
+  lightAttack: {fileID: 11400000, guid: cddbd68ce408f324582626cc9ccc22ab, type: 2}
+  heavyAttack: {fileID: 11400000, guid: 88c7d1798d638d04898a2a3ddad47b48, type: 2}
+  specialMoves:
+  - {fileID: 11400000, guid: 91e1bf7d21ddc164789b649af4b91b82, type: 2}
+  - {fileID: 11400000, guid: bc483bdde2b720949a5d262156a5c933, type: 2}
+  - {fileID: 11400000, guid: ce157d90fa0befd45828a1c8d4ea7770, type: 2}
+  - {fileID: 11400000, guid: c75cb2b8280bfb74c8b471e9c916627c, type: 2}
+  - {fileID: 11400000, guid: 38058ece73c3ffd44abb230de9a463bd, type: 2}
+  - {fileID: 11400000, guid: 3810d6de85159b44193085883ef078a2, type: 2}
+  - {fileID: 11400000, guid: 74f1278e8baf4b145a1f3213802180e7, type: 2}
+  - {fileID: 11400000, guid: 5ee3f02c3aebeb54d96f937a9330c7cc, type: 2}
+  canAdaptToConditions: 1
+  adaptationRules: []

@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b79732b31f830df41b1f5efbcbbd4f9d, type: 3}
+  m_Name: MoveLibrary_Spear
+  m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.Data.MoveLibrary
+  weaponType: 7
+  weaponName: Spear
+  attack1: {fileID: 11400000, guid: 4651a3dfcccd6c54b900a96fbc836a36, type: 2}
+  attack2: {fileID: 11400000, guid: 413c217e0bc67ca4396833c46b2aaff7, type: 2}
+  attack3: {fileID: 11400000, guid: 81955b012e2d5884dabb72cd6602b285, type: 2}
+  jumpAttack1: {fileID: 11400000, guid: e7c0155b84413bd4e94ed3d43742efa0, type: 2}
+  jumpAttack2: {fileID: 11400000, guid: 894ea1567b543d84191f0b3b1c822127, type: 2}
+  jumpAttack3: {fileID: 11400000, guid: 452dbde660c82fb4dbe0af889757df33, type: 2}
+  block: {fileID: 0}
+  dodge: {fileID: 0}
+  dodgeRoll: {fileID: 0}
+  dodgeAttack: {fileID: 11400000, guid: 5dfa7f81413312b47aa63a3c573b20c4, type: 2}
+  crouch: {fileID: 0}
+  crouchAttack: {fileID: 11400000, guid: 92416918a0a0b75499c40854009ecc90, type: 2}
+  crouchBlock: {fileID: 0}
+  skill1_Float: {fileID: 11400000, guid: 436c6da866d299647a4715e6d23d6676, type: 2}
+  skill2_Slow: {fileID: 11400000, guid: 4cdfb9f45f0f85144b69cb7430af6f75, type: 2}
+  skill3_Stun: {fileID: 11400000, guid: 8ac3894fcbeadfa4bb2d3d99f3921d00, type: 2}
+  skill4_Push: {fileID: 11400000, guid: a7512ab9d03ec574a81fb74056174822, type: 2}
+  skill5_Pull: {fileID: 11400000, guid: b0cf84a30d708c3458cdc011f5a0cfaf, type: 2}
+  skill6_Move: {fileID: 11400000, guid: 34ae87209b86cab47ad71f777ef0d26c, type: 2}
+  skill7_Around: {fileID: 11400000, guid: 44b2e144b279d1f45b45bfcd7652c6f2, type: 2}
+  skill8_Air: {fileID: 11400000, guid: bc42ac8b6fbc9a2438797a84121409ff, type: 2}
+  weaponSheath: {fileID: 0}
+  weaponUnsheath: {fileID: 0}

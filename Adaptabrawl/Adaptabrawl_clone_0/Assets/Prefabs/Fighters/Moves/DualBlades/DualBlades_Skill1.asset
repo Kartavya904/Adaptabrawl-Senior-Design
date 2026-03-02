@@ -1,0 +1,101 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3aa5290ba41f9064cb56280a4566b427, type: 3}
+  m_Name: DualBlades_Skill1
+  m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.Data.AnimatedMoveDef
+  moveName: DualBlades_Skill1
+  moveType: 2
+  startupFrames: 5
+  activeFrames: 3
+  recoveryFrames: 10
+  damage: 15
+  knockbackForce: 7.5
+  knockbackDirection: {x: 1, y: 0}
+  hitstopFrames: 4
+  blockstunFrames: 12
+  hitstunFrames: 18
+  hitboxOffset: {x: 0.7, y: 0}
+  hitboxSize: {x: 0.9, y: 1}
+  hitboxDefinitions:
+  - name: Ground
+    offset: {x: 0.7, y: 0}
+    size: {x: 0.9, y: 1}
+    activeStartFrame: 0
+    activeEndFrame: 5
+    damageMultiplier: 1
+    knockbackDirectionOverride: {x: 0.5, y: 1.5}
+    knockbackMultiplier: 1
+    isSweetspot: 0
+    gizmoColor: {r: 0, g: 1, b: 1, a: 0.3}
+  - name: Upper
+    offset: {x: 0.8, y: 1.5}
+    size: {x: 1, y: 0.8}
+    activeStartFrame: 3
+    activeEndFrame: -1
+    damageMultiplier: 1.2
+    knockbackDirectionOverride: {x: 0.3, y: 2}
+    knockbackMultiplier: 1
+    isSweetspot: 0
+    gizmoColor: {r: 0, g: 1, b: 1, a: 0.3}
+  isProjectile: 0
+  projectilePrefab: {fileID: 0}
+  armorFrames: 0
+  invincibilityFrames: 0
+  armorBreaksOnHeavy: 1
+  canCancelIntoDodge: 0
+  canCancelIntoBlock: 0
+  canCancelIntoOtherMoves: 0
+  cancelWindowStart: 0
+  cancelWindowEnd: 0
+  inputBufferWindow: 0.1
+  statusEffectsOnHit: []
+  statusEffectsOnSelf: []
+  hitEffectPrefab: {fileID: 0}
+  hitSound: {fileID: 0}
+  whiffSound: {fileID: 0}
+  animationClip: {fileID: 0}
+  animatorTrigger: Skill1
+  parameterType: 0
+  autoCalculateFrames: 1
+  hitboxActivationTime: 0.4
+  hitboxDuration: 0.2
+  recoveryPercentage: 0.3
+  useAnimationEvents: 0
+  canCombo: 0
+  nextComboMove: {fileID: 0}
+  comboWindow: 0.5
+  hasForwardMovement: 0
+  movementSpeed: 1
+  movementCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 1
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

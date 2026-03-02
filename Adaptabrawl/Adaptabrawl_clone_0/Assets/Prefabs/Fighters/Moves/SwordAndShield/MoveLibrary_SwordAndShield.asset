@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b79732b31f830df41b1f5efbcbbd4f9d, type: 3}
+  m_Name: MoveLibrary_SwordAndShield
+  m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.Data.MoveLibrary
+  weaponType: 1
+  weaponName: SwordAndShield
+  attack1: {fileID: 11400000, guid: cd693b3f539e49d45914167a70d9324a, type: 2}
+  attack2: {fileID: 11400000, guid: 08cb206e36b1d7044a12852bdebcb440, type: 2}
+  attack3: {fileID: 11400000, guid: 1e33e25bdc01a9249be0812f7eaeefef, type: 2}
+  jumpAttack1: {fileID: 11400000, guid: 4e53bad7397a6b64db89d197e77601d9, type: 2}
+  jumpAttack2: {fileID: 11400000, guid: 0e4212444dd706340a57d72d6c8487b0, type: 2}
+  jumpAttack3: {fileID: 11400000, guid: fad9dd0883c59e141937073a32d64929, type: 2}
+  block: {fileID: 0}
+  dodge: {fileID: 0}
+  dodgeRoll: {fileID: 0}
+  dodgeAttack: {fileID: 11400000, guid: 78edf95d6074b7b40bc37847a20b0502, type: 2}
+  crouch: {fileID: 0}
+  crouchAttack: {fileID: 11400000, guid: 01e8fc30da257a848a3c21bec77756a1, type: 2}
+  crouchBlock: {fileID: 0}
+  skill1_Float: {fileID: 11400000, guid: 1f0497bdf5fdb3646bd100318b948b43, type: 2}
+  skill2_Slow: {fileID: 11400000, guid: 7f13c7989f8dd5e4f92a10972ac4212b, type: 2}
+  skill3_Stun: {fileID: 11400000, guid: 0f1a4587cd9863849bd476c7d1735832, type: 2}
+  skill4_Push: {fileID: 11400000, guid: 32548fa83a6d46c47b8e1c665970ab68, type: 2}
+  skill5_Pull: {fileID: 11400000, guid: 04526ef8fc98c0b4b8262575e7ed3efd, type: 2}
+  skill6_Move: {fileID: 11400000, guid: 906b55f0cfc269244be14b9ae83e0c69, type: 2}
+  skill7_Around: {fileID: 11400000, guid: 55de43940b1eae24e98e594c372ba2a3, type: 2}
+  skill8_Air: {fileID: 11400000, guid: 89d1eceda190a784995f11f04ec8b2a1, type: 2}
+  weaponSheath: {fileID: 0}
+  weaponUnsheath: {fileID: 0}

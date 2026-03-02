@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6c396d8fbcecfa498efb2d8358f073d, type: 3}
+  m_Name: Fighter_Cinder
+  m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.Data.FighterDef
+  fighterPrefab: {fileID: 4204661515394576745, guid: 0507841468a54b544a03825898edd88e, type: 3}
+  fighterName: Cinder
+  description: Spell-based attacks and projectiles. Unpredictable angles and area
+    control.
+  portrait: {fileID: 0}
+  maxHealth: 100
+  moveSpeed: 5
+  jumpForce: 10
+  dashSpeed: 12
+  dashDuration: 0.3
+  weight: 1
+  baseDamageMultiplier: 1
+  baseDefenseMultiplier: 1
+  armorBreakThreshold: 3
+  hurtboxes:
+  - name: Body
+    offset: {x: 0, y: 0}
+    size: {x: 1, y: 2}
+    shape: 0
+    capsuleDirection: 0
+    isActive: 1
+    damageMultiplier: 1
+    gizmoColor: {r: 1, g: 0, b: 0, a: 0.3}
+  - name: Head
+    offset: {x: 0, y: 1.5}
+    size: {x: 0.5, y: 0.5}
+    shape: 0
+    capsuleDirection: 0
+    isActive: 1
+    damageMultiplier: 1.2
+    gizmoColor: {r: 1, g: 0, b: 0, a: 0.3}
+  lightAttack: {fileID: 11400000, guid: bf8d838137171bc48b215d63b962352b, type: 2}
+  heavyAttack: {fileID: 11400000, guid: a305dd95145c6894abb5b330887a3b45, type: 2}
+  specialMoves:
+  - {fileID: 11400000, guid: 2d303fbe340716c499eba031a0d04614, type: 2}
+  - {fileID: 11400000, guid: 8e31d1b715ee4ff4389123999bb35c8b, type: 2}
+  - {fileID: 11400000, guid: baa498c6eaff58e45b86f8e7ca6cd269, type: 2}
+  - {fileID: 11400000, guid: 8881e84d4c103824ea2ad70e61b1f9f5, type: 2}
+  - {fileID: 11400000, guid: 610db4f69d07eaf4e875614b9d449fb6, type: 2}
+  - {fileID: 11400000, guid: b526f3fdd9407bd48a6c5e8beea55369, type: 2}
+  - {fileID: 11400000, guid: f78a212f3b0bc9f45942fae7b04f8ecb, type: 2}
+  - {fileID: 11400000, guid: ab0b82691008ee8498668c400611c4cc, type: 2}
+  canAdaptToConditions: 1
+  adaptationRules: []

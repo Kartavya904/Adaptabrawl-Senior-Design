@@ -3331,10 +3331,14 @@ MonoBehaviour:
   player1PreviewRawImage: {fileID: 0}
   player2PreviewRawImage: {fileID: 0}
   previewRenderTextureSize: 256
+  previewCameraLocalPosition: {x: 1.27, y: 2, z: 3.29}
+  previewCameraLocalEuler: {x: -8.6, y: 209.89, z: 0}
+  previewCameraOrthographicSize: 2.5
   spawnPreviewAtImageWorldPosition: 0
   previewDistanceFromCamera: 10
   previewScale: 0.5
   previewScaleInUI: 100
+  previewInitialDelay: 1
   previewMoveDelay: 1.5
   defaultPreviewTrigger: Idle
   previewPlaceholderSprite: {fileID: 0}
@@ -4755,7 +4759,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.UI.CharacterSelectUI
   setupManager: {fileID: 1224466611}
   availableFighters:
+  - {fileID: 11400000, guid: 650c58ccce4fde649af6d0bbd894e6a5, type: 2}
+  - {fileID: 11400000, guid: 3db14d7734ec08a45b6c8e7cfb993e07, type: 2}
+  - {fileID: 11400000, guid: 780483cd612bcfe47b46f2ed0bbf13ea, type: 2}
+  - {fileID: 11400000, guid: 6c4edb7591880954fb273a675a33b598, type: 2}
+  - {fileID: 11400000, guid: 2384042a0eec9ba4585cffcb627f0cfd, type: 2}
+  - {fileID: 11400000, guid: 6a4443283a727db4fa2ff7be85e4e321, type: 2}
+  - {fileID: 11400000, guid: 7b766f897ce233c46bbc583fb1ae7f68, type: 2}
   - {fileID: 11400000, guid: ff5136d8da471bf439280832583ca049, type: 2}
+  - {fileID: 11400000, guid: 26be52fe9a371934dba177992f463f02, type: 2}
+  - {fileID: 11400000, guid: 1f93ef910bfd71047b1930c8164efa58, type: 2}
+  - {fileID: 11400000, guid: 6150c306d265b704bb85f8e213ee1ca2, type: 2}
+  - {fileID: 11400000, guid: 1bf8367d9b1a8e44b97d09b964dc2007, type: 2}
   player1PlayerName: {fileID: 552475938}
   player1FighterContainer: {fileID: 349941225}
   player1FighterImage: {fileID: 0}
@@ -4777,10 +4792,14 @@ MonoBehaviour:
   player1PreviewRawImage: {fileID: 824964373}
   player2PreviewRawImage: {fileID: 1353935331}
   previewRenderTextureSize: 256
+  previewCameraLocalPosition: {x: 1.27, y: 2, z: 3.29}
+  previewCameraLocalEuler: {x: -8.6, y: 209.89, z: 0}
+  previewCameraOrthographicSize: 2.5
   spawnPreviewAtImageWorldPosition: 0
   previewDistanceFromCamera: 10
   previewScale: 1
   previewScaleInUI: 1
+  previewInitialDelay: 1
   previewMoveDelay: 1.5
   defaultPreviewTrigger: Idle
   previewPlaceholderSprite: {fileID: 0}

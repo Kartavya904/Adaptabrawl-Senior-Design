@@ -4,6 +4,7 @@ using TMPro;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
+using Adaptabrawl.Attack;
 using Adaptabrawl.Data;
 using Adaptabrawl.Fighters;
 using Adaptabrawl.Gameplay;
@@ -53,8 +54,8 @@ namespace Adaptabrawl.UI
         [Tooltip("Optional. When set, the 3D preview is rendered to this texture so it shows in the Game view (required if using Screen Space - Overlay canvas, which draws on top of world-space previews). Add a Raw Image in the placeholder area and assign it here.")]
         [SerializeField] private RawImage player1PreviewRawImage;
         [SerializeField] private RawImage player2PreviewRawImage;
-        [Tooltip("Resolution of the render texture for Raw Image preview (when Raw Image is assigned).")]
-        [SerializeField] private int previewRenderTextureSize = 256;
+        [Tooltip("Resolution of the render texture for Raw Image preview (when Raw Image is assigned). Higher = less pixelation (e.g. 512 or 1024).")]
+        [SerializeField] private int previewRenderTextureSize = 1024;
         [Tooltip("Local position of the preview camera relative to the preview stage. Defaults match the main Gameplay camera that framed the fighter well.")]
         [SerializeField] private Vector3 previewCameraLocalPosition = new Vector3(1.27f, 2f, 3.29f);
         [Tooltip("Local euler rotation of the preview camera (X,Y,Z). Defaults match the main Gameplay camera (-8.6, 209.89, 0).")]
@@ -84,7 +85,8 @@ namespace Adaptabrawl.UI
 
         private GameObject _player1Preview;
         private GameObject _player2Preview;
-        private bool _previewSequenceStarted;
+        private bool _previewSequenceStartedP1;
+        private bool _previewSequenceStartedP2;
 
         // Render-to-texture so preview shows in Game view when canvas is Overlay
         private Transform _previewStageP1;
@@ -307,7 +309,7 @@ namespace Adaptabrawl.UI
 
         private void CreatePreviewCameraAndRT(int player, Transform stage, float stageX)
         {
-            int size = Mathf.Clamp(previewRenderTextureSize, 64, 1024);
+            int size = Mathf.Clamp(previewRenderTextureSize, 64, 2048);
 
             if (player == 1)
             {
@@ -444,11 +446,17 @@ namespace Adaptabrawl.UI
             obj.transform.localRotation = Quaternion.identity;
             obj.transform.localScale = Vector3.one * scale;
 
-            // Non-controllable: no input, no physics movement
+            // No game input or combat: prevent any movement/attack from triggering (e.g. mouse clicks in UI).
             var inputHandler = obj.GetComponent<Input.PlayerInputHandler>();
             if (inputHandler != null) inputHandler.enabled = false;
             var movement = obj.GetComponent<MovementController>();
             if (movement != null) movement.enabled = false;
+            var attackSystem = obj.GetComponent<AttackSystem>();
+            if (attackSystem != null) attackSystem.enabled = false;
+            foreach (var pi in obj.GetComponentsInChildren<UnityEngine.InputSystem.PlayerInput>(true))
+            {
+                pi.enabled = false;
+            }
             var rb = obj.GetComponent<Rigidbody2D>();
             if (rb != null)
             {
@@ -468,20 +476,26 @@ namespace Adaptabrawl.UI
 
             if (imageToHide != null) imageToHide.enabled = !useRawImage;
 
-            // Sequence (including delay) starts only when CharacterSelectPanel is shown; see Update().
-            _previewSequenceStarted = false;
+            // Restart this player's preview sequence when selection changes (jump → special → light → heavy).
+            if (playerIndex == 1) _previewSequenceStartedP1 = false;
+            else if (playerIndex == 2) _previewSequenceStartedP2 = false;
         }
 
         private void Update()
         {
-            // Start preview animation sequence only once the CharacterSelectPanel is visible (this object is active).
-            if (_previewSequenceStarted) return;
+            // Start (or restart) each player's preview sequence when panel is visible. Changing selection sets the flag false for that player so their sequence restarts.
             if (!gameObject.activeInHierarchy) return;
-            if (_player1Preview == null && _player2Preview == null) return;
 
-            _previewSequenceStarted = true;
-            TryStartPreviewSequence(_player1Preview);
-            TryStartPreviewSequence(_player2Preview);
+            if (_player1Preview != null && !_previewSequenceStartedP1)
+            {
+                _previewSequenceStartedP1 = true;
+                TryStartPreviewSequence(_player1Preview);
+            }
+            if (_player2Preview != null && !_previewSequenceStartedP2)
+            {
+                _previewSequenceStartedP2 = true;
+                TryStartPreviewSequence(_player2Preview);
+            }
         }
 
         private void TryStartPreviewSequence(GameObject previewObj)

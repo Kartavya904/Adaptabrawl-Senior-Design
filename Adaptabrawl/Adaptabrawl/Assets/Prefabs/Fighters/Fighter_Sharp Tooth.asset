@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.Data.FighterDef
   fighterPrefab: {fileID: 248976184468148758, guid: 20ad0bb5f1bd8844291c970e06815a0f, type: 3}
   fighterName: Sharp Tooth
-  description: 
+  description: Ranged pressure and chip damage. Keeps distance and controls the stage.
   portrait: {fileID: 0}
   maxHealth: 90
   moveSpeed: 7.5
@@ -29,12 +29,16 @@ MonoBehaviour:
   - name: Body
     offset: {x: 0, y: 0}
     size: {x: 1, y: 2}
+    shape: 0
+    capsuleDirection: 0
     isActive: 1
     damageMultiplier: 1
     gizmoColor: {r: 1, g: 0, b: 0, a: 0.3}
   - name: Head
     offset: {x: 0, y: 1.5}
     size: {x: 0.5, y: 0.5}
+    shape: 0
+    capsuleDirection: 0
     isActive: 1
     damageMultiplier: 1.2
     gizmoColor: {r: 1, g: 0, b: 0, a: 0.3}

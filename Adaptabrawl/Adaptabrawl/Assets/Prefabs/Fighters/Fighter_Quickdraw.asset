@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6c396d8fbcecfa498efb2d8358f073d, type: 3}
+  m_Name: Fighter_Quickdraw
+  m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.Data.FighterDef
+  fighterPrefab: {fileID: 7103320764657157607, guid: 11d25df92f964d94ea514894dd47de9b, type: 3}
+  fighterName: Quickdraw
+  description: Quick ranged shots and mobility. Pokes from mid range and punishes
+    recovery.
+  portrait: {fileID: 0}
+  maxHealth: 90
+  moveSpeed: 7.5
+  jumpForce: 14
+  dashSpeed: 18
+  dashDuration: 0.2
+  weight: 0.8
+  baseDamageMultiplier: 0.9
+  baseDefenseMultiplier: 0.9
+  armorBreakThreshold: 3
+  hurtboxes:
+  - name: Body
+    offset: {x: 0, y: 0}
+    size: {x: 1, y: 2}
+    shape: 0
+    capsuleDirection: 0
+    isActive: 1
+    damageMultiplier: 1
+    gizmoColor: {r: 1, g: 0, b: 0, a: 0.3}
+  - name: Head
+    offset: {x: 0, y: 1.5}
+    size: {x: 0.5, y: 0.5}
+    shape: 0
+    capsuleDirection: 0
+    isActive: 1
+    damageMultiplier: 1.2
+    gizmoColor: {r: 1, g: 0, b: 0, a: 0.3}
+  lightAttack: {fileID: 11400000, guid: 695a5a42418c01b44bce162b9477c389, type: 2}
+  heavyAttack: {fileID: 11400000, guid: 7d1d20a58b8efe840bafe37bbe71f97b, type: 2}
+  specialMoves:
+  - {fileID: 11400000, guid: fb22d35ea7de96c4f9d0db506b7b5048, type: 2}
+  - {fileID: 11400000, guid: b55a6f8c9b5359840827d8e181dedd29, type: 2}
+  - {fileID: 11400000, guid: 62e2c41f66889454aabe039e8be64a47, type: 2}
+  - {fileID: 11400000, guid: 42f21c24e2fb322488c3916b2e964484, type: 2}
+  - {fileID: 11400000, guid: c8e7a99e179bbcf4992ab96bda87446d, type: 2}
+  - {fileID: 11400000, guid: 5e20c8fbf0a42314e83db1ad5d7ec0cc, type: 2}
+  - {fileID: 11400000, guid: 39ac0025e1af0434da72b392cb2a3840, type: 2}
+  - {fileID: 11400000, guid: 8cfeaa351b5262548846caadef2cf6a9, type: 2}
+  canAdaptToConditions: 1
+  adaptationRules: []

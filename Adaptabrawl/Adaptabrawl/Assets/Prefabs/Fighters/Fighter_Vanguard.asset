@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6c396d8fbcecfa498efb2d8358f073d, type: 3}
+  m_Name: Fighter_Vanguard
+  m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.Data.FighterDef
+  fighterPrefab: {fileID: 3725160351789409105, guid: 5ae5ac2169281d347bf0df0efb0dbb73, type: 3}
+  fighterName: Vanguard
+  description: All-round brawler. Solid normals and specials with no major weakness.
+  portrait: {fileID: 0}
+  maxHealth: 100
+  moveSpeed: 5
+  jumpForce: 10
+  dashSpeed: 12
+  dashDuration: 0.3
+  weight: 1
+  baseDamageMultiplier: 1
+  baseDefenseMultiplier: 1
+  armorBreakThreshold: 3
+  hurtboxes:
+  - name: Body
+    offset: {x: 0, y: 0}
+    size: {x: 1, y: 2}
+    shape: 0
+    capsuleDirection: 0
+    isActive: 1
+    damageMultiplier: 1
+    gizmoColor: {r: 1, g: 0, b: 0, a: 0.3}
+  - name: Head
+    offset: {x: 0, y: 1.5}
+    size: {x: 0.5, y: 0.5}
+    shape: 0
+    capsuleDirection: 0
+    isActive: 1
+    damageMultiplier: 1.2
+    gizmoColor: {r: 1, g: 0, b: 0, a: 0.3}
+  lightAttack: {fileID: 11400000, guid: 7b0931068fa152a42b0e0c4bdd7579ba, type: 2}
+  heavyAttack: {fileID: 11400000, guid: 892548f9efeafb544b2e23b3cd030a8a, type: 2}
+  specialMoves:
+  - {fileID: 11400000, guid: f5983c1a41f04b24480f33dd17986f31, type: 2}
+  - {fileID: 11400000, guid: e7d452079991d3d4a9bc0af3cf59c53f, type: 2}
+  - {fileID: 11400000, guid: a3fa158c386b5d04fbd24fb8e2ee67e6, type: 2}
+  - {fileID: 11400000, guid: 07ffdc534d0e8ab4a8731ca64012f0a7, type: 2}
+  - {fileID: 11400000, guid: 53bb8102d0b26c444b191f324edb0694, type: 2}
+  - {fileID: 11400000, guid: 649723a0bf004f5428ba717126b21043, type: 2}
+  - {fileID: 11400000, guid: d5769d94f118cc14e8bb81db30f01520, type: 2}
+  - {fileID: 11400000, guid: be94a786e51f1e94fa964b8184e86ec9, type: 2}
+  canAdaptToConditions: 1
+  adaptationRules: []

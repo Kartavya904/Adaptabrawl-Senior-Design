@@ -343,8 +343,16 @@ namespace Adaptabrawl.UI
             // Server automatically launches the game if BOTH players are ready on the exact same arena
             if (IsServer && p1ArenaReady.Value && p2ArenaReady.Value)
             {
-                Debug.Log("[SetupSceneManager] Both players agree. Host is loading GameScene...");
-                NetworkManager.Singleton.SceneManager.LoadScene("GameScene", UnityEngine.SceneManagement.LoadSceneMode.Single);
+                if (Adaptabrawl.UI.CharacterSelectData.isLocalMatch)
+                {
+                    Debug.Log("[SetupSceneManager] Both players agree. Host is loading GameScene (Local)...");
+                    NetworkManager.Singleton.SceneManager.LoadScene("GameScene", UnityEngine.SceneManagement.LoadSceneMode.Single);
+                }
+                else
+                {
+                    Debug.Log("[SetupSceneManager] Both players agree. Host is loading OnlineGameScene (Online)...");
+                    NetworkManager.Singleton.SceneManager.LoadScene("OnlineGameScene", UnityEngine.SceneManagement.LoadSceneMode.Single);
+                }
             }
         }
 

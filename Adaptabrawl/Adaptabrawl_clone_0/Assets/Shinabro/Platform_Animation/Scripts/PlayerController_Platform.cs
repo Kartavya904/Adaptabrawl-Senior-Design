@@ -68,6 +68,30 @@ public class PlayerController_Platform : MonoBehaviour
     private bool canChainAttack;
     public bool isDead;
 
+    [Header("Network Input Override")]
+    public bool isNetworkControlled = false;
+    public bool netRight;
+    public bool netLeft;
+    public bool netCrouch;
+    public bool netSprint;
+    public bool netJump;
+    public bool netAttack;
+    public bool netBlock;
+    public bool netBlockDown;
+    public bool netBlockUp;
+    public bool netDodge;
+    public bool[] netSkills = new bool[8];
+
+    public void ConsumeNetworkTriggers()
+    {
+        netJump = false;
+        netAttack = false;
+        netBlockDown = false;
+        netBlockUp = false;
+        netDodge = false;
+        for (int i=0; i<8; i++) netSkills[i] = false;
+    }
+
     // --- Input Helper Methods ---
     private Gamepad GetGamepad()
     {
@@ -80,6 +104,7 @@ public class PlayerController_Platform : MonoBehaviour
 
     private bool IsRightPressed()
     {
+        if (isNetworkControlled) return netRight;
         Gamepad pad = GetGamepad();
         bool padRight = pad != null && (pad.leftStick.x.ReadValue() > 0.5f || pad.dpad.right.isPressed);
         return Input.GetKey(keyRight) || padRight;
@@ -87,6 +112,7 @@ public class PlayerController_Platform : MonoBehaviour
 
     private bool IsLeftPressed()
     {
+        if (isNetworkControlled) return netLeft;
         Gamepad pad = GetGamepad();
         bool padLeft = pad != null && (pad.leftStick.x.ReadValue() < -0.5f || pad.dpad.left.isPressed);
         return Input.GetKey(keyLeft) || padLeft;
@@ -94,6 +120,7 @@ public class PlayerController_Platform : MonoBehaviour
 
     private bool IsCrouchPressed()
     {
+        if (isNetworkControlled) return netCrouch;
         Gamepad pad = GetGamepad();
         bool padDown = pad != null && (pad.leftStick.y.ReadValue() < -0.5f || pad.dpad.down.isPressed);
         return Input.GetKey(keyCrouch) || padDown;
@@ -101,6 +128,7 @@ public class PlayerController_Platform : MonoBehaviour
 
     private bool IsSprintPressed()
     {
+        if (isNetworkControlled) return netSprint;
         Gamepad pad = GetGamepad();
         bool padSprint = pad != null && pad.leftTrigger.isPressed;
         return Input.GetKey(keySprint) || padSprint;
@@ -108,6 +136,7 @@ public class PlayerController_Platform : MonoBehaviour
 
     private bool WasJumpPressed()
     {
+        if (isNetworkControlled) return netJump;
         Gamepad pad = GetGamepad();
         bool padJump = pad != null && pad.buttonSouth.wasPressedThisFrame;
         return Input.GetKeyDown(keyJump) || padJump;
@@ -115,6 +144,7 @@ public class PlayerController_Platform : MonoBehaviour
 
     private bool WasAttackPressed()
     {
+        if (isNetworkControlled) return netAttack;
         Gamepad pad = GetGamepad();
         bool padAttack = pad != null && pad.buttonWest.wasPressedThisFrame; // X/Square
         // Defaulting to Mouse0 for fallback legacy support along with keyAttack
@@ -123,6 +153,7 @@ public class PlayerController_Platform : MonoBehaviour
 
     private bool IsBlockPressed()
     {
+        if (isNetworkControlled) return netBlock;
         Gamepad pad = GetGamepad();
         bool padBlock = pad != null && pad.rightTrigger.isPressed;
         return Input.GetKey(keyBlock) || Input.GetMouseButton(1) || padBlock;
@@ -130,6 +161,7 @@ public class PlayerController_Platform : MonoBehaviour
 
     private bool WasBlockPressed()
     {
+        if (isNetworkControlled) return netBlockDown;
         Gamepad pad = GetGamepad();
         bool padBlock = pad != null && pad.rightTrigger.wasPressedThisFrame;
         return Input.GetKeyDown(keyBlock) || Input.GetMouseButtonDown(1) || padBlock;
@@ -137,6 +169,7 @@ public class PlayerController_Platform : MonoBehaviour
 
     private bool WasBlockReleased()
     {
+        if (isNetworkControlled) return netBlockUp;
         Gamepad pad = GetGamepad();
         bool padBlock = pad != null && pad.rightTrigger.wasReleasedThisFrame;
         return Input.GetKeyUp(keyBlock) || Input.GetMouseButtonUp(1) || padBlock;
@@ -144,6 +177,7 @@ public class PlayerController_Platform : MonoBehaviour
 
     private bool WasDodgePressed()
     {
+        if (isNetworkControlled) return netDodge;
         Gamepad pad = GetGamepad();
         bool padDodge = pad != null && pad.buttonEast.wasPressedThisFrame; // B/Circle
         return Input.GetKeyDown(keyDodge) || padDodge;
@@ -151,6 +185,7 @@ public class PlayerController_Platform : MonoBehaviour
 
     private bool WasSkillPressed(int index)
     {
+        if (isNetworkControlled) return index >= 0 && index < 8 ? netSkills[index] : false;
         KeyCode[] keys = { skill1, skill2, skill3, skill4, skill5, skill6, skill7, skill8 };
         if (index >= 0 && index < keys.Length && Input.GetKeyDown(keys[index])) return true;
         
@@ -359,6 +394,8 @@ public class PlayerController_Platform : MonoBehaviour
                 Skill8();
             }
         }
+
+        if (isNetworkControlled) ConsumeNetworkTriggers();
     }
 
     Quaternion rot;

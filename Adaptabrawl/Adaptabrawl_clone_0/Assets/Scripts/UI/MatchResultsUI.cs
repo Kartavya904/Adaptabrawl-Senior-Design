@@ -14,46 +14,46 @@ namespace Adaptabrawl.UI
         [SerializeField] private TextMeshProUGUI winnerText;
         [SerializeField] private TextMeshProUGUI matchScoreText;
         [SerializeField] private TextMeshProUGUI roundResultsText;
-        
+
         [Header("Player 1 Results")]
         [SerializeField] private TextMeshProUGUI player1NameText;
         [SerializeField] private TextMeshProUGUI player1WinsText;
         [SerializeField] private Image player1Portrait;
-        
+
         [Header("Player 2 Results")]
         [SerializeField] private TextMeshProUGUI player2NameText;
         [SerializeField] private TextMeshProUGUI player2WinsText;
         [SerializeField] private Image player2Portrait;
-        
+
         [Header("Buttons")]
         [SerializeField] private Button rematchButton;
         [SerializeField] private Button mainMenuButton;
         [SerializeField] private Button characterSelectButton;
-        
+
         [Header("Animation")]
         [SerializeField] private float resultsDelay = 2f;
         [SerializeField] private Animator resultsAnimator;
-        
+
         private void Start()
         {
             // Setup button listeners
             if (rematchButton != null)
                 rematchButton.onClick.AddListener(Rematch);
-            
+
             if (mainMenuButton != null)
                 mainMenuButton.onClick.AddListener(ReturnToMainMenu);
-            
+
             if (characterSelectButton != null)
                 characterSelectButton.onClick.AddListener(ReturnToCharacterSelect);
-            
+
             // Hide results initially
             if (resultsPanel != null)
                 resultsPanel.SetActive(false);
-            
+
             // Load match results data
             LoadMatchResults();
         }
-        
+
         private void LoadMatchResults()
         {
             // Get results from MatchResultsData
@@ -68,25 +68,25 @@ namespace Adaptabrawl.UI
                 ReturnToMainMenu();
             }
         }
-        
+
         private System.Collections.IEnumerator ShowResultsAfterDelay()
         {
             yield return new WaitForSeconds(resultsDelay);
-            
+
             if (resultsPanel != null)
                 resultsPanel.SetActive(true);
-            
+
             DisplayResults();
-            
+
             // Play animation if available
             if (resultsAnimator != null)
                 resultsAnimator.SetTrigger("ShowResults");
         }
-        
+
         private void DisplayResults()
         {
             var results = MatchResultsData.results;
-            
+
             // Display winner
             if (winnerText != null)
             {
@@ -101,25 +101,25 @@ namespace Adaptabrawl.UI
                     winnerText.color = Color.white;
                 }
             }
-            
+
             // Display match score
             if (matchScoreText != null)
             {
                 matchScoreText.text = $"{results.player1Wins} - {results.player2Wins}";
             }
-            
+
             // Display player 1 info
             if (player1NameText != null)
                 player1NameText.text = GetFighterName(results.player1);
             if (player1WinsText != null)
                 player1WinsText.text = $"Wins: {results.player1Wins}";
-            
+
             // Display player 2 info
             if (player2NameText != null)
                 player2NameText.text = GetFighterName(results.player2);
             if (player2WinsText != null)
                 player2WinsText.text = $"Wins: {results.player2Wins}";
-            
+
             // Display round-by-round results
             if (roundResultsText != null)
             {
@@ -133,7 +133,7 @@ namespace Adaptabrawl.UI
                 roundResultsText.text = roundText;
             }
         }
-        
+
         private string GetFighterName(FighterController fighter)
         {
             if (fighter == null) return "Unknown";
@@ -141,16 +141,16 @@ namespace Adaptabrawl.UI
                 return fighter.FighterDef.fighterName;
             return fighter.name;
         }
-        
+
         private void Rematch()
         {
             // Store rematch flag
             MatchResultsData.rematchRequested = true;
-            
+
             // Return to character select or directly to game
             if (MatchResultsData.isLocalMatch)
             {
-                SceneManager.LoadScene("CharacterSelect");
+                SceneManager.LoadScene("SetupScene");
             }
             else
             {
@@ -158,20 +158,20 @@ namespace Adaptabrawl.UI
                 SceneManager.LoadScene("LobbyScene");
             }
         }
-        
+
         private void ReturnToMainMenu()
         {
             MatchResultsData.Clear();
             SceneManager.LoadScene("StartScene");
         }
-        
+
         private void ReturnToCharacterSelect()
         {
             MatchResultsData.Clear();
-            SceneManager.LoadScene("CharacterSelect");
+            SceneManager.LoadScene("SetupScene");
         }
     }
-    
+
     // Static class to pass match results between scenes
     public static class MatchResultsData
     {
@@ -179,14 +179,14 @@ namespace Adaptabrawl.UI
         public static bool rematchRequested = false;
         public static bool isLocalMatch = false;
         public static MatchResults results;
-        
+
         public static void SetResults(MatchResults matchResults, bool local)
         {
             results = matchResults;
             hasResults = true;
             isLocalMatch = local;
         }
-        
+
         public static void Clear()
         {
             hasResults = false;
@@ -195,7 +195,7 @@ namespace Adaptabrawl.UI
             results = null;
         }
     }
-    
+
     // Data structure for match results
     [System.Serializable]
     public class MatchResults

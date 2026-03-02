@@ -29,17 +29,26 @@ MonoBehaviour:
   - name: Body
     offset: {x: 0, y: 0}
     size: {x: 1, y: 2}
+    shape: 0
+    capsuleDirection: 0
     isActive: 1
     damageMultiplier: 1
     gizmoColor: {r: 1, g: 0, b: 0, a: 0.3}
   - name: Head
     offset: {x: 7.891887, y: 3.9888144}
     size: {x: 0.5, y: 0.5}
+    shape: 0
+    capsuleDirection: 0
     isActive: 1
     damageMultiplier: 1.2
     gizmoColor: {r: 1, g: 0, b: 0, a: 0.3}
   lightAttack: {fileID: 11400000, guid: 5d0225eaf16f2754fb8e32357b641ee5, type: 2}
   heavyAttack: {fileID: 11400000, guid: ff739ec410f8d1143a04e0a173b38ca9, type: 2}
   specialMoves: []
+  moveLibrary: {fileID: 11400000, guid: 01d83765552a62f4898ec78203f89ec1, type: 2}
+  jumpAttackPrimary: {fileID: 11400000, guid: 0ea1ae6fcee416943b3832bf70377ef8, type: 2}
+  aerialSpecial: {fileID: 11400000, guid: 2ee5e02c0722eec48812051edd7a8f7b, type: 2}
+  dodgeAttack: {fileID: 11400000, guid: f7447eca37120544f995ebe74470c685, type: 2}
+  crouchAttack: {fileID: 11400000, guid: 4e7822df35bd91f4cae9d6bfe717b276, type: 2}
   canAdaptToConditions: 1
   adaptationRules: []

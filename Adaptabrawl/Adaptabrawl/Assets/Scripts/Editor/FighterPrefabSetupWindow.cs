@@ -207,12 +207,21 @@ namespace Adaptabrawl.Editor
                         attack2Damage: 10f,
                         attack3Damage: 15f,
                         onProgress: (msg, p) => EditorUtility.DisplayProgressBar("Fighter Setup Wizard", msg, p));
+
+                    // Core moves wired from the Shinabro move library
                     newFighter.lightAttack = library.attack1;
                     newFighter.heavyAttack = library.attack3;
                     var specials = library.GetSpecialAttacks();
                     newFighter.specialMoves = new MoveDef[specials.Length];
                     for (int i = 0; i < specials.Length; i++)
                         newFighter.specialMoves[i] = specials[i];
+
+                    // Extended references so we can use the full Shinabro set at runtime
+                    newFighter.moveLibrary = library;
+                    newFighter.jumpAttackPrimary = library.jumpAttack1;
+                    newFighter.aerialSpecial = library.skill8_Air;
+                    newFighter.dodgeAttack = library.dodgeAttack;
+                    newFighter.crouchAttack = library.crouchAttack;
                 }
                 finally
                 {

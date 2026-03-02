@@ -46,6 +46,7 @@ namespace Adaptabrawl.Fighters
             }
             rb.freezeRotation = true;
             rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            rb.gravityScale = 1f;
             
             // Add FighterController (main component)
             FighterController fighterController = fighterObj.GetComponent<FighterController>();
@@ -76,11 +77,23 @@ namespace Adaptabrawl.Fighters
             // Add animation bridge for Shinabro animation integration
             EnsureComponent<AnimationBridge>(fighterObj);
             
-            // Ensure collider for ground detection
-            if (fighterObj.GetComponent<Collider2D>() == null)
+            // Ensure at least one non-trigger Collider2D on root for ground/platform collision (2D physics).
+            // Hurtboxes from HitboxHurtboxSpawner are triggers; the floor needs a solid collider to push against.
+            Collider2D[] colliders = fighterObj.GetComponents<Collider2D>();
+            bool hasSolidCollider = false;
+            for (int i = 0; i < colliders.Length; i++)
             {
-                BoxCollider2D collider = fighterObj.AddComponent<BoxCollider2D>();
-                collider.size = new Vector2(1f, 2f);
+                if (!colliders[i].isTrigger)
+                {
+                    hasSolidCollider = true;
+                    break;
+                }
+            }
+            if (!hasSolidCollider)
+            {
+                BoxCollider2D groundCollider = fighterObj.AddComponent<BoxCollider2D>();
+                groundCollider.size = new Vector2(1f, 2f);
+                groundCollider.isTrigger = false;
             }
             
             // Set facing
@@ -234,4 +247,3 @@ namespace Adaptabrawl.Fighters
         }
     }
 }
-

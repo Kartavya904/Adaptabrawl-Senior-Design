@@ -43,7 +43,9 @@ namespace Adaptabrawl.Editor
             EditorGUILayout.LabelField("Fighter Setup Wizard", titleStyle);
             EditorGUILayout.Space(10);
             
-            EditorGUILayout.HelpBox("Quickly create a new fighter using Shinabro prefabs!", MessageType.Info);
+            EditorGUILayout.HelpBox(
+                "Creates a Fighter Definition in Assets/Prefabs/Fighters with moves and hit/hurtboxes set up automatically. Portrait stays empty for later.",
+                MessageType.Info);
             EditorGUILayout.Space(10);
             
             // Step 1: Select Prefab
@@ -63,7 +65,11 @@ namespace Adaptabrawl.Editor
             }
             else
             {
-                EditorGUILayout.HelpBox($"Selected: {selectedPrefab.name}", MessageType.None);
+                var weaponType = MoveLibraryGenerationHelper.GetWeaponTypeFromPrefabName(selectedPrefab.name);
+                if (weaponType.HasValue)
+                    EditorGUILayout.HelpBox($"Selected: {selectedPrefab.name} → moves will be auto-generated for {weaponType.Value}.", MessageType.None);
+                else
+                    EditorGUILayout.HelpBox($"Selected: {selectedPrefab.name}. Unknown weapon type; definition will have no moves (assign manually).", MessageType.Warning);
             }
             
             EditorGUILayout.EndVertical();
@@ -173,24 +179,62 @@ namespace Adaptabrawl.Editor
         
         private void CreateFighterDef()
         {
-            // Create the asset
-            FighterDef newFighter = ScriptableObject.CreateInstance<FighterDef>();
+            MoveLibraryGenerationHelper.EnsureFolderExists(MoveLibraryGenerationHelper.DefaultFightersPath);
             
-            // Set basic info
+            FighterDef newFighter = ScriptableObject.CreateInstance<FighterDef>();
             newFighter.fighterName = fighterName;
             newFighter.description = fighterDescription;
             newFighter.fighterPrefab = selectedPrefab;
-            
-            // Apply preset stats
+            newFighter.portrait = null;
             ApplyPresetStats(newFighter, selectedPreset);
+            // Hurtboxes: keep default Body + Head (already set on new instance)
             
-            // Save the asset
+            WeaponType? weaponType = MoveLibraryGenerationHelper.GetWeaponTypeFromPrefabName(selectedPrefab.name);
+            if (weaponType.HasValue)
+            {
+                string movesPath = $"{MoveLibraryGenerationHelper.DefaultFightersPath}/{MoveLibraryGenerationHelper.DefaultMovesSubpath}/{weaponType.Value}";
+                MoveLibraryGenerationHelper.EnsureFolderExists(movesPath);
+                EditorUtility.DisplayProgressBar("Fighter Setup Wizard", "Generating moves and hitboxes...", 0f);
+                try
+                {
+                    MoveLibrary library = MoveLibraryGenerationHelper.GenerateMoveLibrary(
+                        weaponType.Value,
+                        movesPath,
+                        generateHitboxes: true,
+                        autoCalculateFrames: true,
+                        setupComboChains: true,
+                        attack1Damage: 8f,
+                        attack2Damage: 10f,
+                        attack3Damage: 15f,
+                        onProgress: (msg, p) => EditorUtility.DisplayProgressBar("Fighter Setup Wizard", msg, p));
+
+                    // Core moves wired from the Shinabro move library
+                    newFighter.lightAttack = library.attack1;
+                    newFighter.heavyAttack = library.attack3;
+                    var specials = library.GetSpecialAttacks();
+                    newFighter.specialMoves = new MoveDef[specials.Length];
+                    for (int i = 0; i < specials.Length; i++)
+                        newFighter.specialMoves[i] = specials[i];
+
+                    // Extended references so we can use the full Shinabro set at runtime
+                    newFighter.moveLibrary = library;
+                    newFighter.jumpAttackPrimary = library.jumpAttack1;
+                    newFighter.aerialSpecial = library.skill8_Air;
+                    newFighter.dodgeAttack = library.dodgeAttack;
+                    newFighter.crouchAttack = library.crouchAttack;
+                }
+                finally
+                {
+                    EditorUtility.ClearProgressBar();
+                }
+            }
+            
             string path = EditorUtility.SaveFilePanelInProject(
                 "Save Fighter Definition",
                 $"Fighter_{fighterName}",
                 "asset",
                 "Choose where to save the fighter definition",
-                "Assets"
+                MoveLibraryGenerationHelper.DefaultFightersPath
             );
             
             if (!string.IsNullOrEmpty(path))
@@ -198,16 +242,11 @@ namespace Adaptabrawl.Editor
                 AssetDatabase.CreateAsset(newFighter, path);
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
-                
-                // Select the new asset
                 EditorUtility.FocusProjectWindow();
                 Selection.activeObject = newFighter;
-                
-                EditorUtility.DisplayDialog("Success!", 
-                    $"Fighter '{fighterName}' created successfully!\n\nYou can now customize it further in the Inspector.", 
+                EditorUtility.DisplayDialog("Success!",
+                    $"Fighter '{fighterName}' created with prefab, stats, default hurtboxes, and {(weaponType.HasValue ? "auto-generated moves and hitboxes" : "no moves (assign manually)")}.\n\nPortrait is left empty; set it in the Inspector when needed.",
                     "OK");
-                
-                // Reset the window
                 selectedPrefab = null;
                 fighterName = "";
                 fighterDescription = "";

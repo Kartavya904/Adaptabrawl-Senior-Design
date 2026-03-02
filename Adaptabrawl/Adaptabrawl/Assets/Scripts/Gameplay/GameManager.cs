@@ -11,10 +11,10 @@ namespace Adaptabrawl.Gameplay
         [SerializeField] private int roundsToWin = 2;
         [SerializeField] private float roundDuration = 99f; // Seconds
         [SerializeField] private float roundEndDelay = 3f;
-        
+
         [Header("Players")]
         [SerializeField] private List<FighterController> players = new List<FighterController>();
-        
+
         [Header("Round State")]
         private int currentRound = 1;
         private Dictionary<FighterController, int> roundWins = new Dictionary<FighterController, int>();
@@ -22,18 +22,19 @@ namespace Adaptabrawl.Gameplay
         private float roundTimer = 0f;
         private bool roundActive = false;
         private FighterController roundWinner = null;
-        
+
         [Header("Events")]
         public System.Action<int> OnRoundStart; // round number
         public System.Action<FighterController> OnRoundEnd; // winner
         public System.Action<FighterController> OnMatchEnd; // winner
         public System.Action<float> OnRoundTimerUpdate; // remaining time
-        
+        public System.Action<int> OnRoundCountdown; // 3, 2, 1, 0 (FIGHT)
+
         private void Start()
         {
             InitializeMatch();
         }
-        
+
         private void Update()
         {
             if (roundActive)
@@ -42,31 +43,31 @@ namespace Adaptabrawl.Gameplay
                 CheckWinConditions();
             }
         }
-        
+
         private void InitializeMatch()
         {
             // Find all fighters
             players.Clear();
             players.AddRange(FindObjectsByType<FighterController>(FindObjectsSortMode.None));
-            
+
             // Initialize round wins
             foreach (var player in players)
             {
                 roundWins[player] = 0;
-                
+
                 // Subscribe to death events
                 player.OnDeath += () => OnPlayerDeath(player);
             }
-            
+
             StartRound();
         }
-        
+
         private void StartRound()
         {
-            roundActive = true;
+            roundActive = false; // explicitly freeze timer
             roundTimer = roundDuration;
             roundWinner = null;
-            
+
             // Reset fighters
             foreach (var player in players)
             {
@@ -76,22 +77,38 @@ namespace Adaptabrawl.Gameplay
                     // This would require a Reset method on FighterController
                 }
             }
-            
+
+            StartCoroutine(PreRoundCountdownRoutine());
+        }
+
+        private System.Collections.IEnumerator PreRoundCountdownRoutine()
+        {
+            // 3, 2, 1, FIGHT countdown
+            for (int i = 3; i > 0; i--)
+            {
+                OnRoundCountdown?.Invoke(i);
+                yield return new WaitForSeconds(1f);
+            }
+
+            OnRoundCountdown?.Invoke(0); // 0 means FIGHT!
+            yield return new WaitForSeconds(0.5f); // Brief delay to show "FIGHT!" text
+
+            roundActive = true;
             OnRoundStart?.Invoke(currentRound);
         }
-        
+
         private void UpdateRoundTimer()
         {
             roundTimer -= Time.deltaTime;
             OnRoundTimerUpdate?.Invoke(roundTimer);
-            
+
             if (roundTimer <= 0f)
             {
                 // Time's up - determine winner by health
                 EndRoundByTime();
             }
         }
-        
+
         private void CheckWinConditions()
         {
             // Check if any player is dead
@@ -104,11 +121,11 @@ namespace Adaptabrawl.Gameplay
                 }
             }
         }
-        
+
         private void OnPlayerDeath(FighterController deadPlayer)
         {
             if (!roundActive) return;
-            
+
             // Find the winner (the other player)
             FighterController winner = players.FirstOrDefault(p => p != deadPlayer && !p.IsDead);
             if (winner != null)
@@ -116,13 +133,13 @@ namespace Adaptabrawl.Gameplay
                 EndRound(winner);
             }
         }
-        
+
         private void EndRoundByTime()
         {
             // Determine winner by health percentage
             FighterController winner = null;
             float highestHealth = 0f;
-            
+
             foreach (var player in players)
             {
                 if (player != null && !player.IsDead)
@@ -135,7 +152,7 @@ namespace Adaptabrawl.Gameplay
                     }
                 }
             }
-            
+
             if (winner != null)
             {
                 EndRound(winner);
@@ -146,24 +163,24 @@ namespace Adaptabrawl.Gameplay
                 EndRound(null);
             }
         }
-        
+
         private void EndRound(FighterController winner)
         {
             if (!roundActive) return;
-            
+
             roundActive = false;
             roundWinner = winner;
-            
+
             if (winner != null)
             {
                 roundWins[winner]++;
             }
-            
+
             // Track round winner
             roundWinners.Add(winner);
-            
+
             OnRoundEnd?.Invoke(winner);
-            
+
             // Check if match is over
             if (winner != null && roundWins[winner] >= roundsToWin)
             {
@@ -175,18 +192,18 @@ namespace Adaptabrawl.Gameplay
                 StartCoroutine(StartNextRoundAfterDelay());
             }
         }
-        
+
         private System.Collections.IEnumerator StartNextRoundAfterDelay()
         {
             yield return new WaitForSeconds(roundEndDelay);
             currentRound++;
             StartRound();
         }
-        
+
         private void EndMatch(FighterController winner)
         {
             OnMatchEnd?.Invoke(winner);
-            
+
             // Create match results
             var matchResults = new Adaptabrawl.UI.MatchResults
             {
@@ -198,20 +215,20 @@ namespace Adaptabrawl.Gameplay
                 roundWinners = new System.Collections.Generic.List<FighterController>(roundWinners),
                 totalRounds = currentRound
             };
-            
+
             // Store results
             Adaptabrawl.UI.MatchResultsData.SetResults(matchResults, true);
-            
+
             // Transition to results scene after delay
             StartCoroutine(TransitionToResultsAfterDelay());
         }
-        
+
         private System.Collections.IEnumerator TransitionToResultsAfterDelay()
         {
             yield return new WaitForSeconds(roundEndDelay);
             SceneManager.LoadScene("MatchResults");
         }
-        
+
         public void Rematch()
         {
             // Reset match
@@ -222,15 +239,15 @@ namespace Adaptabrawl.Gameplay
             {
                 roundWins[player] = 0;
             }
-            
+
             StartRound();
         }
-        
+
         public void ReturnToMenu()
         {
             SceneManager.LoadScene("StartScene");
         }
-        
+
         // Public getters
         public int CurrentRound => currentRound;
         public float RoundTimer => roundTimer;

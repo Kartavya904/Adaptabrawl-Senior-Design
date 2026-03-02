@@ -15,7 +15,6 @@ namespace Adaptabrawl.Editor
         private HitboxHurtboxSpawner spawner;
         private FighterController fighterController;
         private bool editHurtboxes = true;
-        private int selectedHurtboxIndex = -1;
         
         private void OnEnable()
         {

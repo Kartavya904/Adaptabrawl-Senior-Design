@@ -44,6 +44,18 @@ namespace Adaptabrawl.Gameplay
         {
             if (animator == null)
                 animator = GetComponent<Animator>();
+            if (animator == null || animator.runtimeAnimatorController == null)
+            {
+                var animators = GetComponentsInChildren<Animator>(true);
+                foreach (var a in animators)
+                {
+                    if (a != null && a.runtimeAnimatorController != null)
+                    {
+                        animator = a;
+                        break;
+                    }
+                }
+            }
             
             if (hitboxManager == null)
                 hitboxManager = GetComponent<HitboxManager>();
@@ -224,7 +236,7 @@ namespace Adaptabrawl.Gameplay
         
         private void TriggerAnimation(AnimatedMoveDef move)
         {
-            if (animator == null) return;
+            if (animator == null || animator.runtimeAnimatorController == null) return;
             
             switch (move.parameterType)
             {

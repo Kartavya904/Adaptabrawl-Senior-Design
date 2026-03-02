@@ -692,7 +692,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.MusicManager
   backgroundMusic: {fileID: 8300000, guid: cd1be188df07b2a4abffc574c36a2f17, type: 3}
-  volume: 0.5
+  volume: 0.1
 --- !u!82 &327146792
 AudioSource:
   m_ObjectHideFlags: 0

@@ -13,7 +13,6 @@ namespace Adaptabrawl.Editor
     public class MoveLibraryGenerator : EditorWindow
     {
         private WeaponType selectedWeapon;
-        private string weaponPath = "Assets/Shinabro/Platform_Animation/Animation/";
         private string savePath = "Assets/Moves/";
         
         private Vector2 scrollPosition;
@@ -132,109 +131,31 @@ namespace Adaptabrawl.Editor
         
         private void GenerateMoveLibrary()
         {
-            if (!AssetDatabase.IsValidFolder(savePath))
-            {
-                EditorUtility.DisplayDialog("Invalid Path", "Please select a valid save folder", "OK");
-                return;
-            }
-            
-            string weaponFolder = GetWeaponFolderName(selectedWeapon);
-            string weaponAnimPath = weaponPath + weaponFolder + "/";
-            
+            MoveLibraryGenerationHelper.EnsureFolderExists(savePath);
             EditorUtility.DisplayProgressBar("Generating Move Library", "Creating assets...", 0f);
-            
             try
             {
-                // Create move library container
-                MoveLibrary library = ScriptableObject.CreateInstance<MoveLibrary>();
-                library.weaponType = selectedWeapon;
-                library.weaponName = selectedWeapon.ToString();
-                
-                // Generate all moves
-                float progress = 0f;
-                float total = 23f;
-                
-                // Ground attacks
-                EditorUtility.DisplayProgressBar("Generating Move Library", "Creating ground attacks...", progress++ / total);
-                library.attack1 = CreateAttackMove("Attack1", attack1Damage, HitboxPresets.GetQuickAttackHitboxes(), 0.25f, 0.15f);
-                
-                EditorUtility.DisplayProgressBar("Generating Move Library", "Creating ground attacks...", progress++ / total);
-                library.attack2 = CreateAttackMove("Attack2", attack2Damage, HitboxPresets.GetMediumAttackHitboxes(), 0.3f, 0.2f);
-                
-                EditorUtility.DisplayProgressBar("Generating Move Library", "Creating ground attacks...", progress++ / total);
-                library.attack3 = CreateAttackMove("Attack3", attack3Damage, HitboxPresets.GetHeavyAttackHitboxes(), 0.35f, 0.25f);
-                
-                // Aerial attacks
-                EditorUtility.DisplayProgressBar("Generating Move Library", "Creating aerial attacks...", progress++ / total);
-                library.jumpAttack1 = CreateAttackMove("JumpAttack1", 9f, HitboxPresets.GetAerialAttackHitboxes(), 0.3f, 0.2f);
-                
-                EditorUtility.DisplayProgressBar("Generating Move Library", "Creating aerial attacks...", progress++ / total);
-                library.jumpAttack2 = CreateAttackMove("JumpAttack2", 11f, HitboxPresets.GetAerialAttackHitboxes(), 0.3f, 0.2f);
-                
-                EditorUtility.DisplayProgressBar("Generating Move Library", "Creating aerial attacks...", progress++ / total);
-                library.jumpAttack3 = CreateAttackMove("JumpAttack3", 14f, HitboxPresets.GetAerialAttackHitboxes(), 0.35f, 0.25f);
-                
-                // Dodge moves
-                EditorUtility.DisplayProgressBar("Generating Move Library", "Creating defensive moves...", progress++ / total);
-                library.dodgeAttack = CreateAttackMove("DodgeAttack", 12f, HitboxPresets.GetQuickAttackHitboxes(), 0.4f, 0.2f);
-                
-                // Crouch moves
-                EditorUtility.DisplayProgressBar("Generating Move Library", "Creating crouch moves...", progress++ / total);
-                library.crouchAttack = CreateAttackMove("CrouchAttack", 10f, HitboxPresets.GetQuickAttackHitboxes(), 0.3f, 0.2f);
-                
-                // Special skills
-                EditorUtility.DisplayProgressBar("Generating Move Library", "Creating special skills...", progress++ / total);
-                library.skill1_Float = CreateAttackMove("Skill1", 15f, HitboxPresets.GetLauncherHitboxes(), 0.4f, 0.2f);
-                
-                EditorUtility.DisplayProgressBar("Generating Move Library", "Creating special skills...", progress++ / total);
-                library.skill2_Slow = CreateAttackMove("Skill2", 12f, HitboxPresets.GetStunAttackHitboxes(), 0.35f, 0.2f);
-                
-                EditorUtility.DisplayProgressBar("Generating Move Library", "Creating special skills...", progress++ / total);
-                library.skill3_Stun = CreateAttackMove("Skill3", 10f, HitboxPresets.GetStunAttackHitboxes(), 0.3f, 0.2f);
-                
-                EditorUtility.DisplayProgressBar("Generating Move Library", "Creating special skills...", progress++ / total);
-                library.skill4_Push = CreateAttackMove("Skill4", 8f, HitboxPresets.GetPushAttackHitboxes(), 0.3f, 0.2f);
-                
-                EditorUtility.DisplayProgressBar("Generating Move Library", "Creating special skills...", progress++ / total);
-                library.skill5_Pull = CreateAttackMove("Skill5", 8f, HitboxPresets.GetPushAttackHitboxes(), 0.3f, 0.2f);
-                
-                EditorUtility.DisplayProgressBar("Generating Move Library", "Creating special skills...", progress++ / total);
-                library.skill6_Move = CreateAttackMove("Skill6", 16f, HitboxPresets.GetDashAttackHitboxes(), 0.4f, 0.25f);
-                
-                EditorUtility.DisplayProgressBar("Generating Move Library", "Creating special skills...", progress++ / total);
-                library.skill7_Around = CreateAttackMove("Skill7", 18f, HitboxPresets.GetSpinAttackHitboxes(), 0.3f, 0.3f);
-                
-                EditorUtility.DisplayProgressBar("Generating Move Library", "Creating special skills...", progress++ / total);
-                library.skill8_Air = CreateAttackMove("Skill8", 20f, HitboxPresets.GetHeavyAttackHitboxes(), 0.4f, 0.25f);
-                
-                // Setup combo chains
-                if (setupComboChains)
-                {
-                    EditorUtility.DisplayProgressBar("Generating Move Library", "Setting up combo chains...", progress++ / total);
-                    library.SetupComboChains();
-                }
-                
-                // Save library
-                EditorUtility.DisplayProgressBar("Generating Move Library", "Saving library...", 0.95f);
-                string libraryPath = $"{savePath}/MoveLibrary_{selectedWeapon}.asset";
-                AssetDatabase.CreateAsset(library, libraryPath);
-                
-                // Save and select
+                MoveLibrary library = MoveLibraryGenerationHelper.GenerateMoveLibrary(
+                    selectedWeapon,
+                    savePath,
+                    generateHitboxes,
+                    autoCalculateFrames,
+                    setupComboChains,
+                    attack1Damage,
+                    attack2Damage,
+                    attack3Damage,
+                    (msg, p) => EditorUtility.DisplayProgressBar("Generating Move Library", msg, p));
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
-                
                 EditorUtility.ClearProgressBar();
-                
-                // Show success
+                string libraryPath = $"{savePath}/MoveLibrary_{selectedWeapon}.asset";
                 EditorUtility.DisplayDialog(
                     "Success!",
                     $"Move Library generated successfully!\n\n" +
                     $"Created {GetGeneratedMoveCount(library)} moves with hitboxes.\n\n" +
                     $"Location: {libraryPath}\n\n" +
                     "All moves are configured and ready to use in the Inspector!",
-                    "OK"
-                );
-                
+                    "OK");
                 Selection.activeObject = library;
                 EditorGUIUtility.PingObject(library);
             }
@@ -243,84 +164,6 @@ namespace Adaptabrawl.Editor
                 EditorUtility.ClearProgressBar();
                 EditorUtility.DisplayDialog("Error", $"Failed to generate move library:\n{e.Message}", "OK");
                 Debug.LogError($"Move Library Generator Error: {e}");
-            }
-        }
-        
-        private AnimatedMoveDef CreateAttackMove(string animName, float damage, HitboxDefinition[] hitboxes, float hitboxStart, float hitboxDuration)
-        {
-            AnimatedMoveDef move = ScriptableObject.CreateInstance<AnimatedMoveDef>();
-            
-            // Set animation info
-            move.moveName = $"{selectedWeapon}_{animName}";
-            move.animatorTrigger = animName;
-            move.parameterType = AnimatorParameterType.Trigger;
-            move.moveType = GetMoveType(animName);
-            
-            // Set auto-calculate settings
-            move.autoCalculateFrames = autoCalculateFrames;
-            move.hitboxActivationTime = hitboxStart;
-            move.hitboxDuration = hitboxDuration;
-            move.recoveryPercentage = 0.3f;
-            
-            // Set combat properties
-            move.damage = damage;
-            move.knockbackForce = damage * 0.5f;
-            move.knockbackDirection = Vector2.right;
-            move.hitstopFrames = Mathf.RoundToInt(damage * 0.3f);
-            move.hitstunFrames = Mathf.RoundToInt(damage * 1.2f);
-            move.blockstunFrames = Mathf.RoundToInt(damage * 0.8f);
-            
-            // Set hitboxes
-            if (generateHitboxes && hitboxes != null)
-            {
-                move.hitboxDefinitions = hitboxes;
-            }
-            
-            // Legacy hitbox (for backwards compatibility)
-            if (hitboxes != null && hitboxes.Length > 0)
-            {
-                move.hitboxOffset = hitboxes[0].offset;
-                move.hitboxSize = hitboxes[0].size;
-            }
-            
-            // Save move
-            string movePath = $"{savePath}/{move.moveName}.asset";
-            AssetDatabase.CreateAsset(move, movePath);
-            
-            return move;
-        }
-        
-        private MoveType GetMoveType(string animName)
-        {
-            if (animName.Contains("Attack"))
-                return MoveType.LightAttack;
-            if (animName.Contains("Skill"))
-                return MoveType.Special;
-            if (animName.Contains("Dodge"))
-                return MoveType.Dodge;
-            if (animName.Contains("Block"))
-                return MoveType.Block;
-            
-            return MoveType.LightAttack;
-        }
-        
-        private string GetWeaponFolderName(WeaponType weapon)
-        {
-            switch (weapon)
-            {
-                case WeaponType.Unarmed_Fighter: return "09_Fighter";
-                case WeaponType.SwordAndShield: return "01_Sword&Shield";
-                case WeaponType.Hammer: return "02_Hammer";
-                case WeaponType.DualBlades: return "03_DualBlades";
-                case WeaponType.Bow: return "04_Bow";
-                case WeaponType.Pistol: return "05_Pistol";
-                case WeaponType.Magic: return "06_Magic";
-                case WeaponType.Spear: return "07_Spear";
-                case WeaponType.Staff: return "08_Staff";
-                case WeaponType.Rapier: return "10_Rapier";
-                case WeaponType.DoubleBlades: return "11_DoubleBlades";
-                case WeaponType.Claymore: return "12_Claymore";
-                default: return "09_Fighter";
             }
         }
         

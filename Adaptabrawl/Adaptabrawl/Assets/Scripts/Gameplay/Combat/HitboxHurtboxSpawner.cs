@@ -88,25 +88,36 @@ namespace Adaptabrawl.Combat
         }
         
         /// <summary>
-        /// Creates a single hurtbox from a definition
+        /// Creates a single hurtbox from a definition. Uses Box or Capsule per definition so each part matches the character shape.
         /// </summary>
         private HurtboxInstance CreateHurtbox(HurtboxDefinition definition)
         {
             GameObject hurtboxObj = new GameObject($"Hurtbox_{definition.name}");
             hurtboxObj.transform.SetParent(hurtboxParent);
             hurtboxObj.transform.localPosition = definition.offset;
-            hurtboxObj.layer = LayerMask.NameToLayer("Fighter"); // Ensure proper layer
+            int layer = LayerMask.NameToLayer("Fighter");
+            if (layer >= 0) hurtboxObj.layer = layer;
             
-            // Add collider
-            BoxCollider2D collider = hurtboxObj.AddComponent<BoxCollider2D>();
-            collider.size = definition.size;
-            collider.isTrigger = true;
+            Collider2D collider;
+            if (definition.shape == HurtboxShape.Capsule)
+            {
+                CapsuleCollider2D cap = hurtboxObj.AddComponent<CapsuleCollider2D>();
+                cap.size = definition.size;
+                cap.direction = definition.capsuleDirection;
+                cap.isTrigger = true;
+                collider = cap;
+            }
+            else
+            {
+                BoxCollider2D box = hurtboxObj.AddComponent<BoxCollider2D>();
+                box.size = definition.size;
+                box.isTrigger = true;
+                collider = box;
+            }
             
-            // Add Hurtbox component
             Hurtbox hurtbox = hurtboxObj.AddComponent<Hurtbox>();
             hurtbox.SetActive(definition.isActive);
             
-            // Create instance wrapper
             HurtboxInstance instance = new HurtboxInstance
             {
                 definition = definition,
@@ -177,7 +188,8 @@ namespace Adaptabrawl.Combat
             GameObject hitboxObj = new GameObject($"Hitbox_{definition.name}");
             hitboxObj.transform.SetParent(hitboxParent);
             hitboxObj.transform.localPosition = definition.offset;
-            hitboxObj.layer = LayerMask.NameToLayer("Hitbox"); // Ensure proper layer
+            int layer = LayerMask.NameToLayer("Hitbox");
+            if (layer >= 0) hitboxObj.layer = layer;
             
             // Add collider
             BoxCollider2D collider = hitboxObj.AddComponent<BoxCollider2D>();
@@ -259,12 +271,12 @@ namespace Adaptabrawl.Combat
         /// </summary>
         public void SetHurtboxActive(string hurtboxName, bool active)
         {
-            foreach (var hurtbox in spawnedHurtboxes)
+            foreach (var h in spawnedHurtboxes)
             {
-                if (hurtbox.definition.name == hurtboxName)
+                if (h.definition.name == hurtboxName)
                 {
-                    hurtbox.hurtbox.SetActive(active);
-                    hurtbox.collider.enabled = active;
+                    h.hurtbox.SetActive(active);
+                    if (h.collider != null) h.collider.enabled = active;
                 }
             }
         }
@@ -334,7 +346,7 @@ namespace Adaptabrawl.Combat
     {
         public HurtboxDefinition definition;
         public GameObject gameObject;
-        public BoxCollider2D collider;
+        public Collider2D collider;
         public Hurtbox hurtbox;
     }
     

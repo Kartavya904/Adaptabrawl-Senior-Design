@@ -67,17 +67,32 @@ namespace Adaptabrawl.Data
         public MoveModifier[] moveModifiers;
     }
     
+    /// <summary>
+    /// Shape of a single hurtbox so it can match body parts (box for torso/head, capsule for limbs).
+    /// </summary>
+    public enum HurtboxShape
+    {
+        Box,
+        Capsule
+    }
+
     [System.Serializable]
     public class HurtboxDefinition
     {
-        [Tooltip("Name for identification")]
+        [Tooltip("Name for identification (e.g. Body, Head, LeftArm, RightLeg)")]
         public string name = "Hurtbox";
         
         [Tooltip("Offset from fighter center")]
         public Vector2 offset;
         
-        [Tooltip("Size of the hurtbox")]
+        [Tooltip("Size of the hurtbox (for Box: width/height; for Capsule: width = diameter, height = length)")]
         public Vector2 size = new Vector2(1f, 1f);
+        
+        [Tooltip("Box = rectangular part (torso, head). Capsule = rounded part (limbs).")]
+        public HurtboxShape shape = HurtboxShape.Box;
+        
+        [Tooltip("For Capsule: Vertical = tall, Horizontal = wide. Ignored for Box.")]
+        public CapsuleDirection2D capsuleDirection = CapsuleDirection2D.Vertical;
         
         [Tooltip("Is this hurtbox active by default?")]
         public bool isActive = true;

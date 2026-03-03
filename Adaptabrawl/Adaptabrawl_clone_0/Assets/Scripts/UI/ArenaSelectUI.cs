@@ -267,16 +267,17 @@ namespace Adaptabrawl.UI
                 countdownText.gameObject.SetActive(false);
 
             // Host (or local instance) actually triggers the scene load.
+            string gameSceneName = CharacterSelectData.isLocalMatch ? "GameScene" : "OnlineGameScene";
             if (NetworkManager.Singleton != null)
             {
                 if (NetworkManager.Singleton.IsServer)
                 {
-                    NetworkManager.Singleton.SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
+                    NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
                 }
             }
             else
             {
-                SceneManager.LoadScene("GameScene");
+                SceneManager.LoadScene(gameSceneName);
             }
         }
     }

@@ -38,6 +38,7 @@ namespace Adaptabrawl.UI
         public System.Action OnControllerConfigChanged;
         public System.Action OnCharacterConfigChanged;
         public System.Action OnArenaConfigChanged;
+        public System.Action OnArenaCountdownRequested;
 
         private void Start()
         {
@@ -229,6 +230,66 @@ namespace Adaptabrawl.UI
             OnControllerConfigChanged?.Invoke();
         }
 
+        // Mirror fields for arena phase when NetworkManager is not running
+        private int _localArenaIndex;
+        private bool _localP1ArenaReady;
+        private bool _localP2ArenaReady;
+
+        public int LocalArenaIndex => _localArenaIndex;
+        public bool LocalP1ArenaReady => _localP1ArenaReady;
+        public bool LocalP2ArenaReady => _localP2ArenaReady;
+
+        /// <summary>
+        /// Local-only arena change (no networking). Used for pure local matches.
+        /// </summary>
+        public void LocalChangeArena(int direction, int maxArenas)
+        {
+            if (maxArenas <= 0) return;
+            if (_localP1ArenaReady || _localP2ArenaReady) return;
+
+            _localArenaIndex = (_localArenaIndex + direction + maxArenas) % maxArenas;
+            OnArenaConfigChanged?.Invoke();
+        }
+
+        /// <summary>
+        /// Local-only ready toggle for a specific player. Countdown starts when both are ready.
+        /// </summary>
+        public void LocalToggleArenaReady(int targetPlayer)
+        {
+            if (targetPlayer == 1)
+                _localP1ArenaReady = !_localP1ArenaReady;
+            else if (targetPlayer == 2)
+                _localP2ArenaReady = !_localP2ArenaReady;
+
+            OnArenaConfigChanged?.Invoke();
+
+            if (_localP1ArenaReady && _localP2ArenaReady)
+            {
+                // Start local countdown (no networking).
+                BeginArenaCountdownLocal();
+            }
+        }
+
+        /// <summary>
+        /// Local-only cancel: clears both ready flags so arena can be changed again.
+        /// </summary>
+        public void LocalCancelArenaOverride()
+        {
+            _localP1ArenaReady = false;
+            _localP2ArenaReady = false;
+            OnArenaConfigChanged?.Invoke();
+        }
+
+        /// <summary>
+        /// Local-only back from arena to character selection.
+        /// </summary>
+        public void GoBackToCharacterLocal()
+        {
+            _localP1ArenaReady = false;
+            _localP2ArenaReady = false;
+            ShowCharacterSelect();
+        }
+
         /// <summary>
         /// Called by the Back button on ControllerConfigPanel in local play.
         /// Resets local ready/device state and returns to the LocalJoin panel.
@@ -328,32 +389,30 @@ namespace Adaptabrawl.UI
         {
             if (clientId == NetworkManager.ServerClientId)
             {
-                p1ArenaReady.Value = true; // explicitly true, cancellation handled by override
+                p1ArenaReady.Value = !p1ArenaReady.Value;
             }
             else
             {
-                p2ArenaReady.Value = true;
+                p2ArenaReady.Value = !p2ArenaReady.Value;
             }
 
-            if (Adaptabrawl.UI.CharacterSelectData.isLocalMatch)
-            {
-                p2ArenaReady.Value = true; // Auto ready P2 for local match
-            }
-
-            // Server automatically launches the game if BOTH players are ready on the exact same arena
+            // Server triggers a countdown when BOTH players are ready on the same arena.
             if (IsServer && p1ArenaReady.Value && p2ArenaReady.Value)
             {
-                if (Adaptabrawl.UI.CharacterSelectData.isLocalMatch)
-                {
-                    Debug.Log("[SetupSceneManager] Both players agree. Host is loading GameScene (Local)...");
-                    NetworkManager.Singleton.SceneManager.LoadScene("GameScene", UnityEngine.SceneManagement.LoadSceneMode.Single);
-                }
-                else
-                {
-                    Debug.Log("[SetupSceneManager] Both players agree. Host is loading OnlineGameScene (Online)...");
-                    NetworkManager.Singleton.SceneManager.LoadScene("OnlineGameScene", UnityEngine.SceneManagement.LoadSceneMode.Single);
-                }
+                Debug.Log("[SetupSceneManager] Both players agree. Starting arena countdown...");
+                BeginArenaCountdownClientRpc();
             }
+        }
+
+        private void BeginArenaCountdownLocal()
+        {
+            OnArenaCountdownRequested?.Invoke();
+        }
+
+        [ClientRpc]
+        private void BeginArenaCountdownClientRpc()
+        {
+            OnArenaCountdownRequested?.Invoke();
         }
 
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]

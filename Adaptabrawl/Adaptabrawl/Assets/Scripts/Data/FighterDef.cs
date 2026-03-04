@@ -49,10 +49,29 @@ namespace Adaptabrawl.Data
             }
         };
         
-        [Header("Moveset")]
+        [Header("Moveset (Core)")]
+        [Tooltip("Primary fast ground attack (usually Shinabro Attack1).")]
         public MoveDef lightAttack;
+        [Tooltip("Primary heavy/finisher ground attack (usually Shinabro Attack3).")]
         public MoveDef heavyAttack;
+        [Tooltip("Array of specials/skills (usually Shinabro Skill1–Skill8).")]
         public MoveDef[] specialMoves;
+
+        [Header("Moveset (Extended / Shinabro)")]
+        [Tooltip("Optional: full Shinabro move library generated for this fighter's weapon type.")]
+        public MoveLibrary moveLibrary;
+
+        [Tooltip("Preferred jump/air attack used for previews or specialized input (typically JumpAttack1).")]
+        public AnimatedMoveDef jumpAttackPrimary;
+
+        [Tooltip("Preferred aerial special used for previews or air-combo starters (typically Skill8_Air).")]
+        public AnimatedMoveDef aerialSpecial;
+
+        [Tooltip("Optional: attack performed out of a dodge (Shinabro DodgeAttack).")]
+        public AnimatedMoveDef dodgeAttack;
+
+        [Tooltip("Optional: crouching attack (Shinabro CrouchAttack).")]
+        public AnimatedMoveDef crouchAttack;
         
         [Header("Adaptation Hooks")]
         public bool canAdaptToConditions = true;

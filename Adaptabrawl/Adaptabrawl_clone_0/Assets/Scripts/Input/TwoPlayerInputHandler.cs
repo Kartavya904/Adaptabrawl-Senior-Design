@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using Adaptabrawl.Gameplay;
 using Adaptabrawl.Data;
 
@@ -95,8 +96,21 @@ public class TwoPlayerInputHandler : MonoBehaviour
     
     void Update()
     {
+        // Only allow live combat input in dedicated gameplay/testing scenes.
+        if (!IsGameplayScene())
+            return;
+
         HandlePlayer1Input();
         HandlePlayer2Input();
+    }
+
+    /// <summary>
+    /// Returns true only in scenes where fighters should respond to gameplay input.
+    /// </summary>
+    private bool IsGameplayScene()
+    {
+        var sceneName = SceneManager.GetActiveScene().name;
+        return sceneName == "GameScene" || sceneName == "TestCharacter";
     }
     
     void HandlePlayer1Input()

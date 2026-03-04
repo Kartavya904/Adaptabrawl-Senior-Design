@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using Adaptabrawl.Attack;
@@ -70,9 +71,9 @@ namespace Adaptabrawl.UI
         [SerializeField] private float previewScale = 0.5f;
         [Tooltip("When the container is under a Canvas (RectTransform), multiply scale by this so the fighter is visible in UI space. Try 50–200 if preview is too small.")]
         [SerializeField] private float previewScaleInUI = 100f;
-        [Tooltip("Delay in seconds before the preview starts playing moves.")]
-        [SerializeField] private float previewInitialDelay = 1f;
-        [Tooltip("Delay in seconds between each move in the preview sequence (jump → 2 specials → light → heavy).")]
+        [Tooltip("Delay in seconds before the preview starts playing moves after a character is loaded/changed.")]
+        [SerializeField] private float previewInitialDelay = 0.5f;
+        [Tooltip("Delay in seconds between each move in the preview sequence (jump/air → special → heavy → light).")]
         [SerializeField] private float previewMoveDelay = 1.5f;
         [Tooltip("Animator trigger to play when fighter has no AnimatedMoveDef (e.g. runtime-created Striker/Elusive). Leave empty to skip.")]
         [SerializeField] private string defaultPreviewTrigger = "Idle";
@@ -453,6 +454,9 @@ namespace Adaptabrawl.UI
             if (movement != null) movement.enabled = false;
             var attackSystem = obj.GetComponent<AttackSystem>();
             if (attackSystem != null) attackSystem.enabled = false;
+            // Disable Shinabro platform controller so mouse clicks and legacy input don't drive attacks in previews.
+            var shinabroController = obj.GetComponent<PlayerController_Platform>();
+            if (shinabroController != null) shinabroController.enabled = false;
             foreach (var pi in obj.GetComponentsInChildren<UnityEngine.InputSystem.PlayerInput>(true))
             {
                 pi.enabled = false;
@@ -524,52 +528,78 @@ namespace Adaptabrawl.UI
         private IEnumerator PlayPreviewSequence(AnimationBridge bridge, FighterDef def, List<AnimatedMoveDef> sequence)
         {
             if (bridge == null || sequence == null || sequence.Count == 0) yield break;
+
+            // Wait briefly after the character loads/changes before starting the showcase.
             yield return new WaitForSeconds(previewInitialDelay);
-            int index = 0;
-            while (bridge != null)
+
+            // Play the sequence once in order (jump/air → special → heavy → light) and then stop.
+            for (int i = 0; i < sequence.Count && bridge != null; i++)
             {
-                AnimatedMoveDef move = sequence[index];
+                AnimatedMoveDef move = sequence[i];
                 if (move != null)
                 {
                     bridge.PlayMove(move);
-                    // Wait for the move to finish: use animation length so we always advance (min 0.5s, max 5s)
                     float moveDuration = move.GetAnimationLength();
                     yield return new WaitForSeconds(Mathf.Clamp(moveDuration, 0.5f, 5f));
                 }
+
                 if (bridge == null) yield break;
-                yield return new WaitForSeconds(previewMoveDelay);
-                index = (index + 1) % sequence.Count;
+
+                // Wait between moves, but not after the final one.
+                if (i < sequence.Count - 1)
+                    yield return new WaitForSeconds(previewMoveDelay);
             }
         }
 
         /// <summary>
-        /// Builds the preview sequence: jump attack → one special → light → heavy (exactly this order when available).
+        /// Builds the preview sequence: jump/air attack → one special → heavy → light (exactly this order when available).
+        /// Uses explicit FighterDef extended fields when present, falling back to specials array/name heuristics.
         /// </summary>
         private static List<AnimatedMoveDef> GetPreviewSequence(FighterDef def)
         {
             var list = new List<AnimatedMoveDef>();
             if (def == null) return list;
 
-            // 1) Jump / air attack (special whose name contains "Air" or "Jump", or first special)
+            // Collect all specials as AnimatedMoveDef for selection.
             var specials = new List<AnimatedMoveDef>();
             if (def.specialMoves != null)
             {
                 foreach (var m in def.specialMoves)
                 {
-                    if (m is AnimatedMoveDef am && am != null) specials.Add(am);
+                    if (m is AnimatedMoveDef am && am != null)
+                        specials.Add(am);
                 }
             }
+
+            // 1) Jump / air attack:
+            //    Prefer explicit FighterDef.jumpAttackPrimary, then FighterDef.aerialSpecial,
+            //    then any special whose name hints "Air"/"Jump", otherwise first special.
             AnimatedMoveDef jumpMove = null;
-            foreach (var s in specials)
+            if (def.jumpAttackPrimary != null)
             {
-                if (s != null && (s.moveName.Contains("Air") || s.moveName.Contains("Jump")))
-                {
-                    jumpMove = s;
-                    break;
-                }
+                jumpMove = def.jumpAttackPrimary;
             }
-            if (jumpMove == null && specials.Count > 0) jumpMove = specials[0];
-            if (jumpMove != null) list.Add(jumpMove);
+            else if (def.aerialSpecial != null)
+            {
+                jumpMove = def.aerialSpecial;
+            }
+            else
+            {
+                foreach (var s in specials)
+                {
+                    if (s != null && (s.moveName.Contains("Air") || s.moveName.Contains("Jump")))
+                    {
+                        jumpMove = s;
+                        break;
+                    }
+                }
+
+                if (jumpMove == null && specials.Count > 0)
+                    jumpMove = specials[0];
+            }
+
+            if (jumpMove != null)
+                list.Add(jumpMove);
 
             // 2) One other special (different from jump)
             foreach (var s in specials)
@@ -581,11 +611,13 @@ namespace Adaptabrawl.UI
                 }
             }
 
-            // 3) Light attack
-            if (def.lightAttack is AnimatedMoveDef light && light != null) list.Add(light);
+            // 3) Heavy attack
+            if (def.heavyAttack is AnimatedMoveDef heavy && heavy != null)
+                list.Add(heavy);
 
-            // 4) Heavy attack
-            if (def.heavyAttack is AnimatedMoveDef heavy && heavy != null) list.Add(heavy);
+            // 4) Light attack
+            if (def.lightAttack is AnimatedMoveDef light && light != null)
+                list.Add(light);
 
             return list;
         }

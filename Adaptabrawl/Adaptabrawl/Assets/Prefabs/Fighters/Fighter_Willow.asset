@@ -53,5 +53,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 3d246640ef2319949a59d448c5f442d1, type: 2}
   - {fileID: 11400000, guid: 75405eb06e98094479bb81e690470320, type: 2}
   - {fileID: 11400000, guid: 3bdd8a732d387d44e87c37dec7a54a5d, type: 2}
+  moveLibrary: {fileID: 11400000, guid: 77c70575f74cdb64585e4efe142aa99d, type: 2}
+  jumpAttackPrimary: {fileID: 11400000, guid: 9b04047b875249242a6d59bc3a16b497, type: 2}
+  aerialSpecial: {fileID: 11400000, guid: 3bdd8a732d387d44e87c37dec7a54a5d, type: 2}
+  dodgeAttack: {fileID: 11400000, guid: 2d8e0cbfb3da62c43989063d296ad07c, type: 2}
+  crouchAttack: {fileID: 11400000, guid: 484aada10928f9e4b8be2ae5081f0f8a, type: 2}
   canAdaptToConditions: 1
   adaptationRules: []

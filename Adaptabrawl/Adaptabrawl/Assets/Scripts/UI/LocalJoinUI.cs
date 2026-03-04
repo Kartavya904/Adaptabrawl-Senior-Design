@@ -112,7 +112,8 @@ namespace Adaptabrawl.UI
 
         private IEnumerator JoinCountdownRoutine()
         {
-            for (int i = 5; i > 0; i--)
+            // Short 2-second countdown before moving to controller config.
+            for (int i = 2; i > 0; i--)
             {
                 if (countdownText != null)
                 {

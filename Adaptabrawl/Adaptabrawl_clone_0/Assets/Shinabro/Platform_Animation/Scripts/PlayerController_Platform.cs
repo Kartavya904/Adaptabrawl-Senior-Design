@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem; // Using new input system for gamepads
@@ -89,7 +89,7 @@ public class PlayerController_Platform : MonoBehaviour
         netBlockDown = false;
         netBlockUp = false;
         netDodge = false;
-        for (int i=0; i<8; i++) netSkills[i] = false;
+        for (int i = 0; i < 8; i++) netSkills[i] = false;
     }
 
     // --- Input Helper Methods ---

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 765354436790555023}
   - component: {fileID: 6083098680926533213}
+  - component: {fileID: 6378250315836569699}
   m_Layer: 0
   m_Name: BaseNetworkFighter
   m_TagString: Untagged
@@ -57,3 +58,17 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
+--- !u!114 &6378250315836569699
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2273728098224604683}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d3a2594740e9094d88f3896e44ec2e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  paddingX: 0.05
+  paddingY: 0.05

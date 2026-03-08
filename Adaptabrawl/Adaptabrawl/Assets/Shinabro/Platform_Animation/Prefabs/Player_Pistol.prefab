@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7103320764657157604}
   - component: {fileID: -612771017208062210}
+  - component: {fileID: 4656076928804947681}
   m_Layer: 0
   m_Name: Player_Pistol
   m_TagString: Untagged
@@ -280,3 +281,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5793250998878961437, guid: 9440c82e2c3b1274faa9b2e9e4d4af07, type: 3}
   m_PrefabInstance: {fileID: 7103320764849944286}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &4656076928804947681
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7103320764657157607}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d3a2594740e9094d88f3896e44ec2e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  paddingX: 0.05
+  paddingY: 0.05

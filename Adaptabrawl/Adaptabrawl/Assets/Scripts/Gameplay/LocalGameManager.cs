@@ -37,6 +37,12 @@ namespace Adaptabrawl.Gameplay
         private FighterController player2;
         private Adaptabrawl.UI.MatchResults matchResults;
 
+        /// <summary>Fired once both fighters are spawned. Subscribe in Start() or later.</summary>
+        public System.Action<FighterController, FighterController> OnFightersSpawned;
+
+        public FighterController Player1 => player1;
+        public FighterController Player2 => player2;
+
         private void Start()
         {
             InitializeLocalMatch();
@@ -72,6 +78,9 @@ namespace Adaptabrawl.Gameplay
                 gameManager.OnMatchEnd += OnMatchEnd;
                 gameManager.OnRoundEnd += OnRoundEnd;
             }
+
+            // Notify HUD that fighters are ready
+            OnFightersSpawned?.Invoke(player1, player2);
 
             // Initialize match results
             matchResults = new Adaptabrawl.UI.MatchResults

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6573241755428381959}
   - component: {fileID: -4937505009480246093}
+  - component: {fileID: 4889610550776163178}
   m_Layer: 0
   m_Name: Player_Bow
   m_TagString: Untagged
@@ -280,3 +281,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 400042, guid: 61366630e3c077b4b991d36e541d2c9d, type: 3}
   m_PrefabInstance: {fileID: 8286080575507372363}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &4889610550776163178
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 248976184468148758}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d3a2594740e9094d88f3896e44ec2e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  paddingX: 0.05
+  paddingY: 0.05

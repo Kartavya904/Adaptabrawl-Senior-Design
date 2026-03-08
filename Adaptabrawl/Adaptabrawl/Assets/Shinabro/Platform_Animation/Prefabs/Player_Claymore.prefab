@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 811415702080229564}
   - component: {fileID: -12898040748934989}
+  - component: {fileID: 7019138033472324194}
   m_Layer: 0
   m_Name: Player_Claymore
   m_TagString: Untagged
@@ -280,3 +281,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7980358444237933306, guid: 0c06d9ed80cd80b45a2a0e8bc2903e3f, type: 3}
   m_PrefabInstance: {fileID: 6248791078960855030}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &7019138033472324194
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 811415702080229567}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d3a2594740e9094d88f3896e44ec2e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  paddingX: 0.05
+  paddingY: 0.05

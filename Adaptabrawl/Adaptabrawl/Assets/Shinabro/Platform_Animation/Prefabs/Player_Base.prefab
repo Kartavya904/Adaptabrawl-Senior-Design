@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5467629474595074836}
+  - component: {fileID: 8483632156775248404}
   m_Layer: 0
   m_Name: Player_Base
   m_TagString: Untagged
@@ -144,3 +145,17 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 7072383029162970968}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8483632156775248404
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1417716891323106309}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d3a2594740e9094d88f3896e44ec2e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  paddingX: 0.05
+  paddingY: 0.05

@@ -1,14 +1,11 @@
 using UnityEngine;
 using Adaptabrawl.Data;
-using Adaptabrawl.Combat;
 
 namespace Adaptabrawl.Gameplay
 {
-    [RequireComponent(typeof(Rigidbody2D))]
     public class MovementController : MonoBehaviour
     {
         [Header("References")]
-        private Rigidbody2D rb;
         private FighterController fighterController;
         private FighterDef fighterDef;
         
@@ -35,7 +32,6 @@ namespace Adaptabrawl.Gameplay
         
         private void Awake()
         {
-            rb = GetComponent<Rigidbody2D>();
             fighterController = GetComponent<FighterController>();
             
             if (groundCheck == null)
@@ -98,10 +94,7 @@ namespace Adaptabrawl.Gameplay
         
         public void Jump()
         {
-            if (isGrounded && !isDashing)
-            {
-                rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-            }
+            // Physics handled by Shinabro prefab's own Rigidbody
         }
         
         public void Dash(Vector2 direction)
@@ -134,35 +127,22 @@ namespace Adaptabrawl.Gameplay
         
         private void ApplyNormalMovement()
         {
-            float controlMultiplier = isGrounded ? 1f : airControl;
-            Vector2 velocity = rb.linearVelocity;
-            velocity.x = moveInput.x * moveSpeed * controlMultiplier;
-            rb.linearVelocity = velocity;
+            // Physics handled by Shinabro prefab's own Rigidbody
         }
-        
+
         private void ApplyDashMovement()
         {
-            rb.linearVelocity = dashDirection * dashSpeed;
+            // Physics handled by Shinabro prefab's own Rigidbody
         }
-        
+
         private void ApplyFriction()
         {
-            if (isGrounded && Mathf.Abs(moveInput.x) < 0.1f && !isDashing)
-            {
-                Vector2 velocity = rb.linearVelocity;
-                velocity.x *= friction;
-                rb.linearVelocity = velocity;
-            }
+            // Physics handled by Shinabro prefab's own Rigidbody
         }
-        
+
         private void ClampFallSpeed()
         {
-            if (rb.linearVelocity.y < -maxFallSpeed)
-            {
-                Vector2 velocity = rb.linearVelocity;
-                velocity.y = -maxFallSpeed;
-                rb.linearVelocity = velocity;
-            }
+            // Physics handled by Shinabro prefab's own Rigidbody
         }
         
         // Public getters

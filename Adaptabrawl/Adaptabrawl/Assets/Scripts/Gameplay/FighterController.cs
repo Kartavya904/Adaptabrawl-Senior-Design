@@ -12,7 +12,6 @@ namespace Adaptabrawl.Gameplay
         [SerializeField] private FighterDef fighterDef;
 
         [Header("Components")]
-        private Rigidbody2D rb;
         private CombatFSM combatFSM;
         private StatusEffectSystem statusSystem;
         private MovementController movementController;
@@ -39,7 +38,6 @@ namespace Adaptabrawl.Gameplay
         
         private void Awake()
         {
-            rb = GetComponent<Rigidbody2D>();
             combatFSM = GetComponent<CombatFSM>();
             statusSystem = GetComponent<StatusEffectSystem>();
             movementController = GetComponent<MovementController>();
@@ -111,14 +109,6 @@ namespace Adaptabrawl.Gameplay
                 combatFSM.enabled = false;
             if (movementController != null)
                 movementController.enabled = false;
-        }
-        
-        public void ApplyKnockback(Vector2 force)
-        {
-            if (rb != null)
-            {
-                rb.AddForce(force, ForceMode2D.Impulse);
-            }
         }
         
         public void SetFacing(bool right)

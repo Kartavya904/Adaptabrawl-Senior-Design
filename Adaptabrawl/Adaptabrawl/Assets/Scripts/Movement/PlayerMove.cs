@@ -5,7 +5,6 @@ using Adaptabrawl.Gameplay;
 // Keeping for backwards compatibility
 public class PlayerMove : MonoBehaviour
 {
-    [SerializeField] private Rigidbody2D body;
     private MovementController movementController;
 
     private void Start()
@@ -31,11 +30,6 @@ public class PlayerMove : MonoBehaviour
             {
                 movementController.Jump();
             }
-        }
-        else
-        {
-            // Fallback to old behavior
-            body.linearVelocity = new Vector2(xInput * 5f, yInput * 5f);
         }
     }
 }

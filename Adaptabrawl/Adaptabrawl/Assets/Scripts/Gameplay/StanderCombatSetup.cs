@@ -17,10 +17,15 @@ namespace Adaptabrawl.Gameplay
 
             if (stander == null)
             {
-                Debug.LogWarning($"[StanderCombatSetup] No 'Stander' child on '{gameObject.name}'. Combat volumes not attached.");
+                // List actual children to help diagnose naming mismatch
+                string children = "";
+                foreach (Transform c in transform) children += $"'{c.name}' ";
+                Debug.LogWarning($"[StanderCombatSetup] No 'Stander' child on '{gameObject.name}'. Children found: {children}. Combat volumes NOT attached.");
                 Destroy(this);
                 return;
             }
+
+            Debug.Log($"[StanderCombatSetup] Found Stander on '{gameObject.name}' — attaching FighterHurtbox + HitboxEmitter.");
 
             if (stander.GetComponent<FighterHurtbox>() == null)
                 stander.gameObject.AddComponent<FighterHurtbox>();

@@ -64,7 +64,8 @@ namespace Adaptabrawl.Gameplay
             _initialized = true;
             maxHealth = fighterDef.maxHealth;
             currentHealth = maxHealth;
-            
+            Debug.Log($"[FighterController] '{fighterDef.fighterName}' initialized — maxHealth={maxHealth}, currentHealth={currentHealth}");
+
             // Initialize movement
             if (movementController != null)
             {
@@ -83,8 +84,9 @@ namespace Adaptabrawl.Gameplay
         public void TakeDamage(float damage)
         {
             if (IsDead) return;
-            
+
             currentHealth = Mathf.Max(0f, currentHealth - damage);
+            Debug.Log($"[FighterController] '{(fighterDef != null ? fighterDef.fighterName : gameObject.name)}' took {damage} damage — health now {currentHealth}/{maxHealth}");
             OnHealthChanged?.Invoke(currentHealth, maxHealth);
             
             if (currentHealth <= 0f)

@@ -53,6 +53,7 @@ namespace Adaptabrawl.Combat
                 if (hurtbox.Owner == null || hurtbox.Owner == owner) continue;
                 if (alreadyHit.Contains(hurtbox.Owner)) continue;
 
+                Debug.Log($"[ActiveHitbox] HIT — target='{hurtbox.Owner.gameObject.name}', damage={damage}");
                 alreadyHit.Add(hurtbox.Owner);
 
                 Vector2 dir = ((Vector2)hurtbox.transform.position - worldCenter).normalized;

@@ -73,6 +73,7 @@ namespace Adaptabrawl.Combat
             {
                 fsm.OnHitboxActive   += OnHitboxActive;
                 fsm.OnHitboxInactive += OnHitboxInactive;
+                Debug.Log($"[HitboxEmitter] Ready on '{gameObject.name}' — owner={owner?.gameObject.name}, CombatFSM found.");
             }
             else
             {
@@ -91,7 +92,7 @@ namespace Adaptabrawl.Combat
 
         private void OnHitboxActive(MoveDef move)
         {
-            // Destroy any lingering hitbox from a previous move
+            Debug.Log($"[HitboxEmitter] OnHitboxActive — move='{move?.moveName}', spawning hitbox on '{gameObject.name}'.");
             ClearCurrentHitbox();
 
             HitboxConfig cfg = GetConfig(move != null ? move.moveType : MoveType.LightAttack);

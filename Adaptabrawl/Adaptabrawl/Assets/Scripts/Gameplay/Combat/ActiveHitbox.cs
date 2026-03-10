@@ -8,66 +8,67 @@ namespace Adaptabrawl.Combat
     /// Spawned as a child of the Stander by HitboxEmitter for the duration of a move's
     /// active frames. Destroys itself automatically when the active window closes.
     ///
-    /// Because it is parented to the Stander it follows root-motion automatically.
+    /// Uses Physics2D.OverlapBox polling (rather than OnTriggerEnter2D) so it works
+    /// regardless of whether a Rigidbody2D is present — the Shinabro Stander uses a
+    /// 3D Rigidbody which the 2D trigger system does not see.
     /// </summary>
-    [RequireComponent(typeof(BoxCollider2D))]
     public class ActiveHitbox : MonoBehaviour
     {
         [Header("Attack Data")]
         [SerializeField] private float damage;
         [SerializeField] private float knockbackForce;
 
+        [Header("Shape")]
+        [SerializeField] private Vector2 size;
+        [SerializeField] private Vector2 offset;
+
         [Header("Owner")]
         [SerializeField] private FighterController owner;
 
-        private BoxCollider2D col;
         private readonly HashSet<FighterController> alreadyHit = new HashSet<FighterController>();
 
-        private void Awake()
-        {
-            col = GetComponent<BoxCollider2D>();
-            col.isTrigger = true;
-        }
-
-        /// <summary>
-        /// Called by HitboxEmitter immediately after spawning.
-        /// </summary>
-        public void Init(float dmg, float knockback, Vector2 size, Vector2 offset,
+        /// <summary>Called by HitboxEmitter immediately after spawning.</summary>
+        public void Init(float dmg, float knockback, Vector2 hitboxSize, Vector2 hitboxOffset,
                          float duration, FighterController ownerFighter)
         {
             damage        = dmg;
             knockbackForce = knockback;
+            size          = hitboxSize;
+            offset        = hitboxOffset;
             owner         = ownerFighter;
-
-            col.size   = size;
-            col.offset = offset;
 
             Destroy(gameObject, duration);
         }
 
-        private void OnTriggerEnter2D(Collider2D other)
+        private void Update()
         {
-            FighterHurtbox hurtbox = other.GetComponent<FighterHurtbox>();
-            if (hurtbox == null) return;
-            if (hurtbox.Owner == null || hurtbox.Owner == owner) return;
-            if (alreadyHit.Contains(hurtbox.Owner)) return;
+            // Poll every frame — no Rigidbody2D required
+            Vector2 worldCenter = (Vector2)transform.position + offset;
+            Collider2D[] hits = Physics2D.OverlapBoxAll(worldCenter, size, 0f);
 
-            alreadyHit.Add(hurtbox.Owner);
+            foreach (Collider2D hit in hits)
+            {
+                FighterHurtbox hurtbox = hit.GetComponent<FighterHurtbox>();
+                if (hurtbox == null) continue;
+                if (hurtbox.Owner == null || hurtbox.Owner == owner) continue;
+                if (alreadyHit.Contains(hurtbox.Owner)) continue;
 
-            // Knockback direction: away from the attacker's position
-            Vector2 dir = ((Vector2)hurtbox.transform.position - (Vector2)transform.position).normalized;
-            if (dir == Vector2.zero) dir = Vector2.right;
+                alreadyHit.Add(hurtbox.Owner);
 
-            hurtbox.ReceiveHit(damage, dir, knockbackForce);
+                Vector2 dir = ((Vector2)hurtbox.transform.position - worldCenter).normalized;
+                if (dir == Vector2.zero) dir = owner != null && owner.FacingRight ? Vector2.right : Vector2.left;
+
+                hurtbox.ReceiveHit(damage, dir, knockbackForce);
+            }
         }
 
-        private void OnDrawGizmosSelected()
+        private void OnDrawGizmos()
         {
-            if (col == null) return;
             Gizmos.color = new Color(1f, 0.6f, 0f, 0.4f);
-            Gizmos.DrawCube(transform.position + (Vector3)col.offset, new Vector3(col.size.x, col.size.y, 0.1f));
+            Vector3 worldCenter = transform.position + (Vector3)offset;
+            Gizmos.DrawCube(worldCenter, new Vector3(size.x, size.y, 0.1f));
             Gizmos.color = new Color(1f, 0.6f, 0f, 1f);
-            Gizmos.DrawWireCube(transform.position + (Vector3)col.offset, new Vector3(col.size.x, col.size.y, 0.1f));
+            Gizmos.DrawWireCube(worldCenter, new Vector3(size.x, size.y, 0.1f));
         }
     }
 }

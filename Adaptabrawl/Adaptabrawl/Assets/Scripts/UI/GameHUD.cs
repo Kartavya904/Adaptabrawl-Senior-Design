@@ -68,13 +68,21 @@ namespace Adaptabrawl.UI
         private void UpdateP1Health(float current, float max)
         {
             if (p1HealthSlider != null)
-                p1HealthSlider.value = max > 0f ? current / max : 0f;
+            {
+                p1HealthSlider.minValue = 0f;
+                p1HealthSlider.maxValue = max;
+                p1HealthSlider.value    = current;
+            }
         }
 
         private void UpdateP2Health(float current, float max)
         {
             if (p2HealthSlider != null)
-                p2HealthSlider.value = max > 0f ? current / max : 0f;
+            {
+                p2HealthSlider.minValue = 0f;
+                p2HealthSlider.maxValue = max;
+                p2HealthSlider.value    = current;
+            }
         }
 
         private void OnDestroy()

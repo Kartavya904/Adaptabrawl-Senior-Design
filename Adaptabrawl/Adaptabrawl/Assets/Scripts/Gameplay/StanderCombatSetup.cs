@@ -25,13 +25,16 @@ namespace Adaptabrawl.Gameplay
                 return;
             }
 
-            Debug.Log($"[StanderCombatSetup] Found Stander on '{gameObject.name}' — attaching FighterHurtbox + HitboxEmitter.");
+            Debug.Log($"[StanderCombatSetup] Found Stander on '{gameObject.name}' — attaching FighterHurtbox + HitboxEmitter + ShinabroDamageBridge.");
 
             if (stander.GetComponent<FighterHurtbox>() == null)
                 stander.gameObject.AddComponent<FighterHurtbox>();
 
             if (stander.GetComponent<HitboxEmitter>() == null)
                 stander.gameObject.AddComponent<HitboxEmitter>();
+
+            if (stander.GetComponent<ShinabroDamageBridge>() == null)
+                stander.gameObject.AddComponent<ShinabroDamageBridge>();
 
             Destroy(this);
         }

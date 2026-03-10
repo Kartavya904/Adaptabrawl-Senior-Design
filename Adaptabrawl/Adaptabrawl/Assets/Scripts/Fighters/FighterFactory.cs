@@ -38,16 +38,6 @@ namespace Adaptabrawl.Fighters
                 Debug.LogWarning($"FighterFactory: No prefab assigned for '{fighterDef.fighterName}', creating placeholder.");
             }
             
-            // Ensure Rigidbody2D exists and is configured
-            Rigidbody2D rb = fighterObj.GetComponent<Rigidbody2D>();
-            if (rb == null)
-            {
-                rb = fighterObj.AddComponent<Rigidbody2D>();
-            }
-            rb.freezeRotation = true;
-            rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-            rb.gravityScale = 1f;
-            
             // Add FighterController (main component)
             FighterController fighterController = fighterObj.GetComponent<FighterController>();
             if (fighterController == null)

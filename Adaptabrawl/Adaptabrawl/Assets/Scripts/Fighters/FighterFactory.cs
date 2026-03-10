@@ -46,49 +46,28 @@ namespace Adaptabrawl.Fighters
             }
             fighterController.SetFighterDef(fighterDef);
             
-            // Add combat components
+            // Combat state machine (root — no colliders)
             EnsureComponent<Combat.CombatFSM>(fighterObj);
-            EnsureComponent<Combat.HitboxManager>(fighterObj);
-            EnsureComponent<Combat.DamageSystem>(fighterObj);
-            
-            // Add automatic hitbox/hurtbox spawner (replaces manual Hurtbox component)
-            EnsureComponent<Combat.HitboxHurtboxSpawner>(fighterObj);
-            
-            // Add movement
+
+            // Movement
             EnsureComponent<MovementController>(fighterObj);
-            
-            // Add systems
+
+            // Systems (root)
             EnsureComponent<StatusEffectSystem>(fighterObj);
             EnsureComponent<Attack.AttackSystem>(fighterObj);
             EnsureComponent<Defend.DefenseSystem>(fighterObj);
             EnsureComponent<Evade.EvadeSystem>(fighterObj);
             EnsureComponent<Input.PlayerInputHandler>(fighterObj);
-            
-            // Add animation bridge for Shinabro animation integration
+
+            // Animation bridge
             EnsureComponent<AnimationBridge>(fighterObj);
 
-            // Bootstrap that runs in Start() (after full hierarchy is live) to add
-            // CameraBoundsConstraint exclusively to the Stander child.
+            // Bootstrap: adds CameraBoundsConstraint to the Stander child in Start()
             EnsureComponent<StanderCameraConstraint>(fighterObj);
-            
-            // Ensure at least one non-trigger Collider2D on root for ground/platform collision (2D physics).
-            // Hurtboxes from HitboxHurtboxSpawner are triggers; the floor needs a solid collider to push against.
-            Collider2D[] colliders = fighterObj.GetComponents<Collider2D>();
-            bool hasSolidCollider = false;
-            for (int i = 0; i < colliders.Length; i++)
-            {
-                if (!colliders[i].isTrigger)
-                {
-                    hasSolidCollider = true;
-                    break;
-                }
-            }
-            if (!hasSolidCollider)
-            {
-                BoxCollider2D groundCollider = fighterObj.AddComponent<BoxCollider2D>();
-                groundCollider.size = new Vector2(1f, 2f);
-                groundCollider.isTrigger = false;
-            }
+
+            // Bootstrap: adds FighterHurtbox + HitboxEmitter to the Stander child in Start()
+            // so all combat colliders follow root-motion instead of staying on the root.
+            EnsureComponent<StanderCombatSetup>(fighterObj);
             
             // Set facing
             fighterController.SetFacing(facingRight);

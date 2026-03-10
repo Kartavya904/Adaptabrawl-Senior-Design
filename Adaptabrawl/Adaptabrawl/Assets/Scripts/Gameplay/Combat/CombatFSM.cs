@@ -9,7 +9,6 @@ namespace Adaptabrawl.Combat
     {
         [Header("References")]
         [SerializeField] private FighterController fighterController;
-        [SerializeField] private HitboxManager hitboxManager;
         
         [Header("State")]
         private CombatState currentState = CombatState.Idle;
@@ -31,15 +30,15 @@ namespace Adaptabrawl.Combat
         public System.Action<CombatState> OnStateChanged;
         public System.Action<MoveDef> OnMoveStarted;
         public System.Action<MoveDef> OnMoveEnded;
-        public System.Action OnHitboxActive;
+        /// <summary>Fired when a move enters its active (hitbox) frames. Passes the active MoveDef.</summary>
+        public System.Action<MoveDef> OnHitboxActive;
+        /// <summary>Fired when a move's active frames end.</summary>
         public System.Action OnHitboxInactive;
         
         private void Start()
         {
             if (fighterController == null)
                 fighterController = GetComponent<FighterController>();
-            if (hitboxManager == null)
-                hitboxManager = GetComponent<HitboxManager>();
         }
         
         private void Update()
@@ -87,8 +86,7 @@ namespace Adaptabrawl.Combat
                 if (currentState != CombatState.Active)
                 {
                     SetState(CombatState.Active);
-                    hitboxManager?.ActivateHitbox(currentMove);
-                    OnHitboxActive?.Invoke();
+                    OnHitboxActive?.Invoke(currentMove);
                 }
             }
             else if (currentFrame <= currentMove.totalFrames)
@@ -96,7 +94,6 @@ namespace Adaptabrawl.Combat
                 if (currentState != CombatState.Active)
                 {
                     SetState(CombatState.Recovery);
-                    hitboxManager?.DeactivateHitbox();
                     OnHitboxInactive?.Invoke();
                 }
             }

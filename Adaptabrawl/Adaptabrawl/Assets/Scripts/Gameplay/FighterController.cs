@@ -4,23 +4,24 @@ using Adaptabrawl.Combat;
 
 namespace Adaptabrawl.Gameplay
 {
-    [RequireComponent(typeof(Rigidbody2D))]
     [RequireComponent(typeof(CombatFSM))]
     [RequireComponent(typeof(StatusEffectSystem))]
     public class FighterController : MonoBehaviour
     {
         [Header("Fighter Data")]
         [SerializeField] private FighterDef fighterDef;
-        
+
         [Header("Components")]
         private Rigidbody2D rb;
         private CombatFSM combatFSM;
         private StatusEffectSystem statusSystem;
         private MovementController movementController;
-        
+
         [Header("Health")]
         [SerializeField] private float currentHealth;
-        private float maxHealth;
+        [SerializeField] private float maxHealth;
+
+        private bool _initialized;
         
         [Header("Facing")]
         [SerializeField] private bool facingRight = true;
@@ -49,9 +50,11 @@ namespace Adaptabrawl.Gameplay
         
         private void Start()
         {
-            InitializeFighter();
+            // Only initialize here if SetFighterDef() hasn't already done it.
+            if (!_initialized)
+                InitializeFighter();
         }
-        
+
         private void InitializeFighter()
         {
             if (fighterDef == null)
@@ -59,7 +62,8 @@ namespace Adaptabrawl.Gameplay
                 Debug.LogError("FighterController: FighterDef is not assigned!");
                 return;
             }
-            
+
+            _initialized = true;
             maxHealth = fighterDef.maxHealth;
             currentHealth = maxHealth;
             
@@ -130,6 +134,7 @@ namespace Adaptabrawl.Gameplay
         public void SetFighterDef(FighterDef def)
         {
             fighterDef = def;
+            _initialized = false;
             InitializeFighter();
         }
     }

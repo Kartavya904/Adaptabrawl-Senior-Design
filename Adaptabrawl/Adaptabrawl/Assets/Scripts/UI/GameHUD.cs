@@ -55,21 +55,24 @@ namespace Adaptabrawl.UI
             yield return null; // one-frame wait
 
             LocalGameManager lgm = FindFirstObjectByType<LocalGameManager>();
-            if (lgm == null)
+            if (lgm != null)
             {
-                Debug.LogWarning("GameHUD: No LocalGameManager found in scene — health bars will not update.");
+                if (lgm.Player1 != null && lgm.Player2 != null)
+                    BindFighters(lgm.Player1, lgm.Player2);
+                else
+                    lgm.OnFightersSpawned += BindFighters;
                 yield break;
             }
 
-            if (lgm.Player1 != null && lgm.Player2 != null)
+            // Fallback: no LocalGameManager — find FighterControllers directly.
+            FighterController[] fighters = FindObjectsByType<FighterController>(FindObjectsSortMode.InstanceID);
+            if (fighters.Length >= 2)
             {
-                // Fighters were already spawned before we subscribed — bind immediately.
-                BindFighters(lgm.Player1, lgm.Player2);
+                BindFighters(fighters[0], fighters[1]);
             }
             else
             {
-                // Fighters not yet spawned; wait for the event.
-                lgm.OnFightersSpawned += BindFighters;
+                Debug.LogWarning("GameHUD: Could not find fighters — health bars will not update.");
             }
         }
 

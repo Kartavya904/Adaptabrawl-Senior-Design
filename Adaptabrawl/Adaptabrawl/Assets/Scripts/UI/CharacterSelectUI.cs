@@ -56,10 +56,12 @@ namespace Adaptabrawl.UI
         [SerializeField] private RawImage player2PreviewRawImage;
         [Tooltip("Resolution of the render texture for Raw Image preview (when Raw Image is assigned). Higher = less pixelation (e.g. 512 or 1024).")]
         [SerializeField] private int previewRenderTextureSize = 1024;
-        [Tooltip("Local position of the preview camera relative to the preview stage. Defaults match the main Gameplay camera that framed the fighter well.")]
-        [SerializeField] private Vector3 previewCameraLocalPosition = new Vector3(1.27f, 2f, 3.29f);
-        [Tooltip("Local euler rotation of the preview camera (X,Y,Z). Defaults match the main Gameplay camera (-8.6, 209.89, 0).")]
-        [SerializeField] private Vector3 previewCameraLocalEuler = new Vector3(-8.6f, 209.89f, 0f);
+        [Tooltip("Local position of the P1 preview camera relative to its preview stage (world offset from P1 stage at x=-1000).")]
+        [SerializeField] private Vector3 previewCameraLocalPositionP1 = new Vector3(936.7f, 2f, 3.29f);
+        [Tooltip("Local position of the P2 preview camera relative to its preview stage (world offset from P2 stage at x=1000).")]
+        [SerializeField] private Vector3 previewCameraLocalPositionP2 = new Vector3(-1047.5f, 2f, 3.29f);
+        [Tooltip("Local euler rotation of the preview camera (X,Y,Z). Same for both players.")]
+        [SerializeField] private Vector3 previewCameraLocalEuler = new Vector3(-8.6f, -150.11f, 0f);
         [Tooltip("Orthographic size of the preview camera (default 2.5).")]
         [SerializeField] private float previewCameraOrthographicSize = 2.5f;
         [Tooltip("If true, spawn the 3D preview at the world position that lines up with the Image placeholder on screen (no parenting to UI). Use to test if the model appears in the 3D scene at all.")]
@@ -332,7 +334,7 @@ namespace Adaptabrawl.UI
                 _previewRTP1.name = "PreviewRT_P1";
                 var camObj = new GameObject("PreviewCameraP1");
                 camObj.transform.SetParent(stage);
-                camObj.transform.localPosition = previewCameraLocalPosition;
+                camObj.transform.localPosition = previewCameraLocalPositionP1;
                 camObj.transform.localEulerAngles = previewCameraLocalEuler;
                 _previewCameraP1 = camObj.AddComponent<UnityEngine.Camera>();
                 _previewCameraP1.orthographic = true;
@@ -351,7 +353,7 @@ namespace Adaptabrawl.UI
                 _previewRTP2.name = "PreviewRT_P2";
                 var camObj = new GameObject("PreviewCameraP2");
                 camObj.transform.SetParent(stage);
-                camObj.transform.localPosition = previewCameraLocalPosition;
+                camObj.transform.localPosition = previewCameraLocalPositionP2;
                 camObj.transform.localEulerAngles = previewCameraLocalEuler;
                 _previewCameraP2 = camObj.AddComponent<UnityEngine.Camera>();
                 _previewCameraP2.orthographic = true;

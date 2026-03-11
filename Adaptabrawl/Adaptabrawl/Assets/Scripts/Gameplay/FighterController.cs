@@ -129,6 +129,31 @@ namespace Adaptabrawl.Gameplay
             _initialized = false;
             InitializeFighter();
         }
+
+        /// <summary>
+        /// Called by GameManager between rounds. Restores full health, re-enables
+        /// CombatFSM and MovementController (disabled by Die()), and resets the
+        /// Shinabro PlayerController_Platform so it can fight again.
+        /// </summary>
+        public void ResetForNewRound()
+        {
+            currentHealth = maxHealth;
+            OnHealthChanged?.Invoke(currentHealth, maxHealth);
+
+            // Re-enable systems disabled by Die()
+            if (combatFSM != null) combatFSM.enabled = true;
+            if (movementController != null) movementController.enabled = true;
+
+            // Reset Shinabro's own health/death state on the Stander child
+            var pcp = GetComponentInChildren<PlayerController_Platform>();
+            if (pcp != null)
+            {
+                pcp.currentHealth = pcp.maxHealth;
+                pcp.isDead        = false;
+            }
+
+            Debug.Log($"[FighterController] '{(fighterDef != null ? fighterDef.fighterName : gameObject.name)}' reset for new round.");
+        }
     }
 }
 

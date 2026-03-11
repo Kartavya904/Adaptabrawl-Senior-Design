@@ -68,14 +68,11 @@ namespace Adaptabrawl.Gameplay
             roundTimer = roundDuration;
             roundWinner = null;
 
-            // Reset fighters
+            // Reset fighters for the new round
             foreach (var player in players)
             {
                 if (player != null)
-                {
-                    // Reset health, position, etc.
-                    // This would require a Reset method on FighterController
-                }
+                    player.ResetForNewRound();
             }
 
             StartCoroutine(PreRoundCountdownRoutine());

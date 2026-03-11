@@ -76,6 +76,10 @@ namespace Adaptabrawl.Fighters
             
             // Add animation bridge for Shinabro animation integration
             EnsureComponent<AnimationBridge>(fighterObj);
+
+            // Bootstrap that runs in Start() (after full hierarchy is live) to add
+            // CameraBoundsConstraint exclusively to the Stander child.
+            EnsureComponent<StanderCameraConstraint>(fighterObj);
             
             // Ensure at least one non-trigger Collider2D on root for ground/platform collision (2D physics).
             // Hurtboxes from HitboxHurtboxSpawner are triggers; the floor needs a solid collider to push against.

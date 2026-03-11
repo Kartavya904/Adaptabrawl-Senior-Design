@@ -120,7 +120,17 @@ namespace Adaptabrawl.Gameplay
 
                 var standerAnim = pcp.GetComponent<Animator>();
                 if (standerAnim != null)
-                    standerAnim.CrossFadeInFixedTime(pcp.deathAnimationState, 0.15f);
+                {
+                    int deathHash = Animator.StringToHash(pcp.deathAnimationState);
+                    if (standerAnim.HasState(0, deathHash))
+                        standerAnim.CrossFadeInFixedTime(pcp.deathAnimationState, 0.15f);
+                    else
+                    {
+                        // No "Death" state found — freeze the animator in its current pose.
+                        standerAnim.speed = 0f;
+                        Debug.LogWarning($"[FighterController] Animator has no '{pcp.deathAnimationState}' state — freezing pose instead.");
+                    }
+                }
 
                 // Disable bone colliders so dead characters don't block attacks
                 foreach (var col in pcp.GetComponentsInChildren<Collider>())
@@ -175,6 +185,12 @@ namespace Adaptabrawl.Gameplay
             {
                 pcp.currentHealth = pcp.maxHealth;
                 pcp.isDead        = false;
+
+                // Restore animator speed — Die() may have frozen it to 0 as a fallback
+                // when no "Death" animation state exists.
+                var standerAnim = pcp.GetComponent<Animator>();
+                if (standerAnim != null)
+                    standerAnim.speed = 1f;
             }
 
             Debug.Log($"[FighterController] '{(fighterDef != null ? fighterDef.fighterName : gameObject.name)}' reset for new round.");

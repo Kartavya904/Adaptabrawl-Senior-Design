@@ -30,9 +30,18 @@ namespace Adaptabrawl.Gameplay
         public System.Action<float> OnRoundTimerUpdate; // remaining time
         public System.Action<int> OnRoundCountdown; // 3, 2, 1, 0 (FIGHT)
 
+        private bool _initialized;
+
         private void Start()
         {
-            InitializeMatch();
+            // Wait one frame so LocalGameManager can spawn fighters before we search for them.
+            StartCoroutine(InitializeIfNotTriggered());
+        }
+
+        private System.Collections.IEnumerator InitializeIfNotTriggered()
+        {
+            yield return null;
+            if (!_initialized) InitializeMatch();
         }
 
         private void Update()
@@ -44,8 +53,11 @@ namespace Adaptabrawl.Gameplay
             }
         }
 
-        private void InitializeMatch()
+        public void InitializeMatch()
         {
+            if (_initialized) return;
+            _initialized = true;
+
             // Find all fighters
             players.Clear();
             players.AddRange(FindObjectsByType<FighterController>(FindObjectsSortMode.None));

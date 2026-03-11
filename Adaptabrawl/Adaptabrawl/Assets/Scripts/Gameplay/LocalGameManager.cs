@@ -74,23 +74,27 @@ namespace Adaptabrawl.Gameplay
                     $"(source: {(CharacterSelectData.selectedFighter1 != null ? "CharacterSelectData" : "Test Override")})");
             }
 
-            // Spawn fighters
+            // Spawn fighters first so GameManager.InitializeMatch() can find them.
             SpawnFighters(fighter1Def, fighter2Def);
 
-            // Initialize game manager
+            // Bootstrap GameManager — try the serialized reference, then the same GameObject,
+            // then the scene, and finally add one if nothing exists.
+            if (gameManager == null)
+                gameManager = GetComponent<GameManager>();
             if (gameManager == null)
                 gameManager = FindFirstObjectByType<GameManager>();
-
-            if (gameManager != null)
+            if (gameManager == null)
             {
-                // Configure game manager with match settings
-                // Note: GameManager has its own serialized fields, but we can override if needed
-                // For now, GameManager uses its own settings, but these fields are available for future use
-
-                // Subscribe to game manager events
-                gameManager.OnMatchEnd += OnMatchEnd;
-                gameManager.OnRoundEnd += OnRoundEnd;
+                gameManager = gameObject.AddComponent<GameManager>();
+                Debug.LogWarning("[LocalGameManager] No GameManager found — added one automatically. " +
+                    "Consider adding a GameManager component to the scene's GameManager GameObject.");
             }
+
+            // Subscribe to events, then call InitializeMatch() explicitly so the GM
+            // picks up the fighters we just spawned (avoids the 1-frame-delay race).
+            gameManager.OnMatchEnd += OnMatchEnd;
+            gameManager.OnRoundEnd += OnRoundEnd;
+            gameManager.InitializeMatch();
 
             // Notify HUD that fighters are ready
             OnFightersSpawned?.Invoke(player1, player2);

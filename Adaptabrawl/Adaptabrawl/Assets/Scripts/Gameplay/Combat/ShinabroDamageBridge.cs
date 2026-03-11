@@ -42,6 +42,9 @@ namespace Adaptabrawl.Combat
 
         private void Update()
         {
+            // Stop polling once our system has already registered death.
+            if (fc.IsDead) return;
+
             float current = pcp.currentHealth;
             float delta   = lastHealth - current;
 
@@ -52,6 +55,16 @@ namespace Adaptabrawl.Combat
             }
 
             lastHealth = current;
+
+            // Shinabro clamps its own currentHealth at 0, so a large hit on a low-HP
+            // fighter produces a smaller delta than the actual damage dealt.
+            // If Shinabro's own dead flag is set but our FighterController hasn't died
+            // yet (e.g. FC still has HP remaining), force-kill it now.
+            if (pcp.isDead && !fc.IsDead)
+            {
+                Debug.Log($"[ShinabroDamageBridge] Shinabro marked dead but FighterController still alive — forcing kill.");
+                fc.TakeDamage(fc.CurrentHealth + 1f);
+            }
         }
     }
 }

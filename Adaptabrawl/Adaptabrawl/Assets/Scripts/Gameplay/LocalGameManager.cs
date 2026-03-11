@@ -11,10 +11,11 @@ namespace Adaptabrawl.Gameplay
     public class LocalGameManager : MonoBehaviour
     {
         [Header("Match Settings")]
-#pragma warning disable CS0414 // Field is assigned but never used (configured in GameManager)
+        [Tooltip("Rounds a player must win to win the match. Forwarded to GameManager.")]
         [SerializeField] private int roundsToWin = 2;
+        [Tooltip("Duration of each round in seconds. Forwarded to GameManager.")]
         [SerializeField] private float roundDuration = 99f;
-#pragma warning restore CS0414
+        [Tooltip("Seconds between round end and the next round starting.")]
         [SerializeField] private float roundEndDelay = 3f;
 
         [Header("Fighter Spawn")]
@@ -89,6 +90,10 @@ namespace Adaptabrawl.Gameplay
                 Debug.LogWarning("[LocalGameManager] No GameManager found — added one automatically. " +
                     "Consider adding a GameManager component to the scene's GameManager GameObject.");
             }
+
+            // Push LocalGameManager's Inspector settings to GameManager so the designer
+            // only needs to adjust one place (this component).
+            gameManager.Configure(roundsToWin, roundDuration, roundEndDelay);
 
             // Subscribe to events, then call InitializeMatch() explicitly so the GM
             // picks up the fighters we just spawned (avoids the 1-frame-delay race).

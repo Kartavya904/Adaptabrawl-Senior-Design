@@ -120,27 +120,31 @@ namespace Adaptabrawl.Gameplay
 
         private void CheckWinConditions()
         {
-            // Check if any player is dead
+            // Find a dead player this frame (poll-based backup for the event path).
+            FighterController dead = null;
             foreach (var player in players)
             {
                 if (player != null && player.IsDead)
                 {
-                    EndRound(player);
-                    return;
+                    dead = player;
+                    break;
                 }
             }
+
+            if (dead == null) return;
+
+            // Award the round to the surviving player (null = draw).
+            FighterController winner = players.FirstOrDefault(p => p != dead && p != null && !p.IsDead);
+            EndRound(winner);
         }
 
         private void OnPlayerDeath(FighterController deadPlayer)
         {
             if (!roundActive) return;
 
-            // Find the winner (the other player)
-            FighterController winner = players.FirstOrDefault(p => p != deadPlayer && !p.IsDead);
-            if (winner != null)
-            {
-                EndRound(winner);
-            }
+            // Find the winner (the other player).
+            FighterController winner = players.FirstOrDefault(p => p != deadPlayer && p != null && !p.IsDead);
+            EndRound(winner);
         }
 
         private void EndRoundByTime()
@@ -236,6 +240,18 @@ namespace Adaptabrawl.Gameplay
         {
             yield return new WaitForSeconds(roundEndDelay);
             SceneManager.LoadScene("MatchResults");
+        }
+
+        /// <summary>
+        /// Override match settings before calling InitializeMatch().
+        /// LocalGameManager calls this so its Inspector fields are the single
+        /// source of truth for round duration and rounds-to-win.
+        /// </summary>
+        public void Configure(int newRoundsToWin, float newRoundDuration, float newRoundEndDelay)
+        {
+            roundsToWin   = newRoundsToWin;
+            roundDuration  = newRoundDuration;
+            roundEndDelay  = newRoundEndDelay;
         }
 
         public void Rematch()

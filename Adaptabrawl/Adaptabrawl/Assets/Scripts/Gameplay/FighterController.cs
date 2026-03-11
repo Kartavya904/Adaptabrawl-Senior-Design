@@ -85,10 +85,12 @@ namespace Adaptabrawl.Gameplay
         {
             if (IsDead) return;
 
-            currentHealth = Mathf.Max(0f, currentHealth - damage);
+            // Allow health to go negative (overkill) so a large hit on a low-health
+            // fighter always triggers death — the Slider's minValue clamps the display.
+            currentHealth -= damage;
             Debug.Log($"[FighterController] '{(fighterDef != null ? fighterDef.fighterName : gameObject.name)}' took {damage} damage — health now {currentHealth}/{maxHealth}");
             OnHealthChanged?.Invoke(currentHealth, maxHealth);
-            
+
             if (currentHealth <= 0f)
             {
                 Die();

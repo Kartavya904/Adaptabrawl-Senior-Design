@@ -146,11 +146,26 @@ namespace Adaptabrawl.UI
 
         private void LoadAvailableFighters()
         {
-            if (availableFighters.Count == 0)
+            // If fighters were already assigned in the Inspector, use those.
+            if (availableFighters.Count > 0) return;
+
+            // Try loading FighterDef ScriptableObjects from Resources/Fighters/.
+            // To use this: create a 'Resources/Fighters' folder under Assets and move your
+            // FighterDef .asset files there. They will be loaded automatically.
+            var loaded = Resources.LoadAll<FighterDef>("Fighters");
+            if (loaded != null && loaded.Length > 0)
             {
-                availableFighters.Add(FighterFactory.CreateStrikerFighter());
-                availableFighters.Add(FighterFactory.CreateElusiveFighter());
+                availableFighters.AddRange(loaded);
+                Debug.Log($"[CharacterSelectUI] Loaded {loaded.Length} FighterDef(s) from Resources/Fighters/.");
+                return;
             }
+
+            // Final fallback: runtime-created archetypes (no prefab, placeholder visuals).
+            Debug.LogWarning("[CharacterSelectUI] No FighterDef assets found. Using built-in Striker/Elusive archetypes. " +
+                "To show real characters: assign FighterDef assets to 'Available Fighters' on this component, " +
+                "or place them in Assets/Resources/Fighters/.");
+            availableFighters.Add(FighterFactory.CreateStrikerFighter());
+            availableFighters.Add(FighterFactory.CreateElusiveFighter());
         }
 
         private void RequestChangeSelection(int direction, int targetPlayer)

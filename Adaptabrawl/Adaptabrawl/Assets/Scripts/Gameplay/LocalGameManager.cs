@@ -25,9 +25,9 @@ namespace Adaptabrawl.Gameplay
         [SerializeField] private float spawnScale = 0.5f;
 
         [Header("Test Override (optional)")]
-        [Tooltip("When set, use this instead of Character Select for P1. Use this to test a fighter by opening Game Scene directly.")]
+        [Tooltip("Fallback fighter for P1 used ONLY when no character was selected (e.g. opening Game Scene directly). CharacterSelectData always takes priority when set.")]
         [SerializeField] private FighterDef testFighterP1;
-        [Tooltip("When set, use this instead of Character Select for P2.")]
+        [Tooltip("Fallback fighter for P2 used ONLY when no character was selected.")]
         [SerializeField] private FighterDef testFighterP2;
 
         [Header("References")]
@@ -50,15 +50,28 @@ namespace Adaptabrawl.Gameplay
 
         private void InitializeLocalMatch()
         {
-            // Use test overrides if set (for testing by opening Game Scene directly), otherwise character select
-            FighterDef fighter1Def = testFighterP1 != null ? testFighterP1 : CharacterSelectData.selectedFighter1;
-            FighterDef fighter2Def = testFighterP2 != null ? testFighterP2 : CharacterSelectData.selectedFighter2;
+            // CharacterSelectData takes priority (set by the character select screen).
+            // Test overrides are only used when CharacterSelectData is null (direct scene testing).
+            FighterDef fighter1Def = CharacterSelectData.selectedFighter1 != null
+                ? CharacterSelectData.selectedFighter1
+                : testFighterP1;
+
+            FighterDef fighter2Def = CharacterSelectData.selectedFighter2 != null
+                ? CharacterSelectData.selectedFighter2
+                : testFighterP2;
 
             if (fighter1Def == null || fighter2Def == null)
             {
                 if (fighter1Def == null) fighter1Def = FighterFactory.CreateStrikerFighter();
                 if (fighter2Def == null) fighter2Def = FighterFactory.CreateElusiveFighter();
-                Debug.LogWarning("No fighters selected, using defaults (Striker/Elusive). To test a specific fighter, assign it to Test Fighter P1/P2 on LocalGameManager.");
+                Debug.LogWarning("[LocalGameManager] No fighter selected — using Striker/Elusive defaults. " +
+                    "Assign FighterDef assets to 'Test Fighter P1/P2' on this component for direct scene testing, " +
+                    "or go through the character select screen.");
+            }
+            else
+            {
+                Debug.Log($"[LocalGameManager] Spawning P1='{fighter1Def.fighterName}' P2='{fighter2Def.fighterName}' " +
+                    $"(source: {(CharacterSelectData.selectedFighter1 != null ? "CharacterSelectData" : "Test Override")})");
             }
 
             // Spawn fighters

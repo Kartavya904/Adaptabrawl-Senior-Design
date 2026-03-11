@@ -105,7 +105,32 @@ namespace Adaptabrawl.Gameplay
         
         private void Die()
         {
+            // Force health to exactly 0 and push a final event so the slider clears immediately
+            currentHealth = 0f;
+            OnHealthChanged?.Invoke(0f, maxHealth);
+
             OnDeath?.Invoke();
+
+            // Trigger the Shinabro death animation on the Stander child.
+            // pcp.Die() is private, so we replicate its key steps here.
+            var pcp = GetComponentInChildren<PlayerController_Platform>();
+            if (pcp != null && !pcp.isDead)
+            {
+                pcp.isDead = true;
+
+                var standerAnim = pcp.GetComponent<Animator>();
+                if (standerAnim != null)
+                    standerAnim.CrossFadeInFixedTime(pcp.deathAnimationState, 0.15f);
+
+                // Disable bone colliders so dead characters don't block attacks
+                foreach (var col in pcp.GetComponentsInChildren<Collider>())
+                    col.enabled = false;
+
+                // Freeze the Rigidbody so the corpse doesn't slide
+                var rb3d = pcp.GetComponent<Rigidbody>();
+                if (rb3d != null) rb3d.isKinematic = true;
+            }
+
             // Disable combat and movement
             if (combatFSM != null)
                 combatFSM.enabled = false;

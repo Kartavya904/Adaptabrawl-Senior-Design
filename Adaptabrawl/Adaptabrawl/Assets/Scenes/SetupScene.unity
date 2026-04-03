@@ -3185,22 +3185,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9b42b846fd30ce4087963c2245b117f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.UI.CharacterSelectUI
-  setupManager: {fileID: 0}
+  setupManager: {fileID: 1224466611}
   availableFighters:
   - {fileID: 11400000, guid: 650c58ccce4fde649af6d0bbd894e6a5, type: 2}
   - {fileID: 11400000, guid: 3db14d7734ec08a45b6c8e7cfb993e07, type: 2}
-  - {fileID: 11400000, guid: 780483cd612bcfe47b46f2ed0bbf13ea, type: 2}
-  - {fileID: 11400000, guid: b212aec6c8dd7fa4c9f902434a9da2fc, type: 2}
-  - {fileID: 11400000, guid: 6c4edb7591880954fb273a675a33b598, type: 2}
   - {fileID: 11400000, guid: 2384042a0eec9ba4585cffcb627f0cfd, type: 2}
-  - {fileID: 11400000, guid: 06ec801d8493b1443995ae6a2644343b, type: 2}
-  - {fileID: 11400000, guid: 6a4443283a727db4fa2ff7be85e4e321, type: 2}
-  - {fileID: 11400000, guid: 7b766f897ce233c46bbc583fb1ae7f68, type: 2}
-  - {fileID: 11400000, guid: ff5136d8da471bf439280832583ca049, type: 2}
-  - {fileID: 11400000, guid: 26be52fe9a371934dba177992f463f02, type: 2}
-  - {fileID: 11400000, guid: 1f93ef910bfd71047b1930c8164efa58, type: 2}
-  - {fileID: 11400000, guid: 6150c306d265b704bb85f8e213ee1ca2, type: 2}
-  - {fileID: 11400000, guid: 1bf8367d9b1a8e44b97d09b964dc2007, type: 2}
+  - {fileID: 11400000, guid: b212aec6c8dd7fa4c9f902434a9da2fc, type: 2}
   player1PlayerName: {fileID: 0}
   player1FighterContainer: {fileID: 0}
   player1FighterImage: {fileID: 0}
@@ -3236,6 +3226,7 @@ MonoBehaviour:
   previewPlaceholderSprite: {fileID: 0}
   player1ConfirmButtonText: {fileID: 0}
   player2ConfirmButtonText: {fileID: 0}
+  characterToArenaCountdownText: {fileID: 0}
   startButton: {fileID: 0}
   backButton: {fileID: 0}
 --- !u!4 &878023397
@@ -4654,16 +4645,8 @@ MonoBehaviour:
   availableFighters:
   - {fileID: 11400000, guid: 650c58ccce4fde649af6d0bbd894e6a5, type: 2}
   - {fileID: 11400000, guid: 3db14d7734ec08a45b6c8e7cfb993e07, type: 2}
-  - {fileID: 11400000, guid: 780483cd612bcfe47b46f2ed0bbf13ea, type: 2}
-  - {fileID: 11400000, guid: 6c4edb7591880954fb273a675a33b598, type: 2}
   - {fileID: 11400000, guid: 2384042a0eec9ba4585cffcb627f0cfd, type: 2}
-  - {fileID: 11400000, guid: 6a4443283a727db4fa2ff7be85e4e321, type: 2}
-  - {fileID: 11400000, guid: 7b766f897ce233c46bbc583fb1ae7f68, type: 2}
-  - {fileID: 11400000, guid: ff5136d8da471bf439280832583ca049, type: 2}
-  - {fileID: 11400000, guid: 26be52fe9a371934dba177992f463f02, type: 2}
-  - {fileID: 11400000, guid: 1f93ef910bfd71047b1930c8164efa58, type: 2}
-  - {fileID: 11400000, guid: 6150c306d265b704bb85f8e213ee1ca2, type: 2}
-  - {fileID: 11400000, guid: 1bf8367d9b1a8e44b97d09b964dc2007, type: 2}
+  - {fileID: 11400000, guid: b212aec6c8dd7fa4c9f902434a9da2fc, type: 2}
   player1PlayerName: {fileID: 552475938}
   player1FighterContainer: {fileID: 349941225}
   player1FighterImage: {fileID: 0}
@@ -4699,6 +4682,7 @@ MonoBehaviour:
   previewPlaceholderSprite: {fileID: 0}
   player1ConfirmButtonText: {fileID: 0}
   player2ConfirmButtonText: {fileID: 0}
+  characterToArenaCountdownText: {fileID: 0}
   startButton: {fileID: 0}
   backButton: {fileID: 1015939025}
 --- !u!114 &1195686053
@@ -7046,6 +7030,7 @@ MonoBehaviour:
   p2ReadyText: {fileID: 1161944458}
   continueButton: {fileID: 371373904}
   backButton: {fileID: 0}
+  controllerPhaseCountdownText: {fileID: 0}
 --- !u!114 &1628573029
 MonoBehaviour:
   m_ObjectHideFlags: 0

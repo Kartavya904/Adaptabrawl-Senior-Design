@@ -85,9 +85,31 @@ namespace Adaptabrawl.Gameplay
             OnHealthChanged?.Invoke(currentHealth, maxHealth);
         }
         
+        /// <summary>
+        /// True while the Shinabro Stander's Animator has the "Block" bool set,
+        /// meaning the player is actively holding the block button.
+        /// </summary>
+        public bool IsBlocking
+        {
+            get
+            {
+                var pcp = GetComponentInChildren<PlayerController_Platform>();
+                if (pcp == null) return false;
+                var anim = pcp.GetComponent<Animator>();
+                return anim != null && anim.GetBool("Block");
+            }
+        }
+
         public void TakeDamage(float damage)
         {
             if (IsDead) return;
+
+            // Reduce incoming damage to 10% when the fighter is actively blocking.
+            if (IsBlocking)
+            {
+                Debug.Log($"[FighterController] '{(fighterDef != null ? fighterDef.fighterName : gameObject.name)}' blocked — damage reduced from {damage} to {damage * 0.1f:F1}");
+                damage *= 0.1f;
+            }
 
             // Allow health to go negative (overkill) so a large hit on a low-health
             // fighter always triggers death — the Slider's minValue clamps the display.

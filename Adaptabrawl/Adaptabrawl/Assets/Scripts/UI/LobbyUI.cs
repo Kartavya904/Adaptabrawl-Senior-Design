@@ -123,7 +123,7 @@ namespace Adaptabrawl.UI
         {
             if (lobbyManager != null && roomCodeInput != null)
             {
-                string code = roomCodeInput.text.ToUpper();
+                string code = roomCodeInput.text.Trim().ToUpperInvariant();
                 if (code.Length == 6)
                 {
                     lobbyManager.JoinRoom(code);
@@ -177,8 +177,8 @@ namespace Adaptabrawl.UI
             
             if (waitingRoomCodeText != null)
             {
-                waitingRoomCodeText.text = $"<size=40>YOUR ROOM CODE:</size>\n<size=120><color=#FFD700>{code}</color></size>\n\n<size=30><i>Waiting for opponent to join...</i></size>";
-
+                waitingRoomCodeText.text =
+                    $"<size=40>YOUR ROOM CODE:</size>\n<size=120><color=#FFD700>{code}</color></size>\n\n<size=28>Guest: same Wi‑Fi, enter this code on Join.</size>\n\n<size=30><i>Waiting for opponent to join...</i></size>";
             }
             
             if (lobbyRoomCodeText != null)
@@ -250,18 +250,21 @@ namespace Adaptabrawl.UI
         
         private void ShowChoicePanel()
         {
+            lobbyManager?.CancelPendingJoin();
             HideAllPanels();
             if (choicePanel != null) choicePanel.SetActive(true);
         }
         
         private void ShowCreatePanel()
         {
+            lobbyManager?.CancelPendingJoin();
             HideAllPanels();
             if (createRoomPanel != null) createRoomPanel.SetActive(true);
         }
         
         private void ShowJoinPanel()
         {
+            lobbyManager?.CancelPendingJoin();
             HideAllPanels();
             if (joinErrorText != null) joinErrorText.text = "";
             if (joinRoomPanel != null) joinRoomPanel.SetActive(true);

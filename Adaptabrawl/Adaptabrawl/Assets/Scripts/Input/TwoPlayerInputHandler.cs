@@ -110,7 +110,7 @@ public class TwoPlayerInputHandler : MonoBehaviour
     private bool IsGameplayScene()
     {
         var sceneName = SceneManager.GetActiveScene().name;
-        return sceneName == "GameScene" || sceneName == "TestCharacter";
+        return sceneName == "GameScene" || sceneName == "OnlineGameScene" || sceneName == "TestCharacter";
     }
     
     void HandlePlayer1Input()

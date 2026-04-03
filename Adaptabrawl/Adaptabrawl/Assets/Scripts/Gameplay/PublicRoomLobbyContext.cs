@@ -1,5 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
+using System.Text;
 using UnityEngine;
 using Adaptabrawl.Networking;
 
@@ -32,6 +36,15 @@ namespace Adaptabrawl.Gameplay
 
         public LanLobbyRoomListService RoomListService => _roomListService;
 
+        [Header("Debug (builds & editor)")]
+        [Tooltip("Draws a small overlay: local IPv4s, multicast group, beacon port, and how many LAN rooms were heard.")]
+        [SerializeField]
+        private bool showLanDebugOverlay;
+
+        [Tooltip("Logs to the Unity Console whenever the LAN room list updates.")]
+        [SerializeField]
+        private bool logLanRoomUpdatesToConsole;
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -63,7 +76,66 @@ namespace Adaptabrawl.Gameplay
                 _currentPublicRooms.AddRange(rooms);
 
             LastPublicRoomScanUtc = DateTime.UtcNow;
+
+            if (logLanRoomUpdatesToConsole)
+            {
+                var primary = LanAddressHints.GetPrimaryLanIpv4();
+                if (_currentPublicRooms.Count == 0)
+                    Debug.Log($"[PublicRoomLobbyContext] LAN list: 0 rooms (primary IPv4: {primary}). " +
+                              $"Beacon UDP {LanRoomDiscovery.DefaultBeaconPort}, multicast {LanRoomDiscovery.LanMulticastGroup}. " +
+                              "If this stays empty on another PC, check Windows firewall (UDP inbound on host) and router client isolation.");
+                else
+                {
+                    var sb = new StringBuilder();
+                    sb.AppendLine($"[PublicRoomLobbyContext] LAN list: {_currentPublicRooms.Count} room(s), primary IPv4: {primary}");
+                    foreach (var r in _currentPublicRooms)
+                        sb.AppendLine($"  {r.RoomCode} -> {r.HostIpv4}:{r.GamePort}");
+                    Debug.Log(sb.ToString().TrimEnd());
+                }
+            }
+
             CurrentRoomsChanged?.Invoke(_currentPublicRooms);
+        }
+
+        private void OnGUI()
+        {
+            if (!showLanDebugOverlay)
+                return;
+
+            const float w = 420f;
+            var area = new Rect(10f, 10f, w, 220f);
+            GUI.Box(area, "Adaptabrawl LAN debug (PublicRoomLobbyContext)");
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"Rooms heard: {_currentPublicRooms.Count}  (last tick {LastPublicRoomScanUtc:HH:mm:ss} UTC)");
+            sb.AppendLine($"Primary IPv4: {LanAddressHints.GetPrimaryLanIpv4()}");
+            sb.AppendLine($"Multicast: {LanRoomDiscovery.LanMulticastGroup}  beacon port: {LanRoomDiscovery.DefaultBeaconPort}");
+            sb.AppendLine("Local IPv4s:");
+            var listed = 0;
+            foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (ni.OperationalStatus != OperationalStatus.Up)
+                    continue;
+                foreach (var ua in ni.GetIPProperties().UnicastAddresses)
+                {
+                    if (listed >= 12)
+                        break;
+                    if (ua.Address.AddressFamily != AddressFamily.InterNetwork)
+                        continue;
+                    if (IPAddress.IsLoopback(ua.Address))
+                        continue;
+                    sb.AppendLine($"  {ua.Address}");
+                    listed++;
+                }
+
+                if (listed >= 12)
+                    break;
+            }
+
+            if (listed >= 12)
+                sb.AppendLine("  …");
+
+            GUI.Label(new Rect(20f, 35f, w - 20f, 190f), sb.ToString());
         }
 
         public static PublicRoomLobbyContext EnsureExists()

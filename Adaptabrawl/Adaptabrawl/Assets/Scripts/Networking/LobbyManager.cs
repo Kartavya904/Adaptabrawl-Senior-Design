@@ -160,7 +160,7 @@ namespace Adaptabrawl.Networking
                 if (!ok)
                 {
                     OnRoomJoinFailed?.Invoke(
-                        "Could not find that room on this network. Use the same Wi‑Fi, check the code, and make sure the host created the room.");
+                        "Could not find that room on this network. Same Wi‑Fi, correct code, host must be waiting. On Windows set the network to Private, and allow UDP (game + Editor) through the firewall on both PCs.");
                     return;
                 }
 

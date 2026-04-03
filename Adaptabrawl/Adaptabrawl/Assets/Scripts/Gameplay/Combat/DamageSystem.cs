@@ -46,13 +46,6 @@ namespace Adaptabrawl.Combat
             // Apply damage to target
             target.TakeDamage(finalDamage);
             
-            // Apply knockback
-            Vector2 knockbackDir = move.knockbackDirection;
-            if (transform.position.x > target.transform.position.x)
-                knockbackDir.x *= -1f; // Knockback away from attacker
-            
-            target.ApplyKnockback(knockbackDir * move.knockbackForce);
-            
             // Apply hitstop
             if (move.hitstopFrames > 0)
             {
@@ -85,13 +78,6 @@ namespace Adaptabrawl.Combat
             {
                 targetCombat.SetStunned(move.blockstunFrames);
             }
-            
-            // Reduced knockback on block
-            Vector2 knockbackDir = move.knockbackDirection;
-            if (transform.position.x > target.transform.position.x)
-                knockbackDir.x *= -1f;
-            
-            target.ApplyKnockback(knockbackDir * move.knockbackForce * 0.3f);
             
             OnBlocked?.Invoke(target, move);
         }

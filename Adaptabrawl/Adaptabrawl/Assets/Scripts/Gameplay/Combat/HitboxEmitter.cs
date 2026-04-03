@@ -47,8 +47,6 @@ namespace Adaptabrawl.Combat
         {
             new HitboxConfig { moveType = MoveType.LightAttack,  damage = 8f,  knockbackForce = 3f,  size = new Vector2(1.5f, 1f),  offset = new Vector2(0.75f, 0.5f), duration = 0.083f },
             new HitboxConfig { moveType = MoveType.HeavyAttack,  damage = 20f, knockbackForce = 8f,  size = new Vector2(2f,   1.2f), offset = new Vector2(1f,    0.5f), duration = 0.1f  },
-            new HitboxConfig { moveType = MoveType.SpecialAttack,damage = 15f, knockbackForce = 6f,  size = new Vector2(1.8f, 1.1f), offset = new Vector2(0.9f,  0.5f), duration = 0.1f  },
-            new HitboxConfig { moveType = MoveType.AerialAttack, damage = 12f, knockbackForce = 5f,  size = new Vector2(1.5f, 1f),   offset = new Vector2(0.75f, 0f),   duration = 0.1f  },
         };
 
         [Header("Default Config (used when move type has no entry)")]

@@ -79,31 +79,6 @@ namespace Adaptabrawl.Editor
 
             float total = 17f;
             float progress = 0f;
-            void Report(string msg) => onProgress?.Invoke(msg, progress++ / total);
-
-            Report("Ground attacks...");
-            library.attack1 = CreateAndSaveMove(weapon, savePath, "Attack1", attack1Damage, HitboxPresets.GetQuickAttackHitboxes(), 0.25f, 0.15f, generateHitboxes, autoCalculateFrames);
-            library.attack2 = CreateAndSaveMove(weapon, savePath, "Attack2", attack2Damage, HitboxPresets.GetMediumAttackHitboxes(), 0.3f, 0.2f, generateHitboxes, autoCalculateFrames);
-            library.attack3 = CreateAndSaveMove(weapon, savePath, "Attack3", attack3Damage, HitboxPresets.GetHeavyAttackHitboxes(), 0.35f, 0.25f, generateHitboxes, autoCalculateFrames);
-
-            Report("Aerial attacks...");
-            library.jumpAttack1 = CreateAndSaveMove(weapon, savePath, "JumpAttack1", 9f, HitboxPresets.GetAerialAttackHitboxes(), 0.3f, 0.2f, generateHitboxes, autoCalculateFrames);
-            library.jumpAttack2 = CreateAndSaveMove(weapon, savePath, "JumpAttack2", 11f, HitboxPresets.GetAerialAttackHitboxes(), 0.3f, 0.2f, generateHitboxes, autoCalculateFrames);
-            library.jumpAttack3 = CreateAndSaveMove(weapon, savePath, "JumpAttack3", 14f, HitboxPresets.GetAerialAttackHitboxes(), 0.35f, 0.25f, generateHitboxes, autoCalculateFrames);
-
-            Report("Defensive / crouch...");
-            library.dodgeAttack = CreateAndSaveMove(weapon, savePath, "DodgeAttack", 12f, HitboxPresets.GetQuickAttackHitboxes(), 0.4f, 0.2f, generateHitboxes, autoCalculateFrames);
-            library.crouchAttack = CreateAndSaveMove(weapon, savePath, "CrouchAttack", 10f, HitboxPresets.GetQuickAttackHitboxes(), 0.3f, 0.2f, generateHitboxes, autoCalculateFrames);
-
-            Report("Special skills...");
-            library.skill1_Float = CreateAndSaveMove(weapon, savePath, "Skill1", 15f, HitboxPresets.GetLauncherHitboxes(), 0.4f, 0.2f, generateHitboxes, autoCalculateFrames);
-            library.skill2_Slow = CreateAndSaveMove(weapon, savePath, "Skill2", 12f, HitboxPresets.GetStunAttackHitboxes(), 0.35f, 0.2f, generateHitboxes, autoCalculateFrames);
-            library.skill3_Stun = CreateAndSaveMove(weapon, savePath, "Skill3", 10f, HitboxPresets.GetStunAttackHitboxes(), 0.3f, 0.2f, generateHitboxes, autoCalculateFrames);
-            library.skill4_Push = CreateAndSaveMove(weapon, savePath, "Skill4", 8f, HitboxPresets.GetPushAttackHitboxes(), 0.3f, 0.2f, generateHitboxes, autoCalculateFrames);
-            library.skill5_Pull = CreateAndSaveMove(weapon, savePath, "Skill5", 8f, HitboxPresets.GetPushAttackHitboxes(), 0.3f, 0.2f, generateHitboxes, autoCalculateFrames);
-            library.skill6_Move = CreateAndSaveMove(weapon, savePath, "Skill6", 16f, HitboxPresets.GetDashAttackHitboxes(), 0.4f, 0.25f, generateHitboxes, autoCalculateFrames);
-            library.skill7_Around = CreateAndSaveMove(weapon, savePath, "Skill7", 18f, HitboxPresets.GetSpinAttackHitboxes(), 0.3f, 0.3f, generateHitboxes, autoCalculateFrames);
-            library.skill8_Air = CreateAndSaveMove(weapon, savePath, "Skill8", 20f, HitboxPresets.GetHeavyAttackHitboxes(), 0.4f, 0.25f, generateHitboxes, autoCalculateFrames);
 
             if (setupComboChains)
                 library.SetupComboChains();

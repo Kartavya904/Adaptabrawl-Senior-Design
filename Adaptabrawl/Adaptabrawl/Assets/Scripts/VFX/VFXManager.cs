@@ -32,13 +32,6 @@ namespace Adaptabrawl.VFX
                     damageSystem.OnDamageDealt += OnDamageDealt;
                     damageSystem.OnBlocked += OnBlockedFromDamage;
                 }
-                
-                var hitboxManager = fighter.GetComponent<HitboxManager>();
-                if (hitboxManager != null)
-                {
-                    hitboxManager.OnHit += OnHit;
-                    hitboxManager.OnBlocked += OnBlocked;
-                }
             }
         }
         

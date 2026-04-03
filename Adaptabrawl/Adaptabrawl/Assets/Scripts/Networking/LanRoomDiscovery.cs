@@ -18,19 +18,22 @@ namespace Adaptabrawl.Networking
     {
         private const string Prefix = "ABDISC|";
 
-        /// <summary>Fixed group for Adaptabrawl LAN discovery (not routed to the internet).</summary>
-        private static readonly IPAddress LanMulticastGroup = IPAddress.Parse("239.255.192.177");
+        /// <summary>Fixed group for Adaptabrawl LAN discovery / beacons (not routed to the internet).</summary>
+        public static readonly IPAddress LanMulticastGroup = IPAddress.Parse("239.255.192.177");
 
         private static Thread s_HostThread;
         private static volatile bool s_HostRunning;
         private static UdpClient s_HostUdp;
 
-        public static void StartHostResponder(string roomCode, ushort gamePort, int discoveryPort)
+        /// <summary>UDP port for periodic room beacons (LAN room list). Separate from discovery answer port.</summary>
+        public const int DefaultBeaconPort = 7790;
+
+        public static void StartHostResponder(string roomCode, ushort gamePort, int discoveryPort, int beaconPort = DefaultBeaconPort)
         {
             StopHostResponder();
             s_HostRunning = true;
             var normalizedCode = NormalizeCode(roomCode);
-            s_HostThread = new Thread(() => HostThreadProc(normalizedCode, gamePort, discoveryPort))
+            s_HostThread = new Thread(() => HostThreadProc(normalizedCode, gamePort, discoveryPort, beaconPort))
             {
                 IsBackground = true,
                 Name = "LanRoomDiscovery-Host"
@@ -56,7 +59,7 @@ namespace Adaptabrawl.Networking
             s_HostThread = null;
         }
 
-        private static void HostThreadProc(string roomCode, ushort gamePort, int discoveryPort)
+        private static void HostThreadProc(string roomCode, ushort gamePort, int discoveryPort, int beaconPort)
         {
             try
             {
@@ -67,14 +70,27 @@ namespace Adaptabrawl.Networking
 
                 TryJoinMulticastListen(s_HostUdp);
 
+                var lastBeaconUtc = DateTime.MinValue;
+                var beaconInterval = TimeSpan.FromSeconds(5);
+                var advertisedIp = LanAddressHints.GetPrimaryLanIpv4();
+                if (string.IsNullOrEmpty(advertisedIp))
+                    advertisedIp = "127.0.0.1";
+
                 Debug.Log(
                     $"[LanRoomDiscovery] Host listening UDP *:{discoveryPort} + multicast {LanMulticastGroup} (room {roomCode}). " +
+                    $"Beacons to LAN on port {beaconPort} every {beaconInterval.TotalSeconds:0}s. " +
                     "If joins fail: Windows often shows no popup—add inbound UDP rules for this port and your game port, or try both PCs on Private network.");
 
                 while (s_HostRunning)
                 {
                     try
                     {
+                        if (DateTime.UtcNow - lastBeaconUtc >= beaconInterval)
+                        {
+                            SendLanRoomBeaconPayload(roomCode, advertisedIp, gamePort, beaconPort);
+                            lastBeaconUtc = DateTime.UtcNow;
+                        }
+
                         // ref endpoint must not be null on all runtimes (IL2CPP / modern .NET).
                         var remote = new IPEndPoint(IPAddress.Any, 0);
                         byte[] data;
@@ -134,6 +150,56 @@ namespace Adaptabrawl.Networking
             return code.Length > 0;
         }
 
+        /// <summary>BEACON|roomCode|hostIpv4|gamePort — for LAN room browser.</summary>
+        public static bool TryParseBeacon(string text, out string code, out string hostIp, out ushort gamePort)
+        {
+            code = null;
+            hostIp = null;
+            gamePort = 0;
+            if (string.IsNullOrEmpty(text))
+                return false;
+            const string tag = "BEACON|";
+            if (!text.StartsWith(Prefix, StringComparison.Ordinal))
+                return false;
+            var rest = text.Substring(Prefix.Length);
+            if (!rest.StartsWith(tag, StringComparison.Ordinal))
+                return false;
+            var payload = rest.Substring(tag.Length);
+            var parts = payload.Split('|');
+            if (parts.Length < 3)
+                return false;
+            code = NormalizeCode(parts[0]);
+            hostIp = parts[1].Trim();
+            if (!ushort.TryParse(parts[2].Trim(), out gamePort))
+                return false;
+            return code.Length == 6 && IPAddress.TryParse(hostIp, out _);
+        }
+
+        private static void SendLanRoomBeaconPayload(string roomCode, string hostIp, ushort gamePort, int beaconPort)
+        {
+            var payload = Encoding.UTF8.GetBytes($"{Prefix}BEACON|{roomCode}|{hostIp}|{gamePort}\n");
+            try
+            {
+                using var udp = new UdpClient();
+                udp.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                udp.EnableBroadcast = true;
+                try
+                {
+                    udp.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 32);
+                }
+                catch
+                {
+                    // ignored
+                }
+
+                SendPayloadToAllLanEndpoints(udp, payload, beaconPort);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[LanRoomDiscovery] Beacon send failed: {ex.Message}");
+            }
+        }
+
         private static bool TryParseHostReply(string text, out string ip, out ushort port, out string code)
         {
             ip = null;
@@ -190,7 +256,7 @@ namespace Adaptabrawl.Networking
                         {
                             if (DateTime.UtcNow >= nextFindUtc)
                             {
-                                SendFindToAllBroadcastEndpoints(udp, req, discoveryPort);
+                                SendPayloadToAllLanEndpoints(udp, req, discoveryPort);
                                 nextFindUtc = DateTime.UtcNow.AddMilliseconds(findIntervalMs);
                             }
 
@@ -249,7 +315,7 @@ namespace Adaptabrawl.Networking
         /// <summary>
         /// Broadcast + per-interface broadcast + LAN multicast so Wi‑Fi/Ethernet guests can reach the host.
         /// </summary>
-        private static void SendFindToAllBroadcastEndpoints(UdpClient udp, byte[] req, int discoveryPort)
+        private static void SendPayloadToAllLanEndpoints(UdpClient udp, byte[] payload, int port)
         {
             var sentKeys = new HashSet<string>();
             void TrySend(IPEndPoint ep)
@@ -259,16 +325,16 @@ namespace Adaptabrawl.Networking
                     return;
                 try
                 {
-                    udp.Send(req, req.Length, ep);
+                    udp.Send(payload, payload.Length, ep);
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogWarning($"[LanRoomDiscovery] FIND send to {ep} failed: {ex.Message}");
+                    Debug.LogWarning($"[LanRoomDiscovery] UDP send to {ep} failed: {ex.Message}");
                 }
             }
 
-            TrySend(new IPEndPoint(LanMulticastGroup, discoveryPort));
-            TrySend(new IPEndPoint(IPAddress.Broadcast, discoveryPort));
+            TrySend(new IPEndPoint(LanMulticastGroup, port));
+            TrySend(new IPEndPoint(IPAddress.Broadcast, port));
 
             foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
             {
@@ -291,7 +357,7 @@ namespace Adaptabrawl.Networking
                         continue;
 
                     var bcast = ComputeBroadcastAddressForTypicalHomeLan(ipBytes);
-                    TrySend(new IPEndPoint(bcast, discoveryPort));
+                    TrySend(new IPEndPoint(bcast, port));
                 }
             }
         }
@@ -334,6 +400,70 @@ namespace Adaptabrawl.Networking
 
                 return "127.0.0.1";
             }
+        }
+    }
+
+    /// <summary>Helpers for showing / parsing LAN IPv4 when UDP discovery is blocked by firewall or Wi‑Fi gear.</summary>
+    public static class LanAddressHints
+    {
+        /// <summary>Best-effort IPv4 to show the host (prefers 192.168.x, then 10.x).</summary>
+        public static string GetPrimaryLanIpv4()
+        {
+            string tenNet = null;
+            string any = null;
+            foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (ni.OperationalStatus != OperationalStatus.Up)
+                    continue;
+                if (ni.NetworkInterfaceType == NetworkInterfaceType.Loopback)
+                    continue;
+
+                foreach (var ua in ni.GetIPProperties().UnicastAddresses)
+                {
+                    if (ua.Address.AddressFamily != AddressFamily.InterNetwork)
+                        continue;
+                    if (IPAddress.IsLoopback(ua.Address))
+                        continue;
+                    var b = ua.Address.GetAddressBytes();
+                    if (b.Length < 4 || (b[0] == 169 && b[1] == 254))
+                        continue;
+                    var s = ua.Address.ToString();
+                    if (b[0] == 192 && b[1] == 168)
+                        return s;
+                    if (b[0] == 10)
+                        tenNet ??= s;
+                    if (b[0] == 172 && b[1] >= 16 && b[1] <= 31)
+                        any ??= s;
+                    any ??= s;
+                }
+            }
+
+            return tenNet ?? any ?? "";
+        }
+
+        /// <summary>True if the string is an IPv4, optionally with :port (e.g. 192.168.1.5:7778).</summary>
+        public static bool LooksLikeIpv4WithOptionalPort(string raw, out string ipv4, out int port)
+        {
+            ipv4 = null;
+            port = 0;
+            if (string.IsNullOrWhiteSpace(raw))
+                return false;
+            raw = raw.Trim();
+            var hostPart = raw;
+            if (raw.Contains(":"))
+            {
+                var idx = raw.LastIndexOf(':');
+                hostPart = raw.Substring(0, idx).Trim();
+                if (!int.TryParse(raw.Substring(idx + 1).Trim(), out port) || port < 1 || port > 65535)
+                    return false;
+            }
+
+            if (!IPAddress.TryParse(hostPart, out var addr))
+                return false;
+            if (addr.AddressFamily != AddressFamily.InterNetwork)
+                return false;
+            ipv4 = hostPart;
+            return true;
         }
     }
 }

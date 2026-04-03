@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Adaptabrawl.Gameplay;
 using Adaptabrawl.Networking;
 
 namespace Adaptabrawl.UI
@@ -27,6 +29,9 @@ namespace Adaptabrawl.UI
         [SerializeField] private Button joinRoomButton;
         [SerializeField] private Button backFromJoinButton;
         [SerializeField] private TextMeshProUGUI joinErrorText;
+
+        [Tooltip("Optional: lists room codes heard on LAN (PublicRoomLobbyContext scanner). Wire a TMP under Join panel.")]
+        [SerializeField] private TextMeshProUGUI discoveredLanRoomsText;
         
         [Header("Waiting Room UI (Host Only)")]
         [SerializeField] private GameObject waitingRoomPanel;
@@ -91,13 +96,22 @@ namespace Adaptabrawl.UI
                 
             // Ensure error text starts empty
             if (joinErrorText != null) joinErrorText.text = "";
+
+            if (roomCodeInput != null && roomCodeInput.placeholder is TextMeshProUGUI ph)
+                ph.text = "6-digit code or host IP (e.g. 192.168.1.5:7777)";
                 
+            if (PublicRoomLobbyContext.Instance != null)
+                PublicRoomLobbyContext.Instance.CurrentRoomsChanged += OnPublicRoomsChanged;
+
             // Ensure we start on the Choice panel
             ShowChoicePanel();
         }
         
         private void OnDestroy()
         {
+            if (PublicRoomLobbyContext.Instance != null)
+                PublicRoomLobbyContext.Instance.CurrentRoomsChanged -= OnPublicRoomsChanged;
+
             if (lobbyManager != null)
             {
                 lobbyManager.OnRoomCodeGenerated -= OnRoomCodeGenerated;
@@ -121,14 +135,34 @@ namespace Adaptabrawl.UI
         
         private void JoinRoom()
         {
-            if (lobbyManager != null && roomCodeInput != null)
+            if (lobbyManager == null || roomCodeInput == null)
+                return;
+
+            var raw = roomCodeInput.text.Trim();
+            if (string.IsNullOrEmpty(raw))
+                return;
+
+            if (joinErrorText != null)
+                joinErrorText.text = "";
+
+            if (LanAddressHints.LooksLikeIpv4WithOptionalPort(raw, out var hostIp, out var hostPort))
             {
-                string code = roomCodeInput.text.Trim().ToUpperInvariant();
-                if (code.Length == 6)
-                {
-                    lobbyManager.JoinRoom(code);
-                }
+                lobbyManager.JoinRoomByDirectIpv4(hostIp, hostPort);
+                return;
             }
+
+            var code = raw.ToUpperInvariant();
+            if (code.Length != 6)
+            {
+                if (joinErrorText != null)
+                {
+                    joinErrorText.text = "Use a 6-digit code, or the host’s IPv4 like 192.168.1.5 (add :PORT if not 7777).";
+                    joinErrorText.color = Color.red;
+                }
+                return;
+            }
+
+            lobbyManager.JoinRoom(code);
         }
         
         private void ToggleReady()
@@ -175,12 +209,8 @@ namespace Adaptabrawl.UI
                 roomCodeText.text = $"Room Code: {code}";
             }
             
-            if (waitingRoomCodeText != null)
-            {
-                waitingRoomCodeText.text =
-                    $"<size=40>YOUR ROOM CODE:</size>\n<size=120><color=#FFD700>{code}</color></size>\n\n<size=28>Guest: same Wi‑Fi, enter this code on Join.</size>\n\n<size=30><i>Waiting for opponent to join...</i></size>";
-            }
-            
+            // Waiting-room copy is set in OnWaitingForOpponent once the host socket is up (includes IP:port for direct join).
+
             if (lobbyRoomCodeText != null)
             {
                 lobbyRoomCodeText.text = code;
@@ -190,6 +220,18 @@ namespace Adaptabrawl.UI
         private void OnWaitingForOpponent()
         {
             ShowWaitingRoomPanel();
+            if (waitingRoomCodeText != null && lobbyManager != null)
+            {
+                var code = lobbyManager.CurrentRoomCode;
+                var ip = lobbyManager.LastHostLanIpv4;
+                var port = lobbyManager.LastHostGamePort;
+                if (string.IsNullOrEmpty(ip))
+                    ip = "see ipconfig → IPv4";
+                waitingRoomCodeText.text =
+                    $"<size=40>ROOM CODE</size>\n<size=120><color=#FFD700>{code}</color></size>\n\n" +
+                    $"<size=26>Friend sees “no room”? Same box on Join, type:\n<color=#FFD700>{ip}:{port}</color></size>\n\n" +
+                    "<size=28><i>Waiting for opponent…</i></size>";
+            }
         }
         
         private void OnRoomJoined()
@@ -268,6 +310,18 @@ namespace Adaptabrawl.UI
             HideAllPanels();
             if (joinErrorText != null) joinErrorText.text = "";
             if (joinRoomPanel != null) joinRoomPanel.SetActive(true);
+
+            PublicRoomLobbyContext.Instance?.RequestRoomListRefresh();
+        }
+
+        private void OnPublicRoomsChanged(IReadOnlyList<LanAdvertisedRoom> rooms)
+        {
+            if (discoveredLanRoomsText == null)
+                return;
+
+            var ctx = PublicRoomLobbyContext.Instance;
+            var interval = ctx != null ? ctx.PublicRoomScanIntervalSeconds : 5f;
+            discoveredLanRoomsText.text = PublicRoomLobbyContext.FormatRoomsForDisplay(rooms, interval);
         }
         
         private void UpdateReadyUI()

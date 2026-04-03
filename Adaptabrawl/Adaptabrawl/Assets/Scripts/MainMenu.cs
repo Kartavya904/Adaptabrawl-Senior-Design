@@ -47,6 +47,8 @@ namespace Adaptabrawl.UI
         {
             // Init persistent lobby context — carries player names, devices, fighters across scenes
             LobbyContext.EnsureExists().Init(true);
+            if (PublicRoomLobbyContext.Instance != null)
+                PublicRoomLobbyContext.Instance.SetLanRoomListActive(false);
             CharacterSelectData.isLocalMatch = true;
 
             // Start local host
@@ -65,6 +67,7 @@ namespace Adaptabrawl.UI
         public void PlayOnline()
         {
             LobbyContext.EnsureExists().Init(false);
+            PublicRoomLobbyContext.EnsureExists().SetLanRoomListActive(true);
             CharacterSelectData.isLocalMatch = false;
             // Load lobby scene for online play
             SceneManager.LoadScene("LobbyScene");

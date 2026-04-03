@@ -42,6 +42,16 @@ namespace Adaptabrawl.UI
 
         private void Start()
         {
+            // "Change Characters" rematch: skip controller config, jump straight to character select
+            if (MatchResultsData.rematchSkipToCharacterSelect)
+            {
+                MatchResultsData.rematchSkipToCharacterSelect = false;
+                _localP1ControllerIndex = CharacterSelectData.finalP1ControllerIndex;
+                _localP2ControllerIndex = CharacterSelectData.finalP2ControllerIndex;
+                ShowCharacterSelect();
+                return;
+            }
+
             if (Adaptabrawl.UI.CharacterSelectData.isLocalMatch)
             {
                 ShowLocalJoin();
@@ -166,9 +176,11 @@ namespace Adaptabrawl.UI
 
             OnControllerConfigChanged?.Invoke();
 
-            // Both ready locally → advance
+            // Both ready locally → save indices so rematch-different-characters can restore them
             if (_localP1ControllerReady && _localP2ControllerReady)
             {
+                CharacterSelectData.finalP1ControllerIndex = _localP1ControllerIndex;
+                CharacterSelectData.finalP2ControllerIndex = _localP2ControllerIndex;
                 ShowCharacterSelect();
             }
         }

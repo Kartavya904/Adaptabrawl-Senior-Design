@@ -4,6 +4,7 @@ using TMPro;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 namespace Adaptabrawl.UI
 {
@@ -42,6 +43,10 @@ namespace Adaptabrawl.UI
         [SerializeField] private Image arenaBackgroundImage;
         [SerializeField] private List<Sprite> arenaBackgrounds = new List<Sprite>();
 
+        [Header("Ready Button Labels (assign TMP text inside each ready button)")]
+        [SerializeField] private TextMeshProUGUI p1ReadyButtonText;
+        [SerializeField] private TextMeshProUGUI p2ReadyButtonText;
+
         [Header("Countdown")]
         [SerializeField] private TextMeshProUGUI countdownText;
 
@@ -73,6 +78,36 @@ namespace Adaptabrawl.UI
             }
 
             UpdateUI();
+        }
+
+        private void Update()
+        {
+            if (setupManager == null || _countdownRunning) return;
+
+            bool networked = NetworkManager.Singleton != null;
+            bool isHost = networked && NetworkManager.Singleton.IsServer;
+            bool isLocal = CharacterSelectData.isLocalMatch;
+
+            int p1CtrlIdx = networked ? setupManager.p1ControllerIndex.Value : setupManager.LocalP1ControllerIndex;
+            int p2CtrlIdx = networked ? setupManager.p2ControllerIndex.Value : setupManager.LocalP2ControllerIndex;
+            bool p1Ready = networked ? setupManager.p1ArenaReady.Value : setupManager.LocalP1ArenaReady;
+            bool p2Ready = networked ? setupManager.p2ArenaReady.Value : setupManager.LocalP2ArenaReady;
+
+            if (!p1Ready && (isHost || isLocal || !networked))
+            {
+                bool p1Confirm = p1CtrlIdx == 1
+                    ? (Gamepad.all.Count > 0 && Gamepad.all[0].buttonSouth.wasPressedThisFrame)
+                    : UnityEngine.Input.GetKeyDown(KeyCode.Space);
+                if (p1Confirm) RequestReady(1);
+            }
+
+            if (!p2Ready && (!isHost || isLocal || !networked))
+            {
+                bool p2Confirm = p2CtrlIdx == 1
+                    ? (Gamepad.all.Count > 1 && Gamepad.all[1].buttonSouth.wasPressedThisFrame)
+                    : UnityEngine.Input.GetKeyDown(KeyCode.Return);
+                if (p2Confirm) RequestReady(2);
+            }
         }
 
         private void OnEnable()
@@ -234,6 +269,16 @@ namespace Adaptabrawl.UI
                 p2StatusText.text = p2Ready ? "P2: READY" : "P2: DECIDING...";
                 p2StatusText.color = p2Ready ? Color.green : Color.yellow;
             }
+
+            // Controller input hints on ready buttons
+            int p1CtrlIdx = networked ? setupManager.p1ControllerIndex.Value : setupManager.LocalP1ControllerIndex;
+            int p2CtrlIdx = networked ? setupManager.p2ControllerIndex.Value : setupManager.LocalP2ControllerIndex;
+            string p1Hint = p1CtrlIdx == 1 ? "(A)" : "Space";
+            string p2Hint = p2CtrlIdx == 1 ? "(A)" : "Enter";
+            if (p1ReadyButtonText != null)
+                p1ReadyButtonText.text = p1Ready ? "READY!" : $"Ready\n<size=70%>Press {p1Hint}</size>";
+            if (p2ReadyButtonText != null)
+                p2ReadyButtonText.text = p2Ready ? "READY!" : $"Ready\n<size=70%>Press {p2Hint}</size>";
         }
 
         private void StartArenaCountdown()

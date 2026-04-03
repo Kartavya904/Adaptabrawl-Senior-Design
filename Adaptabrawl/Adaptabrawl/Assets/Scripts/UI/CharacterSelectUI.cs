@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using TMPro;
 using System.Collections;
 using System.Collections.Generic;
@@ -81,6 +82,10 @@ namespace Adaptabrawl.UI
         [Tooltip("When the fighter has no prefab (runtime Striker/Elusive), this sprite is shown so something is visible. Assign a simple sprite (e.g. silhouette).")]
         [SerializeField] private Sprite previewPlaceholderSprite;
 
+        [Header("Input Hints (assign TMP text inside each confirm button)")]
+        [SerializeField] private TextMeshProUGUI player1ConfirmButtonText;
+        [SerializeField] private TextMeshProUGUI player2ConfirmButtonText;
+
         [Header("Navigation")]
         [SerializeField] private Button startButton; // Deprecated, Server loads automatically
         [SerializeField] private Button backButton;
@@ -129,6 +134,95 @@ namespace Adaptabrawl.UI
             }
 
             UpdateUI();
+        }
+
+        private float _p1NavCooldown;
+        private float _p2NavCooldown;
+        private const float NAV_COOLDOWN = 0.25f;
+
+        private void Update()
+        {
+            // Preview sequence: restart per-player when selection changes
+            if (gameObject.activeInHierarchy)
+            {
+                if (_player1Preview != null && !_previewSequenceStartedP1)
+                {
+                    _previewSequenceStartedP1 = true;
+                    TryStartPreviewSequence(_player1Preview);
+                }
+                if (_player2Preview != null && !_previewSequenceStartedP2)
+                {
+                    _previewSequenceStartedP2 = true;
+                    TryStartPreviewSequence(_player2Preview);
+                }
+            }
+
+            // Controller/keyboard navigation
+            if (setupManager == null || availableFighters.Count == 0) return;
+
+            bool networked = NetworkManager.Singleton != null;
+            bool isHost = networked && NetworkManager.Singleton.IsServer;
+            bool isLocal = CharacterSelectData.isLocalMatch;
+
+            int p1CtrlIdx = networked ? setupManager.p1ControllerIndex.Value : setupManager.LocalP1ControllerIndex;
+            int p2CtrlIdx = networked ? setupManager.p2ControllerIndex.Value : setupManager.LocalP2ControllerIndex;
+            bool r1 = networked ? setupManager.p1CharacterReady.Value : setupManager.LocalP1CharacterReady;
+            bool r2 = networked ? setupManager.p2CharacterReady.Value : setupManager.LocalP2CharacterReady;
+
+            _p1NavCooldown -= Time.deltaTime;
+            _p2NavCooldown -= Time.deltaTime;
+
+            if (!r1 && (isHost || isLocal || !networked))
+                HandleCharacterNavigation(1, p1CtrlIdx, ref _p1NavCooldown);
+
+            if (!r2 && (!isHost || isLocal || !networked))
+                HandleCharacterNavigation(2, p2CtrlIdx, ref _p2NavCooldown);
+        }
+
+        private void HandleCharacterNavigation(int player, int controllerIndex, ref float cooldown)
+        {
+            int direction = 0;
+            bool confirm = false;
+
+            if (controllerIndex == 1) // Gamepad
+            {
+                int padIdx = player == 1 ? 0 : 1;
+                Gamepad pad = Gamepad.all.Count > padIdx ? Gamepad.all[padIdx] : null;
+                if (pad != null)
+                {
+                    if (cooldown <= 0f)
+                    {
+                        float h = pad.leftStick.ReadValue().x;
+                        if (Mathf.Abs(h) < 0.3f) h = pad.dpad.ReadValue().x;
+                        if (h > 0.5f) direction = 1;
+                        else if (h < -0.5f) direction = -1;
+                    }
+                    confirm = pad.buttonSouth.wasPressedThisFrame;
+                }
+            }
+            else // Keyboard
+            {
+                if (player == 1)
+                {
+                    if (UnityEngine.Input.GetKeyDown(KeyCode.D)) direction = 1;
+                    else if (UnityEngine.Input.GetKeyDown(KeyCode.A)) direction = -1;
+                    confirm = UnityEngine.Input.GetKeyDown(KeyCode.Space);
+                }
+                else
+                {
+                    if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow)) direction = 1;
+                    else if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow)) direction = -1;
+                    confirm = UnityEngine.Input.GetKeyDown(KeyCode.Return);
+                }
+            }
+
+            if (direction != 0)
+            {
+                RequestChangeSelection(direction, player);
+                cooldown = NAV_COOLDOWN;
+            }
+            if (confirm)
+                RequestConfirmSelection(player);
         }
 
         private void OnDestroy()
@@ -268,6 +362,16 @@ namespace Adaptabrawl.UI
                 player2ReadyText.text = r2 ? "READY" : "SELECT";
                 player2ReadyText.color = r2 ? Color.green : Color.white;
             }
+
+            // Controller input hints on confirm buttons
+            int p1CtrlIdx = networked ? setupManager.p1ControllerIndex.Value : setupManager.LocalP1ControllerIndex;
+            int p2CtrlIdx = networked ? setupManager.p2ControllerIndex.Value : setupManager.LocalP2ControllerIndex;
+            string p1Hint = p1CtrlIdx == 1 ? "Press (A)" : "Press Space";
+            string p2Hint = p2CtrlIdx == 1 ? "Press (A)" : "Press Enter";
+            if (player1ConfirmButtonText != null)
+                player1ConfirmButtonText.text = r1 ? "LOCKED IN" : $"Lock In\n<size=70%>{p1Hint}</size>";
+            if (player2ConfirmButtonText != null)
+                player2ConfirmButtonText.text = r2 ? "LOCKED IN" : $"Lock In\n<size=70%>{p2Hint}</size>";
         }
 
         /// <summary>
@@ -501,23 +605,6 @@ namespace Adaptabrawl.UI
             else if (playerIndex == 2) _previewSequenceStartedP2 = false;
         }
 
-        private void Update()
-        {
-            // Start (or restart) each player's preview sequence when panel is visible. Changing selection sets the flag false for that player so their sequence restarts.
-            if (!gameObject.activeInHierarchy) return;
-
-            if (_player1Preview != null && !_previewSequenceStartedP1)
-            {
-                _previewSequenceStartedP1 = true;
-                TryStartPreviewSequence(_player1Preview);
-            }
-            if (_player2Preview != null && !_previewSequenceStartedP2)
-            {
-                _previewSequenceStartedP2 = true;
-                TryStartPreviewSequence(_player2Preview);
-            }
-        }
-
         private void TryStartPreviewSequence(GameObject previewObj)
         {
             if (previewObj == null) return;
@@ -645,5 +732,8 @@ namespace Adaptabrawl.UI
         public static Adaptabrawl.Data.FighterDef selectedFighter1;
         public static Adaptabrawl.Data.FighterDef selectedFighter2;
         public static bool isLocalMatch = false;
+        // Preserved across scenes so rematch-with-different-characters restores controller types
+        public static int finalP1ControllerIndex = 0;
+        public static int finalP2ControllerIndex = 0;
     }
 }

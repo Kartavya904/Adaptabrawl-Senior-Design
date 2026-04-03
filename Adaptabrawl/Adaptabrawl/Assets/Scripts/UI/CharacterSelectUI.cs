@@ -86,6 +86,9 @@ namespace Adaptabrawl.UI
         [SerializeField] private TextMeshProUGUI player1ConfirmButtonText;
         [SerializeField] private TextMeshProUGUI player2ConfirmButtonText;
 
+        [Header("Phase countdown (optional TMP — 3,2,1 before arena select)")]
+        [SerializeField] private TextMeshProUGUI characterToArenaCountdownText;
+
         [Header("Navigation")]
         [SerializeField] private Button startButton; // Deprecated, Server loads automatically
         [SerializeField] private Button backButton;
@@ -131,9 +134,36 @@ namespace Adaptabrawl.UI
             if (setupManager != null)
             {
                 setupManager.OnCharacterConfigChanged += UpdateUI;
+                setupManager.OnCharacterToArenaCountdownTick += OnCharacterToArenaCountdownTick;
+            }
+
+            SyncLobbyInputDevicesFromSetupManager();
+            if (setupManager != null && availableFighters.Count > 0)
+            {
+                setupManager.ClampLocalFighterIndicesToRoster(availableFighters.Count);
+                if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+                    setupManager.ServerClampFighterIndicesToRoster(availableFighters.Count);
             }
 
             UpdateUI();
+        }
+
+        private void OnEnable()
+        {
+            SyncLobbyInputDevicesFromSetupManager();
+        }
+
+        /// <summary>
+        /// Keeps DontDestroyOnLoad lobby in sync with networked or local controller choices.
+        /// </summary>
+        private void SyncLobbyInputDevicesFromSetupManager()
+        {
+            if (setupManager == null) return;
+            var lobby = LobbyContext.EnsureExists();
+            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+            int p1 = networked ? setupManager.p1ControllerIndex.Value : setupManager.LocalP1ControllerIndex;
+            int p2 = networked ? setupManager.p2ControllerIndex.Value : setupManager.LocalP2ControllerIndex;
+            lobby.SetInputDevices(p1, p2);
         }
 
         private float _p1NavCooldown;
@@ -164,30 +194,74 @@ namespace Adaptabrawl.UI
             bool isHost = networked && NetworkManager.Singleton.IsServer;
             bool isLocal = CharacterSelectData.isLocalMatch;
 
-            int p1CtrlIdx = networked ? setupManager.p1ControllerIndex.Value : setupManager.LocalP1ControllerIndex;
-            int p2CtrlIdx = networked ? setupManager.p2ControllerIndex.Value : setupManager.LocalP2ControllerIndex;
+            // Prefer LobbyContext for device type (set during controller config); fall back to setupManager
+            int p1CtrlIdx = LobbyContext.Instance != null ? LobbyContext.Instance.p1InputDevice
+                          : (networked ? setupManager.p1ControllerIndex.Value : setupManager.LocalP1ControllerIndex);
+            int p2CtrlIdx = LobbyContext.Instance != null ? LobbyContext.Instance.p2InputDevice
+                          : (networked ? setupManager.p2ControllerIndex.Value : setupManager.LocalP2ControllerIndex);
             bool r1 = networked ? setupManager.p1CharacterReady.Value : setupManager.LocalP1CharacterReady;
             bool r2 = networked ? setupManager.p2CharacterReady.Value : setupManager.LocalP2CharacterReady;
 
             _p1NavCooldown -= Time.deltaTime;
             _p2NavCooldown -= Time.deltaTime;
 
-            if (!r1 && (isHost || isLocal || !networked))
-                HandleCharacterNavigation(1, p1CtrlIdx, ref _p1NavCooldown);
+            bool p1CanInteract = isHost || isLocal || !networked;
+            bool p2CanInteract = (!isHost || isLocal || !networked);
 
-            if (!r2 && (!isHost || isLocal || !networked))
-                HandleCharacterNavigation(2, p2CtrlIdx, ref _p2NavCooldown);
+            bool phaseCountdown = setupManager.CharacterPhaseCountdownActive;
+            if (!phaseCountdown)
+            {
+                if (!r1 && p1CanInteract)
+                    HandleCharacterNavigation(1, p1CtrlIdx, p1CtrlIdx, p2CtrlIdx, ref _p1NavCooldown);
+
+                if (!r2 && p2CanInteract)
+                    HandleCharacterNavigation(2, p2CtrlIdx, p1CtrlIdx, p2CtrlIdx, ref _p2NavCooldown);
+
+                if (r1 && p1CanInteract)
+                    HandleCharacterUnlockInput(1, p1CtrlIdx, p1CtrlIdx, p2CtrlIdx);
+                if (r2 && p2CanInteract)
+                    HandleCharacterUnlockInput(2, p2CtrlIdx, p1CtrlIdx, p2CtrlIdx);
+            }
         }
 
-        private void HandleCharacterNavigation(int player, int controllerIndex, ref float cooldown)
+        private void OnCharacterToArenaCountdownTick(int n)
+        {
+            if (characterToArenaCountdownText == null) return;
+            if (n <= 0)
+            {
+                characterToArenaCountdownText.gameObject.SetActive(false);
+                return;
+            }
+            characterToArenaCountdownText.gameObject.SetActive(true);
+            characterToArenaCountdownText.text = n.ToString();
+        }
+
+        private void HandleCharacterUnlockInput(int player, int deviceForPlayer, int p1Device, int p2Device)
+        {
+            if (setupManager == null || setupManager.CharacterPhaseCountdownActive) return;
+            if (deviceForPlayer == 1 && LobbyContext.TryGetGamepadForPlayer(player, p1Device, p2Device, out var pad))
+            {
+                if (pad.buttonEast.wasPressedThisFrame)
+                    RequestConfirmSelection(player);
+            }
+            else if (deviceForPlayer == 0)
+            {
+                if (player == 1 && UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+                    RequestConfirmSelection(1);
+                if (player == 2 && UnityEngine.Input.GetKeyDown(KeyCode.Backspace))
+                    RequestConfirmSelection(2);
+            }
+        }
+
+        private void HandleCharacterNavigation(int player, int controllerIndex, int p1Device, int p2Device, ref float cooldown)
         {
             int direction = 0;
             bool confirm = false;
 
             if (controllerIndex == 1) // Gamepad
             {
-                int padIdx = player == 1 ? 0 : 1;
-                Gamepad pad = Gamepad.all.Count > padIdx ? Gamepad.all[padIdx] : null;
+                Gamepad pad = null;
+                LobbyContext.TryGetGamepadForPlayer(player, p1Device, p2Device, out pad);
                 if (pad != null)
                 {
                     if (cooldown <= 0f)
@@ -197,7 +271,7 @@ namespace Adaptabrawl.UI
                         if (h > 0.5f) direction = 1;
                         else if (h < -0.5f) direction = -1;
                     }
-                    confirm = pad.buttonSouth.wasPressedThisFrame;
+                    confirm = pad.buttonNorth.wasPressedThisFrame; // △ Triangle
                 }
             }
             else // Keyboard
@@ -227,7 +301,11 @@ namespace Adaptabrawl.UI
 
         private void OnDestroy()
         {
-            if (setupManager != null) setupManager.OnCharacterConfigChanged -= UpdateUI;
+            if (setupManager != null)
+            {
+                setupManager.OnCharacterConfigChanged -= UpdateUI;
+                setupManager.OnCharacterToArenaCountdownTick -= OnCharacterToArenaCountdownTick;
+            }
             DestroyPreview(ref _player1Preview);
             DestroyPreview(ref _player2Preview);
             if (player1FighterImage != null) player1FighterImage.enabled = true;
@@ -314,17 +392,21 @@ namespace Adaptabrawl.UI
             // Lock input: Host = P1 only, Client = P2 only; local match or offline = both
             bool p1CanInteract = isHost || isLocal || !networked;
             bool p2CanInteract = isClient || isLocal || !networked;
-            if (player1LeftButton != null) player1LeftButton.interactable = p1CanInteract && !r1;
-            if (player1RightButton != null) player1RightButton.interactable = p1CanInteract && !r1;
-            if (player1ConfirmButton != null) player1ConfirmButton.interactable = p1CanInteract;
-            if (player2LeftButton != null) player2LeftButton.interactable = p2CanInteract && !r2;
-            if (player2RightButton != null) player2RightButton.interactable = p2CanInteract && !r2;
-            if (player2ConfirmButton != null) player2ConfirmButton.interactable = p2CanInteract;
-            if (backButton != null) backButton.interactable = !networked || isHost;
+            bool phaseCd = setupManager.CharacterPhaseCountdownActive;
+            if (player1LeftButton != null) player1LeftButton.interactable = p1CanInteract && !r1 && !phaseCd;
+            if (player1RightButton != null) player1RightButton.interactable = p1CanInteract && !r1 && !phaseCd;
+            if (player1ConfirmButton != null) player1ConfirmButton.interactable = p1CanInteract && !phaseCd;
+            if (player2LeftButton != null) player2LeftButton.interactable = p2CanInteract && !r2 && !phaseCd;
+            if (player2RightButton != null) player2RightButton.interactable = p2CanInteract && !r2 && !phaseCd;
+            if (player2ConfirmButton != null) player2ConfirmButton.interactable = p2CanInteract && !phaseCd;
+            if (backButton != null) backButton.interactable = (!networked || isHost) && !phaseCd;
 
             // Top = player name, Bottom = fighter name; spawn preview figure in container
-            if (player1PlayerName != null) player1PlayerName.text = "Player 1";
-            if (player2PlayerName != null) player2PlayerName.text = "Player 2";
+            var lobby = LobbyContext.Instance;
+            if (player1PlayerName != null) player1PlayerName.text = lobby != null ? lobby.p1Name : "Player 1";
+            if (player2PlayerName != null) player2PlayerName.text = lobby != null ? lobby.p2Name : "Player 2";
+
+            lobby?.SetLastFighterIndices(p1Idx, p2Idx);
 
             if (availableFighters.Count > 0)
             {
@@ -333,6 +415,7 @@ namespace Adaptabrawl.UI
                     var fighter1 = availableFighters[p1Idx];
                     if (player1FighterName != null) player1FighterName.text = fighter1 != null ? fighter1.fighterName : "No Fighter";
                     CharacterSelectData.selectedFighter1 = fighter1;
+                    LobbyContext.Instance?.SetP1Fighter(fighter1); // persist for rematch
                     SpawnPreviewInContainer(fighter1, GetPreviewContainerForPlayer(1), player1FighterImage, 1, ref _player1Preview);
                 }
 
@@ -341,6 +424,7 @@ namespace Adaptabrawl.UI
                     var fighter2 = availableFighters[p2Idx];
                     if (player2FighterName != null) player2FighterName.text = fighter2 != null ? fighter2.fighterName : "No Fighter";
                     CharacterSelectData.selectedFighter2 = fighter2;
+                    LobbyContext.Instance?.SetP2Fighter(fighter2); // persist for rematch
                     SpawnPreviewInContainer(fighter2, GetPreviewContainerForPlayer(2), player2FighterImage, 2, ref _player2Preview);
                 }
             }
@@ -352,26 +436,26 @@ namespace Adaptabrawl.UI
                 SetPreviewRawImageVisible(2, false);
             }
 
+            int p1CtrlIdx = LobbyContext.Instance != null ? LobbyContext.Instance.p1InputDevice
+                          : (networked ? setupManager.p1ControllerIndex.Value : setupManager.LocalP1ControllerIndex);
+            int p2CtrlIdx = LobbyContext.Instance != null ? LobbyContext.Instance.p2InputDevice
+                          : (networked ? setupManager.p2ControllerIndex.Value : setupManager.LocalP2ControllerIndex);
+
             if (player1ReadyText != null)
             {
-                player1ReadyText.text = r1 ? "READY" : "SELECT";
+                player1ReadyText.text = LobbySetupInputHints.CharacterReadyStatusLine(p1CtrlIdx, r1);
                 player1ReadyText.color = r1 ? Color.green : Color.white;
             }
             if (player2ReadyText != null)
             {
-                player2ReadyText.text = r2 ? "READY" : "SELECT";
+                player2ReadyText.text = LobbySetupInputHints.CharacterReadyStatusLine(p2CtrlIdx, r2);
                 player2ReadyText.color = r2 ? Color.green : Color.white;
             }
 
-            // Controller input hints on confirm buttons
-            int p1CtrlIdx = networked ? setupManager.p1ControllerIndex.Value : setupManager.LocalP1ControllerIndex;
-            int p2CtrlIdx = networked ? setupManager.p2ControllerIndex.Value : setupManager.LocalP2ControllerIndex;
-            string p1Hint = p1CtrlIdx == 1 ? "Press (A)" : "Press Space";
-            string p2Hint = p2CtrlIdx == 1 ? "Press (A)" : "Press Enter";
             if (player1ConfirmButtonText != null)
-                player1ConfirmButtonText.text = r1 ? "LOCKED IN" : $"Lock In\n<size=70%>{p1Hint}</size>";
+                player1ConfirmButtonText.text = LobbySetupInputHints.CharacterConfirmButtonRich(p1CtrlIdx, r1, true);
             if (player2ConfirmButtonText != null)
-                player2ConfirmButtonText.text = r2 ? "LOCKED IN" : $"Lock In\n<size=70%>{p2Hint}</size>";
+                player2ConfirmButtonText.text = LobbySetupInputHints.CharacterConfirmButtonRich(p2CtrlIdx, r2, false);
         }
 
         /// <summary>

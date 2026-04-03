@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Adaptabrawl.Gameplay;
 
 namespace Adaptabrawl.UI
 {
@@ -44,7 +45,8 @@ namespace Adaptabrawl.UI
 
         public void PlayLocal()
         {
-            // Set flag for local match so Setup UI knows to unlock P2 controls
+            // Init persistent lobby context — carries player names, devices, fighters across scenes
+            LobbyContext.EnsureExists().Init(true);
             CharacterSelectData.isLocalMatch = true;
 
             // Start local host
@@ -62,7 +64,7 @@ namespace Adaptabrawl.UI
 
         public void PlayOnline()
         {
-            // Reset local match flag just in case it carried over
+            LobbyContext.EnsureExists().Init(false);
             CharacterSelectData.isLocalMatch = false;
             // Load lobby scene for online play
             SceneManager.LoadScene("LobbyScene");

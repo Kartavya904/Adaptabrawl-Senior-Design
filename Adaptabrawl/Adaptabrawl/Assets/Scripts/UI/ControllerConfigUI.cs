@@ -2,9 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Unity.Netcode;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Utilities;
-using System;
+using Adaptabrawl.Gameplay;
 
 namespace Adaptabrawl.UI
 {
@@ -33,8 +31,10 @@ namespace Adaptabrawl.UI
         [SerializeField] private Button continueButton;  // Legacy: kept hidden, auto-advances on both ready
         [SerializeField] private Button backButton;
 
+        [Header("Phase countdown (optional TMP — 3,2,1 before character select)")]
+        [SerializeField] private TextMeshProUGUI controllerPhaseCountdownText;
+
         private string[] configOptions = { "Keyboard", "Controller" };
-        private IDisposable inputListener;
 
         private void Start()
         {
@@ -64,52 +64,64 @@ namespace Adaptabrawl.UI
             if (setupManager != null)
             {
                 setupManager.OnControllerConfigChanged += UpdateUI;
+                setupManager.OnControllerToCharacterCountdownTick += OnControllerToCharacterCountdownTick;
             }
 
             UpdateUI();
         }
 
-        private void OnEnable()
+        private void OnControllerToCharacterCountdownTick(int n)
         {
-            inputListener = InputSystem.onAnyButtonPress.Call(OnAnyButtonPressed);
+            if (controllerPhaseCountdownText == null) return;
+            if (n <= 0)
+            {
+                controllerPhaseCountdownText.gameObject.SetActive(false);
+                return;
+            }
+            controllerPhaseCountdownText.gameObject.SetActive(true);
+            controllerPhaseCountdownText.text = n.ToString();
         }
 
-        private void OnDisable()
+        private void Update()
         {
-            inputListener?.Dispose();
-        }
-
-        private void OnAnyButtonPressed(InputControl control)
-        {
-            if (setupManager == null) return;
+            if (setupManager == null || setupManager.ControllerPhaseCountdownActive) return;
 
             bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+            bool isHost = networked && NetworkManager.Singleton.IsServer;
+            bool isLocal = CharacterSelectData.isLocalMatch;
+            bool isClient = networked && !isHost && !isLocal;
+
             int p1Idx = networked ? setupManager.p1ControllerIndex.Value : setupManager.LocalP1ControllerIndex;
             int p2Idx = networked ? setupManager.p2ControllerIndex.Value : setupManager.LocalP2ControllerIndex;
             bool r1 = networked ? setupManager.p1ControllerReady.Value : setupManager.LocalP1ControllerReady;
             bool r2 = networked ? setupManager.p2ControllerReady.Value : setupManager.LocalP2ControllerReady;
 
-            bool isKeyboard = control.device is Keyboard;
-            bool isGamepad = control.device is Gamepad;
-
-            // P1 uses Keyboard (index 0): Space to ready
-            if (isKeyboard && control.name == "space" && p1Idx == 0 && !r1)
+            if (isHost || isLocal || !networked)
             {
-                RequestToggleReady(1);
-                return;
+                if (p1Idx == 1 && LobbyContext.TryGetGamepadForPlayer(1, p1Idx, p2Idx, out var g1))
+                {
+                    if (!r1 && g1.buttonNorth.wasPressedThisFrame) RequestToggleReady(1);
+                    if (r1 && g1.buttonEast.wasPressedThisFrame) RequestToggleReady(1);
+                }
+                else if (p1Idx == 0)
+                {
+                    if (!r1 && UnityEngine.Input.GetKeyDown(KeyCode.Space)) RequestToggleReady(1);
+                    if (r1 && UnityEngine.Input.GetKeyDown(KeyCode.Escape)) RequestToggleReady(1);
+                }
             }
 
-            // P2 uses Controller (index 1): Square (buttonWest) or Triangle (buttonNorth) to ready
-            if (isGamepad && (control.name == "buttonWest" || control.name == "buttonNorth") && p2Idx == 1 && !r2)
+            if (isClient || isLocal || !networked)
             {
-                RequestToggleReady(2);
-                return;
-            }
-
-            // Edge case: P2 chose Keyboard, so Space also readies P2 (after P1 is already ready)
-            if (isKeyboard && control.name == "space" && p2Idx == 0 && r1 && !r2)
-            {
-                RequestToggleReady(2);
+                if (p2Idx == 1 && LobbyContext.TryGetGamepadForPlayer(2, p1Idx, p2Idx, out var g2))
+                {
+                    if (!r2 && g2.buttonNorth.wasPressedThisFrame) RequestToggleReady(2);
+                    if (r2 && g2.buttonEast.wasPressedThisFrame) RequestToggleReady(2);
+                }
+                else if (p2Idx == 0)
+                {
+                    if (!r2 && r1 && UnityEngine.Input.GetKeyDown(KeyCode.Space)) RequestToggleReady(2);
+                    if (r2 && UnityEngine.Input.GetKeyDown(KeyCode.Backspace)) RequestToggleReady(2);
+                }
             }
         }
 
@@ -118,6 +130,7 @@ namespace Adaptabrawl.UI
             if (setupManager != null)
             {
                 setupManager.OnControllerConfigChanged -= UpdateUI;
+                setupManager.OnControllerToCharacterCountdownTick -= OnControllerToCharacterCountdownTick;
             }
         }
 
@@ -153,13 +166,14 @@ namespace Adaptabrawl.UI
             int p2Idx = networked ? setupManager.p2ControllerIndex.Value : setupManager.LocalP2ControllerIndex;
             bool r1 = networked ? setupManager.p1ControllerReady.Value : setupManager.LocalP1ControllerReady;
             bool r2 = networked ? setupManager.p2ControllerReady.Value : setupManager.LocalP2ControllerReady;
+            bool countdown = setupManager.ControllerPhaseCountdownActive;
 
             // Lock buttons: Host owns P1, Client owns P2, Local owns both
-            if (p1ToggleBtn != null) p1ToggleBtn.interactable = (isHost || isLocal) && !r1;
-            if (p1ReadyBtn != null) p1ReadyBtn.interactable = isHost || isLocal;
+            if (p1ToggleBtn != null) p1ToggleBtn.interactable = (isHost || isLocal) && !r1 && !countdown;
+            if (p1ReadyBtn != null) p1ReadyBtn.interactable = (isHost || isLocal) && !countdown;
 
-            if (p2ToggleBtn != null) p2ToggleBtn.interactable = (isClient || isLocal) && !r2;
-            if (p2ReadyBtn != null) p2ReadyBtn.interactable = isClient || isLocal;
+            if (p2ToggleBtn != null) p2ToggleBtn.interactable = (isClient || isLocal) && !r2 && !countdown;
+            if (p2ReadyBtn != null) p2ReadyBtn.interactable = (isClient || isLocal) && !countdown;
 
             // Update display texts
             if (p1ControllerText != null) p1ControllerText.text = configOptions[p1Idx];
@@ -169,24 +183,22 @@ namespace Adaptabrawl.UI
             if (p1ToggleBtnText != null) p1ToggleBtnText.text = p1Idx == 0 ? "Change to Controller" : "Change to Keyboard";
             if (p2ToggleBtnText != null) p2ToggleBtnText.text = p2Idx == 0 ? "Change to Controller" : "Change to Keyboard";
 
-            // Ready button labels: show the input hint based on device, cleared once ready
-            string p1ReadyHint = p1Idx == 0 ? "Press Space to ready up" : "Press (Y) to ready up";
-            string p2ReadyHint = p2Idx == 0 ? "Press Space to ready up" : "Press (Y) to ready up";
-
             if (p1ReadyBtnText != null)
-                p1ReadyBtnText.text = r1 ? "Ready!" : $"Ready\n<size=70%>{p1ReadyHint}</size>";
+                p1ReadyBtnText.text = LobbySetupInputHints.ControllerReadyButtonRich(r1, p1Idx, true);
             if (p2ReadyBtnText != null)
-                p2ReadyBtnText.text = r2 ? "Ready!" : $"Ready\n<size=70%>{p2ReadyHint}</size>";
+                p2ReadyBtnText.text = LobbySetupInputHints.ControllerReadyButtonRich(r2, p2Idx, false);
 
+            string p1Dev = LobbySetupInputHints.DeviceLabel(p1Idx);
+            string p2Dev = LobbySetupInputHints.DeviceLabel(p2Idx);
             if (p1ReadyText != null)
             {
-                p1ReadyText.text = r1 ? "Ready" : "Not Ready";
+                p1ReadyText.text = r1 ? $"Ready ({p1Dev})" : $"Not ready ({p1Dev})";
                 p1ReadyText.color = r1 ? Color.green : Color.white;
             }
 
             if (p2ReadyText != null)
             {
-                p2ReadyText.text = r2 ? "Ready" : "Not Ready";
+                p2ReadyText.text = r2 ? $"Ready ({p2Dev})" : $"Not ready ({p2Dev})";
                 p2ReadyText.color = r2 ? Color.green : Color.white;
             }
         }

@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Unity.Netcode;
 using System.Collections;
+using Adaptabrawl.Gameplay;
 
 namespace Adaptabrawl.UI
 {
@@ -40,6 +41,14 @@ namespace Adaptabrawl.UI
         public System.Action OnArenaConfigChanged;
         public System.Action OnArenaCountdownRequested;
 
+        /// <summary>3,2,1 while waiting to open character select; 0 = finished / hide.</summary>
+        public System.Action<int> OnControllerToCharacterCountdownTick;
+        /// <summary>3,2,1 while waiting to open arena select; 0 = finished / hide.</summary>
+        public System.Action<int> OnCharacterToArenaCountdownTick;
+
+        public bool ControllerPhaseCountdownActive { get; private set; }
+        public bool CharacterPhaseCountdownActive { get; private set; }
+
         private void Start()
         {
             // "Change Characters" rematch: skip controller config, jump straight to character select
@@ -48,7 +57,16 @@ namespace Adaptabrawl.UI
                 MatchResultsData.rematchSkipToCharacterSelect = false;
                 _localP1ControllerIndex = CharacterSelectData.finalP1ControllerIndex;
                 _localP2ControllerIndex = CharacterSelectData.finalP2ControllerIndex;
+                LobbyContext.Instance?.SetInputDevices(_localP1ControllerIndex, _localP2ControllerIndex);
+
+                if (LobbyContext.Instance != null)
+                {
+                    _localP1FighterIndex = LobbyContext.Instance.p1LastFighterIndex;
+                    _localP2FighterIndex = LobbyContext.Instance.p2LastFighterIndex;
+                }
+
                 ShowCharacterSelect();
+                TryPushRematchFighterIndicesToNetwork();
                 return;
             }
 
@@ -100,7 +118,8 @@ namespace Adaptabrawl.UI
 
         private IEnumerator AdvanceToControllerConfigDelay()
         {
-            yield return new WaitForSeconds(1.0f);
+            // Match local join + other setup phases (3s before the next panel).
+            yield return new WaitForSeconds(3.0f);
             ShowControllerConfig();
         }
 
@@ -137,14 +156,31 @@ namespace Adaptabrawl.UI
 
             if (IsServer && p1ControllerReady.Value && p2ControllerReady.Value)
             {
-                AdvanceToCharacterSelectClientRpc();
+                LobbyContext.Instance?.SetInputDevices(p1ControllerIndex.Value, p2ControllerIndex.Value);
+                CharacterSelectData.finalP1ControllerIndex = p1ControllerIndex.Value;
+                CharacterSelectData.finalP2ControllerIndex = p2ControllerIndex.Value;
+                BeginControllerToCharacterCountdownClientRpc();
             }
         }
 
         [ClientRpc]
-        private void AdvanceToCharacterSelectClientRpc()
+        private void BeginControllerToCharacterCountdownClientRpc()
         {
+            StartCoroutine(CoControllerToCharacterCountdown());
+        }
+
+        private IEnumerator CoControllerToCharacterCountdown()
+        {
+            if (ControllerPhaseCountdownActive) yield break;
+            ControllerPhaseCountdownActive = true;
+            for (int i = 3; i > 0; i--)
+            {
+                OnControllerToCharacterCountdownTick?.Invoke(i);
+                yield return new WaitForSeconds(1f);
+            }
+            OnControllerToCharacterCountdownTick?.Invoke(0);
             ShowCharacterSelect();
+            ControllerPhaseCountdownActive = false;
         }
 
         // --- LOCAL (NON-NETWORKED) FALLBACKS ---
@@ -176,13 +212,28 @@ namespace Adaptabrawl.UI
 
             OnControllerConfigChanged?.Invoke();
 
-            // Both ready locally → save indices so rematch-different-characters can restore them
+            // Both ready locally → persist final device choices, 3s countdown, then character select
             if (_localP1ControllerReady && _localP2ControllerReady)
             {
+                LobbyContext.Instance?.SetInputDevices(_localP1ControllerIndex, _localP2ControllerIndex);
                 CharacterSelectData.finalP1ControllerIndex = _localP1ControllerIndex;
                 CharacterSelectData.finalP2ControllerIndex = _localP2ControllerIndex;
-                ShowCharacterSelect();
+                StartCoroutine(CoLocalControllerToCharacterCountdown());
             }
+        }
+
+        private IEnumerator CoLocalControllerToCharacterCountdown()
+        {
+            if (ControllerPhaseCountdownActive) yield break;
+            ControllerPhaseCountdownActive = true;
+            for (int i = 3; i > 0; i--)
+            {
+                OnControllerToCharacterCountdownTick?.Invoke(i);
+                yield return new WaitForSeconds(1f);
+            }
+            OnControllerToCharacterCountdownTick?.Invoke(0);
+            ShowCharacterSelect();
+            ControllerPhaseCountdownActive = false;
         }
 
         // Accessors so ControllerConfigUI can read local state the same way as networked
@@ -212,13 +263,76 @@ namespace Adaptabrawl.UI
             OnCharacterConfigChanged?.Invoke();
         }
 
+        /// <summary>
+        /// Keeps stored indices valid if the fighter roster size changed (e.g. after a build update).
+        /// </summary>
+        public void ClampLocalFighterIndicesToRoster(int fighterCount)
+        {
+            if (fighterCount <= 0) return;
+            int max = fighterCount - 1;
+            _localP1FighterIndex = Mathf.Clamp(_localP1FighterIndex, 0, max);
+            _localP2FighterIndex = Mathf.Clamp(_localP2FighterIndex, 0, max);
+            OnCharacterConfigChanged?.Invoke();
+        }
+
+        /// <summary>
+        /// Server-only: clamp networked fighter indices to roster size.
+        /// </summary>
+        public void ServerClampFighterIndicesToRoster(int fighterCount)
+        {
+            if (!IsServer || fighterCount <= 0) return;
+            int max = fighterCount - 1;
+            p1FighterIndex.Value = Mathf.Clamp(p1FighterIndex.Value, 0, max);
+            p2FighterIndex.Value = Mathf.Clamp(p2FighterIndex.Value, 0, max);
+        }
+
+        private void TryPushRematchFighterIndicesToNetwork()
+        {
+            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer || LobbyContext.Instance == null)
+                return;
+            var ctx = LobbyContext.Instance;
+            if (IsSpawned)
+            {
+                p1FighterIndex.Value = ctx.p1LastFighterIndex;
+                p2FighterIndex.Value = ctx.p2LastFighterIndex;
+            }
+            else
+            {
+                StartCoroutine(PushRematchFighterIndicesWhenSpawned(ctx));
+            }
+        }
+
+        private IEnumerator PushRematchFighterIndicesWhenSpawned(LobbyContext ctx)
+        {
+            yield return null;
+            for (int i = 0; i < 120 && !IsSpawned; i++)
+                yield return null;
+            if (!IsSpawned || ctx == null) yield break;
+            p1FighterIndex.Value = ctx.p1LastFighterIndex;
+            p2FighterIndex.Value = ctx.p2LastFighterIndex;
+        }
+
         public void LocalToggleCharacterReady(int targetPlayer)
         {
             if (targetPlayer == 1) _localP1CharacterReady = !_localP1CharacterReady;
             if (targetPlayer == 2) _localP2CharacterReady = !_localP2CharacterReady;
             OnCharacterConfigChanged?.Invoke();
             if (_localP1CharacterReady && _localP2CharacterReady)
-                ShowArenaSelect();
+                StartCoroutine(CoLocalCharacterToArenaCountdown());
+        }
+
+        private IEnumerator CoLocalCharacterToArenaCountdown()
+        {
+            if (CharacterPhaseCountdownActive) yield break;
+            CharacterPhaseCountdownActive = true;
+            for (int i = 3; i > 0; i--)
+            {
+                OnCharacterToArenaCountdownTick?.Invoke(i);
+                yield return new WaitForSeconds(1f);
+            }
+            OnCharacterToArenaCountdownTick?.Invoke(0);
+            ShowArenaSelect();
+            CharacterPhaseCountdownActive = false;
         }
 
         /// <summary>
@@ -351,7 +465,7 @@ namespace Adaptabrawl.UI
 
             if (IsServer && p1CharacterReady.Value && p2CharacterReady.Value)
             {
-                AdvanceToArenaSelectClientRpc();
+                BeginCharacterToArenaCountdownClientRpc();
             }
         }
 
@@ -373,9 +487,23 @@ namespace Adaptabrawl.UI
         }
 
         [ClientRpc]
-        private void AdvanceToArenaSelectClientRpc()
+        private void BeginCharacterToArenaCountdownClientRpc()
         {
+            StartCoroutine(CoCharacterToArenaCountdown());
+        }
+
+        private IEnumerator CoCharacterToArenaCountdown()
+        {
+            if (CharacterPhaseCountdownActive) yield break;
+            CharacterPhaseCountdownActive = true;
+            for (int i = 3; i > 0; i--)
+            {
+                OnCharacterToArenaCountdownTick?.Invoke(i);
+                yield return new WaitForSeconds(1f);
+            }
+            OnCharacterToArenaCountdownTick?.Invoke(0);
             ShowArenaSelect();
+            CharacterPhaseCountdownActive = false;
         }
 
         // --- NETWORK RPC COMMANDS (ARENA & GAME LAUNCH) ---

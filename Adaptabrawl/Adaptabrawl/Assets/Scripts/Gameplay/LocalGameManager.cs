@@ -17,6 +17,8 @@ namespace Adaptabrawl.Gameplay
         [SerializeField] private float roundDuration = 99f;
         [Tooltip("Seconds between round end and the next round starting.")]
         [SerializeField] private float roundEndDelay = 3f;
+        [Tooltip("Seconds fighters are frozen at the start of each round before they can move or fight.")]
+        [SerializeField] private float preRoundBuffer = 3f;
 
         [Header("Fighter Spawn")]
         [SerializeField] private Transform player1SpawnPoint;
@@ -93,7 +95,7 @@ namespace Adaptabrawl.Gameplay
 
             // Push LocalGameManager's Inspector settings to GameManager so the designer
             // only needs to adjust one place (this component).
-            gameManager.Configure(roundsToWin, roundDuration, roundEndDelay);
+            gameManager.Configure(roundsToWin, roundDuration, roundEndDelay, preRoundBuffer);
 
             // Subscribe to events, then call InitializeMatch() explicitly so the GM
             // picks up the fighters we just spawned (avoids the 1-frame-delay race).
@@ -124,6 +126,7 @@ namespace Adaptabrawl.Gameplay
                 player1 = p1Obj.GetComponent<FighterController>();
                 ApplySpawnSetup(p1Obj);
                 SetupPlayerInput(p1Obj, 1);
+                player1?.SetSpawnPosition(player1SpawnPoint.position);
             }
 
             if (player2SpawnPoint != null && fighter2Def != null)
@@ -132,6 +135,7 @@ namespace Adaptabrawl.Gameplay
                 player2 = p2Obj.GetComponent<FighterController>();
                 ApplySpawnSetup(p2Obj);
                 SetupPlayerInput(p2Obj, 2);
+                player2?.SetSpawnPosition(player2SpawnPoint.position);
             }
         }
 

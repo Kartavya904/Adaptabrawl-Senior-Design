@@ -22,6 +22,10 @@ namespace Adaptabrawl.Gameplay
 
         private bool _initialized;
         
+        [Header("Spawn / Return")]
+        private Vector3 _spawnPosition;
+        [SerializeField] private float returnToSpawnSpeed = 3f;
+
         [Header("Facing")]
         [SerializeField] private bool facingRight = true;
         
@@ -150,6 +154,143 @@ namespace Adaptabrawl.Gameplay
                 movementController.enabled = false;
         }
         
+        /// <summary>
+        /// Re-fires the current health values to all OnHealthChanged listeners.
+        /// Called by GameManager after the HUD has had time to subscribe.
+        /// </summary>
+        public void BroadcastHealth() => OnHealthChanged?.Invoke(currentHealth, maxHealth);
+
+        /// <summary>
+        /// Disables player input, combat, and movement. Called at the start of every round
+        /// during the pre-round buffer, and by ReturnToSpawnCoroutine during walk-back.
+        /// </summary>
+        /// <summary>
+        /// Freezes player input for game-state reasons (buffer, walk-back).
+        /// Does NOT mark the fighter as dead.
+        /// </summary>
+        public void LockInput()
+        {
+            if (combatFSM != null)          combatFSM.enabled = false;
+            if (movementController != null) movementController.enabled = false;
+            var pcp = GetComponentInChildren<PlayerController_Platform>();
+            if (pcp != null) pcp.inputLocked = true;
+        }
+
+        /// <summary>
+        /// Releases the game-state input lock and restores physics/root-motion.
+        /// Called when the pre-round buffer expires.
+        /// </summary>
+        public void UnlockInput()
+        {
+            if (combatFSM != null)          combatFSM.enabled = true;
+            if (movementController != null) movementController.enabled = true;
+
+            var pcp = GetComponentInChildren<PlayerController_Platform>();
+            if (pcp != null)
+            {
+                pcp.inputLocked = false;
+
+                // Unfreeze physics now that the round is live
+                var rb3d = pcp.GetComponent<Rigidbody>();
+                if (rb3d != null) rb3d.isKinematic = false;
+
+                // Restore root motion so run/walk animations move the character
+                var standerAnim = pcp.GetComponent<Animator>();
+                if (standerAnim != null) standerAnim.applyRootMotion = true;
+            }
+        }
+
+        /// <summary>
+        /// Store the world position the fighter should return to at the start of each round.
+        /// Call this once after spawning the fighter.
+        /// </summary>
+        public void SetSpawnPosition(Vector3 pos) => _spawnPosition = pos;
+
+        /// <summary>
+        /// Starts the walk-back-to-spawn coroutine on this fighter.
+        /// <paramref name="onComplete"/> is invoked when the fighter has arrived.
+        /// </summary>
+        public void StartReturnToSpawn(System.Action onComplete)
+        {
+            StartCoroutine(ReturnToSpawnCoroutine(onComplete));
+        }
+
+        private System.Collections.IEnumerator ReturnToSpawnCoroutine(System.Action onComplete)
+        {
+            // Freeze all input and systems while walking back
+            LockInput();
+
+            var pcp = GetComponentInChildren<PlayerController_Platform>();
+
+            if (pcp == null)
+            {
+                onComplete?.Invoke();
+                yield break;
+            }
+
+            var standerAnim = pcp.GetComponent<Animator>();
+            var rb3d        = pcp.GetComponent<Rigidbody>();
+
+            // Freeze physics so we can drive position directly
+            if (rb3d != null) rb3d.isKinematic = true;
+
+            if (standerAnim != null)
+            {
+                standerAnim.speed = 1f;
+                // Disable root motion — we control the position ourselves
+                standerAnim.applyRootMotion = false;
+            }
+
+            float targetX = _spawnPosition.x;
+
+            // Face toward the spawn point before starting to move
+            bool goRight = targetX > pcp.transform.position.x;
+            if (Mathf.Abs(targetX - pcp.transform.position.x) > 0.05f)
+            {
+                pcp.transform.rotation = Quaternion.LookRotation(goRight ? Vector3.right : Vector3.left);
+                facingRight = goRight;
+            }
+
+            // Play run animation
+            if (standerAnim != null)
+            {
+                standerAnim.SetBool("Run",  true);
+                standerAnim.SetBool("Walk", false);
+            }
+
+            const float arrivalThreshold = 0.1f;
+
+            // Move along X only — Y stays fixed so the character stays on the ground
+            while (true)
+            {
+                float xDist = targetX - pcp.transform.position.x;
+
+                if (Mathf.Abs(xDist) <= arrivalThreshold) break;
+
+                float step = Mathf.Sign(xDist) * returnToSpawnSpeed * Time.deltaTime;
+                // Clamp so we don't overshoot
+                if (Mathf.Abs(step) > Mathf.Abs(xDist)) step = xDist;
+
+                pcp.transform.position = new Vector3(
+                    pcp.transform.position.x + step,
+                    pcp.transform.position.y,   // Y unchanged
+                    0f);
+
+                yield return null;
+            }
+
+            // Snap X exactly to spawn; Y stays at whatever ground height the character is at
+            pcp.transform.position = new Vector3(targetX, pcp.transform.position.y, 0f);
+
+            if (standerAnim != null)
+            {
+                standerAnim.SetBool("Run",  false);
+                standerAnim.SetBool("Walk", false);
+            }
+
+            onComplete?.Invoke();
+        }
+
         public void SetFacing(bool right)
         {
             if (facingRight != right)
@@ -177,22 +318,22 @@ namespace Adaptabrawl.Gameplay
             currentHealth = maxHealth;
             OnHealthChanged?.Invoke(currentHealth, maxHealth);
 
-            // Re-enable systems disabled by Die()
-            if (combatFSM != null) combatFSM.enabled = true;
-            if (movementController != null) movementController.enabled = true;
-
-            // Reset Shinabro's own health/death state on the Stander child
+            // Reset Shinabro's health on the Stander child and re-enable its colliders.
+            // NOTE: pcp.isDead, Rigidbody.isKinematic, and applyRootMotion are intentionally
+            // left frozen here. LockInput() keeps them frozen through the pre-round buffer;
+            // UnlockInput() releases them only when the round actually goes live.
             var pcp = GetComponentInChildren<PlayerController_Platform>();
             if (pcp != null)
             {
                 pcp.currentHealth = pcp.maxHealth;
-                pcp.isDead        = false;
+                pcp.isDead = false;
 
-                // Restore animator speed — Die() may have frozen it to 0 as a fallback
-                // when no "Death" animation state exists.
+                // Re-enable bone colliders disabled by Die()
+                foreach (var col in pcp.GetComponentsInChildren<Collider>())
+                    col.enabled = true;
+
                 var standerAnim = pcp.GetComponent<Animator>();
-                if (standerAnim != null)
-                    standerAnim.speed = 1f;
+                if (standerAnim != null) standerAnim.speed = 1f;
             }
 
             Debug.Log($"[FighterController] '{(fighterDef != null ? fighterDef.fighterName : gameObject.name)}' reset for new round.");

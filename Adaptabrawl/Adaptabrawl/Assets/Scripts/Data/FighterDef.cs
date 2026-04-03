@@ -72,7 +72,12 @@ namespace Adaptabrawl.Data
 
         [Tooltip("Optional: crouching attack (Shinabro CrouchAttack).")]
         public AnimatedMoveDef crouchAttack;
-        
+
+        [Header("Weapon Type")]
+        [Tooltip("Determines hitbox placement for this fighter's weapon. " +
+                 "Set to match the weapon used by the fighter's Shinabro prefab.")]
+        public HitboxProfileType weaponType = HitboxProfileType.Default;
+
         [Header("Adaptation Hooks")]
         public bool canAdaptToConditions = true;
         public AdaptationRule[] adaptationRules;
@@ -86,6 +91,19 @@ namespace Adaptabrawl.Data
         public MoveModifier[] moveModifiers;
     }
     
+    /// <summary>
+    /// Weapon archetype — controls which hitbox profile HitboxEmitter uses to
+    /// place the active hitbox over the weapon's striking surface.
+    /// </summary>
+    public enum HitboxProfileType
+    {
+        Default,     // Uses HitboxEmitter's built-in Light/Heavy defaults
+        Hammer,      // Large head high and forward (Anvil)
+        Sword,       // Blade sweeps horizontally from mid-height (Bastion)
+        DualBlades,  // Short fast blades, close range (Shade)
+        Spear        // Small tip far forward (Stinger)
+    }
+
     /// <summary>
     /// Shape of a single hurtbox so it can match body parts (box for torso/head, capsule for limbs).
     /// </summary>

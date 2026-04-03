@@ -68,6 +68,11 @@ public class PlayerController_Platform : MonoBehaviour
     private bool canChainAttack;
     public bool isDead;
 
+    [Header("Input Lock (game-state, not death)")]
+    [Tooltip("Set by the game manager during pre-round buffers and walk-backs. " +
+             "Blocks all player input without marking the character as dead.")]
+    public bool inputLocked = false;
+
     [Header("Network Input Override")]
     public bool isNetworkControlled = false;
     public bool netRight;
@@ -335,7 +340,7 @@ public class PlayerController_Platform : MonoBehaviour
 
     private void Update()
     {
-        if (isDead) return;
+        if (isDead || inputLocked) return;
 
         Rotate();
         transform.position = new Vector3(transform.position.x, transform.position.y, 0f);

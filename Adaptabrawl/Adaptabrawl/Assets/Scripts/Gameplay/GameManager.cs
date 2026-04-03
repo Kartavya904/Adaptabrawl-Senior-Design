@@ -11,6 +11,7 @@ namespace Adaptabrawl.Gameplay
         [SerializeField] private int roundsToWin = 2;
         [SerializeField] private float roundDuration = 99f; // Seconds
         [SerializeField] private float roundEndDelay = 3f;
+        [SerializeField] private float preRoundBuffer = 3f; // Seconds fighters are frozen before round starts
 
         [Header("Players")]
         [SerializeField] private List<FighterController> players = new List<FighterController>();
@@ -31,6 +32,7 @@ namespace Adaptabrawl.Gameplay
         public System.Action<int> OnRoundCountdown; // 3, 2, 1, 0 (FIGHT)
 
         private bool _initialized;
+        private bool _inPreRoundBuffer; // true while the countdown is running; blocks win detection
 
         private void Start()
         {
@@ -76,34 +78,47 @@ namespace Adaptabrawl.Gameplay
 
         private void StartRound()
         {
-            roundActive = false; // explicitly freeze timer
             roundTimer = roundDuration;
             roundWinner = null;
+            _inPreRoundBuffer = true; // block win detection before anything else
 
-            // Reset fighters for the new round
+            // Reset fighters (restores health, colliders)
             foreach (var player in players)
-            {
-                if (player != null)
-                    player.ResetForNewRound();
-            }
+                if (player != null) player.ResetForNewRound();
 
-            StartCoroutine(PreRoundCountdownRoutine());
+            // Lock fighters — they cannot move or fight during the countdown
+            foreach (var player in players)
+                if (player != null) player.LockInput();
+
+            // Timer starts ticking immediately
+            roundActive = true;
+            OnRoundStart?.Invoke(currentRound);
+
+            StartCoroutine(PreRoundBufferRoutine());
         }
 
-        private System.Collections.IEnumerator PreRoundCountdownRoutine()
+        private System.Collections.IEnumerator PreRoundBufferRoutine()
         {
-            // 3, 2, 1, FIGHT countdown
-            for (int i = 3; i > 0; i--)
+            // Yield one frame so the HUD finishes subscribing to health events,
+            // then push a health refresh so the bars show full from the start.
+            yield return null;
+            foreach (var player in players)
+                if (player != null) player.BroadcastHealth();
+
+            // Fire the 3-2-1-FIGHT countdown events
+            int steps = Mathf.Max(1, Mathf.RoundToInt(preRoundBuffer));
+            for (int i = steps; i > 0; i--)
             {
                 OnRoundCountdown?.Invoke(i);
                 yield return new WaitForSeconds(1f);
             }
+            OnRoundCountdown?.Invoke(0); // 0 = FIGHT!
 
-            OnRoundCountdown?.Invoke(0); // 0 means FIGHT!
-            yield return new WaitForSeconds(0.5f); // Brief delay to show "FIGHT!" text
+            _inPreRoundBuffer = false;
 
-            roundActive = true;
-            OnRoundStart?.Invoke(currentRound);
+            // Release fighters — round is live
+            foreach (var player in players)
+                if (player != null) player.UnlockInput();
         }
 
         private void UpdateRoundTimer()
@@ -120,6 +135,8 @@ namespace Adaptabrawl.Gameplay
 
         private void CheckWinConditions()
         {
+            if (_inPreRoundBuffer) return; // don't end the round during the countdown
+
             // Find a dead player this frame (poll-based backup for the event path).
             FighterController dead = null;
             foreach (var player in players)
@@ -140,7 +157,7 @@ namespace Adaptabrawl.Gameplay
 
         private void OnPlayerDeath(FighterController deadPlayer)
         {
-            if (!roundActive) return;
+            if (!roundActive || _inPreRoundBuffer) return;
 
             // Find the winner (the other player).
             FighterController winner = players.FirstOrDefault(p => p != deadPlayer && p != null && !p.IsDead);
@@ -208,7 +225,24 @@ namespace Adaptabrawl.Gameplay
 
         private System.Collections.IEnumerator StartNextRoundAfterDelay()
         {
+            // Brief pause so the round-end result is visible before walk-back
             yield return new WaitForSeconds(roundEndDelay);
+
+            // Walk all fighters back to their spawn positions before starting
+            int doneCount = 0;
+            int playerCount = 0;
+            foreach (var player in players)
+            {
+                if (player != null)
+                {
+                    playerCount++;
+                    player.StartReturnToSpawn(() => doneCount++);
+                }
+            }
+
+            if (playerCount > 0)
+                yield return new WaitUntil(() => doneCount >= playerCount);
+
             currentRound++;
             StartRound();
         }
@@ -247,11 +281,12 @@ namespace Adaptabrawl.Gameplay
         /// LocalGameManager calls this so its Inspector fields are the single
         /// source of truth for round duration and rounds-to-win.
         /// </summary>
-        public void Configure(int newRoundsToWin, float newRoundDuration, float newRoundEndDelay)
+        public void Configure(int newRoundsToWin, float newRoundDuration, float newRoundEndDelay, float newPreRoundBuffer)
         {
-            roundsToWin   = newRoundsToWin;
+            roundsToWin    = newRoundsToWin;
             roundDuration  = newRoundDuration;
             roundEndDelay  = newRoundEndDelay;
+            preRoundBuffer = newPreRoundBuffer;
         }
 
         public void Rematch()

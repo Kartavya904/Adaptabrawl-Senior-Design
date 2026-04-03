@@ -44,7 +44,8 @@ namespace Adaptabrawl.Combat
         {
             // Poll every frame — no Rigidbody2D required
             Vector2 worldCenter = (Vector2)transform.position + offset;
-            Collider2D[] hits = Physics2D.OverlapBoxAll(worldCenter, size, 0f);
+            float angle = transform.eulerAngles.z;
+            Collider2D[] hits = Physics2D.OverlapBoxAll(worldCenter, size, angle);
 
             foreach (Collider2D hit in hits)
             {
@@ -65,11 +66,12 @@ namespace Adaptabrawl.Combat
 
         private void OnDrawGizmos()
         {
+            Gizmos.matrix = Matrix4x4.TRS(transform.position + (Vector3)offset, Quaternion.Euler(0, 0, transform.eulerAngles.z), Vector3.one);
             Gizmos.color = new Color(1f, 0.6f, 0f, 0.4f);
-            Vector3 worldCenter = transform.position + (Vector3)offset;
-            Gizmos.DrawCube(worldCenter, new Vector3(size.x, size.y, 0.1f));
+            Gizmos.DrawCube(Vector3.zero, new Vector3(size.x, size.y, 0.1f));
             Gizmos.color = new Color(1f, 0.6f, 0f, 1f);
-            Gizmos.DrawWireCube(worldCenter, new Vector3(size.x, size.y, 0.1f));
+            Gizmos.DrawWireCube(Vector3.zero, new Vector3(size.x, size.y, 0.1f));
+            Gizmos.matrix = Matrix4x4.identity;
         }
     }
 }

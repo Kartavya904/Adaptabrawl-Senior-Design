@@ -25,7 +25,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2613311873870148345}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -45,19 +45,83 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 0
-  InScenePlacedSourceGlobalObjectIdHash: 0
+  GlobalObjectIdHash: 1031612418
+  InScenePlacedSourceGlobalObjectIdHash: 1624345182
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
+--- !u!1 &2941140640928006334
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4581220979504166187}
+  - component: {fileID: 4658676145700300447}
+  m_Layer: 0
+  m_Name: WeaponHitbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4581220979504166187
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2941140640928006334}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6737743643968907900}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4658676145700300447
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2941140640928006334}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 925237046d66e8c4e92afaf53da70882, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.Combat.HitboxEmitter
+  configs:
+  - moveType: 0
+    damage: 8
+    knockbackForce: 3
+    size: {x: 0.5, y: 0.8}
+    offset: {x: 0, y: 1.8, z: 0}
+    duration: 0.083
+  - moveType: 1
+    damage: 20
+    knockbackForce: 8
+    size: {x: 0.65, y: 1.04}
+    offset: {x: 0, y: 1.8, z: 0}
+    duration: 0.1
+  defaultConfig:
+    moveType: 0
+    damage: 10
+    knockbackForce: 4
+    size: {x: 0.5, y: 0.8}
+    offset: {x: 0, y: 1.8, z: 0}
+    duration: 0.1
 --- !u!1001 &2613311874180039484
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -116,7 +180,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 8774453984257009984, guid: 6e90eab5fbb08fa4fa0f813a120d488a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4581220979504166187}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6e90eab5fbb08fa4fa0f813a120d488a, type: 3}
 --- !u!4 &6737743643968907900 stripped
@@ -280,3 +347,16 @@ MonoBehaviour:
   deathAnimationState: Death
   isJump: 0
   isDead: 0
+  inputLocked: 0
+  isNetworkControlled: 0
+  netRight: 0
+  netLeft: 0
+  netCrouch: 0
+  netSprint: 0
+  netJump: 0
+  netAttack: 0
+  netBlock: 0
+  netBlockDown: 0
+  netBlockUp: 0
+  netDodge: 0
+  netSkills: 0000000000000000

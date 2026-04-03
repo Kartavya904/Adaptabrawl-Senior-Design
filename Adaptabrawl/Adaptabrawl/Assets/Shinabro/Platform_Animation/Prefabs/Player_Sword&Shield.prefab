@@ -1,5 +1,69 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &914731925997134072
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2379171381259473465}
+  - component: {fileID: 987101298548363592}
+  m_Layer: 0
+  m_Name: WeaponHitbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2379171381259473465
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 914731925997134072}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4156547706582230711}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &987101298548363592
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 914731925997134072}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 925237046d66e8c4e92afaf53da70882, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.Combat.HitboxEmitter
+  configs:
+  - moveType: 0
+    damage: 8
+    knockbackForce: 3
+    size: {x: 0.5, y: 1.5}
+    offset: {x: 0, y: 0.8, z: 0}
+    duration: 0.083
+  - moveType: 1
+    damage: 20
+    knockbackForce: 8
+    size: {x: 0.65, y: 1.9499999}
+    offset: {x: 0, y: 0.8, z: 0}
+    duration: 0.1
+  defaultConfig:
+    moveType: 0
+    damage: 10
+    knockbackForce: 4
+    size: {x: 0.5, y: 1.5}
+    offset: {x: 0, y: 0.8, z: 0}
+    duration: 0.1
 --- !u!1 &2553231010451283874
 GameObject:
   m_ObjectHideFlags: 0
@@ -45,14 +109,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 0
-  InScenePlacedSourceGlobalObjectIdHash: 0
+  GlobalObjectIdHash: 2371728054
+  InScenePlacedSourceGlobalObjectIdHash: 627436127
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -116,7 +180,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 1478349538100959758, guid: a52e65b0b78d78e4aaaad741c6c7d011, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2379171381259473465}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a52e65b0b78d78e4aaaad741c6c7d011, type: 3}
 --- !u!4 &4156547706582230711 stripped
@@ -1676,6 +1743,19 @@ MonoBehaviour:
   deathAnimationState: Death
   isJump: 0
   isDead: 0
+  inputLocked: 0
+  isNetworkControlled: 0
+  netRight: 0
+  netLeft: 0
+  netCrouch: 0
+  netSprint: 0
+  netJump: 0
+  netAttack: 0
+  netBlock: 0
+  netBlockDown: 0
+  netBlockUp: 0
+  netDodge: 0
+  netSkills: 0000000000000000
 --- !u!1001 &7999896621383236182
 PrefabInstance:
   m_ObjectHideFlags: 0

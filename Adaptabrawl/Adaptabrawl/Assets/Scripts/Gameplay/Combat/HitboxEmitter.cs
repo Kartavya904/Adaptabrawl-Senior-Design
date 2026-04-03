@@ -33,8 +33,8 @@ namespace Adaptabrawl.Combat
             [Header("Hitbox Shape")]
             [Tooltip("Width and height of the hitbox in world units.")]
             public Vector2 size   = new Vector2(1.5f, 1f);
-            [Tooltip("Offset from the Stander pivot (positive X = in front when facing right).")]
-            public Vector2 offset = new Vector2(0.75f, 0.5f);
+            [Tooltip("3D Local offset from the emitter transform.")]
+            public Vector3 offset = new Vector3(0.75f, 0.5f, 0f);
 
             [Header("Timing")]
             [Tooltip("How long (seconds) the hitbox stays active. Match to the move's active frames / 60.")]
@@ -45,8 +45,8 @@ namespace Adaptabrawl.Combat
                  "Any move type without an entry uses the Default Config below.")]
         [SerializeField] private List<HitboxConfig> configs = new List<HitboxConfig>
         {
-            new HitboxConfig { moveType = MoveType.LightAttack,  damage = 8f,  knockbackForce = 3f,  size = new Vector2(1.5f, 1f),  offset = new Vector2(0.75f, 0.5f), duration = 0.083f },
-            new HitboxConfig { moveType = MoveType.HeavyAttack,  damage = 20f, knockbackForce = 8f,  size = new Vector2(2f,   1.2f), offset = new Vector2(1f,    0.5f), duration = 0.1f  },
+            new HitboxConfig { moveType = MoveType.LightAttack,  damage = 8f,  knockbackForce = 3f,  size = new Vector2(1.5f, 1f),  offset = new Vector3(0.75f, 0.5f, 0f), duration = 0.083f },
+            new HitboxConfig { moveType = MoveType.HeavyAttack,  damage = 20f, knockbackForce = 8f,  size = new Vector2(2f,   1.2f), offset = new Vector3(1f,    0.5f, 0f), duration = 0.1f  },
         };
 
         [Header("Default Config (used when move type has no entry)")]
@@ -95,17 +95,22 @@ namespace Adaptabrawl.Combat
 
             HitboxConfig cfg = GetConfig(move != null ? move.moveType : MoveType.LightAttack);
 
-            // Flip X offset when fighter faces left
-            Vector2 offset = cfg.offset;
+            // In previous static system, offset was a world-space 2D offset from Stander.
+            // Since HitboxEmitter is now parented to the actual weapon, we apply offset
+            // physically to local space, so it naturally rotates with the weapon swing!
+            
+            Vector3 localOffset = cfg.offset;
             if (owner != null && !owner.FacingRight)
-                offset.x = -offset.x;
+                localOffset.x = -localOffset.x; // Optional flip logic if needed locally
 
             GameObject hitboxObj = new GameObject("ActiveHitbox");
             hitboxObj.transform.SetParent(transform, false);
-            hitboxObj.transform.localPosition = Vector3.zero;
+            hitboxObj.transform.localPosition = localOffset;
+            hitboxObj.transform.localRotation = Quaternion.identity;
 
             currentHitbox = hitboxObj.AddComponent<ActiveHitbox>();
-            currentHitbox.Init(cfg.damage, cfg.knockbackForce, cfg.size, offset, cfg.duration, owner);
+            // Pass zero offset to ActiveHitbox, because we moved its transform.position already!
+            currentHitbox.Init(cfg.damage, cfg.knockbackForce, cfg.size, Vector2.zero, cfg.duration, owner);
         }
 
         private void OnHitboxInactive()
@@ -122,11 +127,57 @@ namespace Adaptabrawl.Combat
             }
         }
 
+        private void OnDrawGizmosSelected()
+        {
+            // Visualize in the editor properly translated and rotated by the weapon
+            Gizmos.matrix = transform.localToWorldMatrix;
+            foreach(var cfg in configs)
+            {
+                Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.3f);
+                Vector3 localOffset = cfg.offset;
+                Gizmos.DrawCube(localOffset, new Vector3(cfg.size.x, cfg.size.y, 0.1f));
+                Gizmos.color = new Color(1f, 0.2f, 0.2f, 1f);
+                Gizmos.DrawWireCube(localOffset, new Vector3(cfg.size.x, cfg.size.y, 0.1f));
+            }
+            Gizmos.matrix = Matrix4x4.identity;
+        }
+
         private HitboxConfig GetConfig(MoveType moveType)
         {
             foreach (var c in configs)
                 if (c.moveType == moveType) return c;
             return defaultConfig;
+        }
+
+        /// <summary>
+        /// Replaces the Light/Heavy hitbox configs with weapon-mesh-derived values.
+        /// Called at runtime by StanderCombatSetup so hitboxes track the weapon's
+        /// actual striking surface without requiring an editor bake step.
+        /// </summary>
+        public void ApplyWeaponConfig(Vector3 lightOffset, Vector2 lightSize,
+                                      Vector3 heavyOffset, Vector2 heavySize)
+        {
+            configs.Clear();
+            configs.Add(new HitboxConfig
+            {
+                moveType       = MoveType.LightAttack,
+                damage         = 8f,
+                knockbackForce = 3f,
+                size           = lightSize,
+                offset         = lightOffset,
+                duration       = 0.083f
+            });
+            configs.Add(new HitboxConfig
+            {
+                moveType       = MoveType.HeavyAttack,
+                damage         = 20f,
+                knockbackForce = 8f,
+                size           = heavySize,
+                offset         = heavyOffset,
+                duration       = 0.1f
+            });
+            defaultConfig.offset = lightOffset;
+            defaultConfig.size   = lightSize;
         }
     }
 }

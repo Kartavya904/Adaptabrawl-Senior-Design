@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"C:/Users/saart/Documents/Adaptabrawl-Senior-Design/Adaptabrawl/Adaptabrawl\" && dotnet build obj/Debug/Assembly-CSharp.csproj 2>&1 | tail -20)",
+      "Bash(cd \"C:/Users/saart/Documents/Adaptabrawl-Senior-Design/Adaptabrawl/Adaptabrawl\" && dotnet build Assembly-CSharp.csproj 2>&1 | grep -E \"error|warning|Build succeeded|FAILED\" | head -30)",
+      "Bash(cd \"C:/Users/saart/Documents/Adaptabrawl-Senior-Design/Adaptabrawl/Adaptabrawl\" && dotnet build Assembly-CSharp.csproj 2>&1 | grep -E \"^.*error|Build succeeded|FAILED\")",
+      "Bash(cd \"C:/Users/saart/Documents/Adaptabrawl-Senior-Design/Adaptabrawl/Adaptabrawl\" && dotnet build Assembly-CSharp.csproj 2>&1 | grep -E \"error|Build succeeded|FAILED\")",
+      "Bash(ls -1 \"C:\\\\Users\\\\saart\\\\Documents\\\\Adaptabrawl-Senior-Design\\\\Adaptabrawl\\\\Adaptabrawl\\\\Assets\\\\Prefabs\\\\Fighters\" | grep \"^Fighter_.*\\\\.asset$\" | head -15)",
+      "Bash(grep -l \"664cc725876a02543826c075aecc7e68\\\\|01d83765552a62f4898ec78203f89ec1\\\\|36eda8a5c9115104599889c2f468aa31\\\\|4363a38e8a970b348bf8c4bddca6132e\" /c/Users/saart/Documents/Adaptabrawl-Senior-Design/Adaptabrawl/Adaptabrawl/Assets/Prefabs/Fighters/*.asset | xargs -I{} sh -c 'echo \"=== $\\(basename {}\\) ===\"; grep \"fighterName\\\\|moveLibrary\" {} | head -5')"
+    ]
+  }
+}

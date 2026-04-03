@@ -4,6 +4,8 @@ using TMPro;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
+using Adaptabrawl.Gameplay;
 
 namespace Adaptabrawl.UI
 {
@@ -42,6 +44,10 @@ namespace Adaptabrawl.UI
         [SerializeField] private Image arenaBackgroundImage;
         [SerializeField] private List<Sprite> arenaBackgrounds = new List<Sprite>();
 
+        [Header("Ready Button Labels (assign TMP text inside each ready button)")]
+        [SerializeField] private TextMeshProUGUI p1ReadyButtonText;
+        [SerializeField] private TextMeshProUGUI p2ReadyButtonText;
+
         [Header("Countdown")]
         [SerializeField] private TextMeshProUGUI countdownText;
 
@@ -72,13 +78,80 @@ namespace Adaptabrawl.UI
                 setupManager.OnArenaCountdownRequested += StartArenaCountdown;
             }
 
+            SyncLobbyDevicesFromSetupManager();
             UpdateUI();
+        }
+
+        private void Update()
+        {
+            if (setupManager == null || _countdownRunning) return;
+
+            bool networked = NetworkManager.Singleton != null;
+            bool isHost = networked && NetworkManager.Singleton.IsServer;
+            bool isLocal = CharacterSelectData.isLocalMatch;
+            bool p1Ready = networked ? setupManager.p1ArenaReady.Value : setupManager.LocalP1ArenaReady;
+            bool p2Ready = networked ? setupManager.p2ArenaReady.Value : setupManager.LocalP2ArenaReady;
+
+            // LobbyContext is the source of truth for device type; fall back to setupManager
+            int p1CtrlIdx = LobbyContext.Instance != null ? LobbyContext.Instance.p1InputDevice
+                          : (networked ? setupManager.p1ControllerIndex.Value : setupManager.LocalP1ControllerIndex);
+            int p2CtrlIdx = LobbyContext.Instance != null ? LobbyContext.Instance.p2InputDevice
+                          : (networked ? setupManager.p2ControllerIndex.Value : setupManager.LocalP2ControllerIndex);
+
+            if (!p1Ready && (isHost || isLocal || !networked))
+            {
+                bool p1Confirm = false;
+                if (p1CtrlIdx == 1 && LobbyContext.TryGetGamepadForPlayer(1, p1CtrlIdx, p2CtrlIdx, out var gp1))
+                    p1Confirm = gp1.buttonNorth.wasPressedThisFrame;
+                else if (p1CtrlIdx != 1)
+                    p1Confirm = UnityEngine.Input.GetKeyDown(KeyCode.Space);
+                if (p1Confirm) RequestReady(1);
+            }
+            else if (p1Ready && (isHost || isLocal || !networked))
+            {
+                bool p1Unready = false;
+                if (p1CtrlIdx == 1 && LobbyContext.TryGetGamepadForPlayer(1, p1CtrlIdx, p2CtrlIdx, out var gp1u))
+                    p1Unready = gp1u.buttonEast.wasPressedThisFrame;
+                else if (p1CtrlIdx != 1)
+                    p1Unready = UnityEngine.Input.GetKeyDown(KeyCode.Escape);
+                if (p1Unready) RequestReady(1);
+            }
+
+            if (!p2Ready && (!isHost || isLocal || !networked))
+            {
+                bool p2Confirm = false;
+                if (p2CtrlIdx == 1 && LobbyContext.TryGetGamepadForPlayer(2, p1CtrlIdx, p2CtrlIdx, out var gp2))
+                    p2Confirm = gp2.buttonNorth.wasPressedThisFrame;
+                else if (p2CtrlIdx != 1)
+                    p2Confirm = UnityEngine.Input.GetKeyDown(KeyCode.Return);
+                if (p2Confirm) RequestReady(2);
+            }
+            else if (p2Ready && (!isHost || isLocal || !networked))
+            {
+                bool p2Unready = false;
+                if (p2CtrlIdx == 1 && LobbyContext.TryGetGamepadForPlayer(2, p1CtrlIdx, p2CtrlIdx, out var gp2u))
+                    p2Unready = gp2u.buttonEast.wasPressedThisFrame;
+                else if (p2CtrlIdx != 1)
+                    p2Unready = UnityEngine.Input.GetKeyDown(KeyCode.Backspace);
+                if (p2Unready) RequestReady(2);
+            }
         }
 
         private void OnEnable()
         {
+            SyncLobbyDevicesFromSetupManager();
             // When the Arena Select panel becomes active, refresh UI so the background image is set.
             UpdateUI();
+        }
+
+        private void SyncLobbyDevicesFromSetupManager()
+        {
+            if (setupManager == null) return;
+            var lobby = LobbyContext.EnsureExists();
+            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+            int p1 = networked ? setupManager.p1ControllerIndex.Value : setupManager.LocalP1ControllerIndex;
+            int p2 = networked ? setupManager.p2ControllerIndex.Value : setupManager.LocalP2ControllerIndex;
+            lobby.SetInputDevices(p1, p2);
         }
 
         private void OnDestroy()
@@ -179,6 +252,11 @@ namespace Adaptabrawl.UI
                 ArenaSelectData.selectedArenaName = availableArenas[aIdx];
             }
 
+            if (availableArenas.Count > 0 && aIdx >= 0 && aIdx < availableArenas.Count)
+                LobbyContext.Instance?.SetLastArenaSelection(aIdx, availableArenas[aIdx]);
+            else
+                LobbyContext.Instance?.SetLastArenaSelection(aIdx, "");
+
             // Set the panel's Image source to the sprite for the selected arena (elements 0, 1, 2).
             ApplyArenaBackground(aIdx);
 
@@ -222,18 +300,29 @@ namespace Adaptabrawl.UI
                     p2ReadyButton.interactable = true;
             }
 
-            // Public Status Rendering
+            int p1CtrlIdx = LobbyContext.Instance != null ? LobbyContext.Instance.p1InputDevice
+                          : (networked ? setupManager.p1ControllerIndex.Value : setupManager.LocalP1ControllerIndex);
+            int p2CtrlIdx = LobbyContext.Instance != null ? LobbyContext.Instance.p2InputDevice
+                          : (networked ? setupManager.p2ControllerIndex.Value : setupManager.LocalP2ControllerIndex);
+            string p1Dev = LobbySetupInputHints.DeviceLabel(p1CtrlIdx);
+            string p2Dev = LobbySetupInputHints.DeviceLabel(p2CtrlIdx);
+
             if (p1StatusText != null)
             {
-                p1StatusText.text = p1Ready ? "P1: READY" : "P1: DECIDING...";
+                p1StatusText.text = p1Ready ? $"P1: READY ({p1Dev})" : $"P1: choosing… ({p1Dev})";
                 p1StatusText.color = p1Ready ? Color.green : Color.yellow;
             }
 
             if (p2StatusText != null)
             {
-                p2StatusText.text = p2Ready ? "P2: READY" : "P2: DECIDING...";
+                p2StatusText.text = p2Ready ? $"P2: READY ({p2Dev})" : $"P2: choosing… ({p2Dev})";
                 p2StatusText.color = p2Ready ? Color.green : Color.yellow;
             }
+
+            if (p1ReadyButtonText != null)
+                p1ReadyButtonText.text = LobbySetupInputHints.ArenaReadyButtonRich(p1Ready, p1CtrlIdx, true);
+            if (p2ReadyButtonText != null)
+                p2ReadyButtonText.text = LobbySetupInputHints.ArenaReadyButtonRich(p2Ready, p2CtrlIdx, false);
         }
 
         private void StartArenaCountdown()

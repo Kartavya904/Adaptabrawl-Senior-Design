@@ -263,8 +263,9 @@ namespace Adaptabrawl.Gameplay
                 totalRounds = currentRound
             };
 
-            // Store results
-            Adaptabrawl.UI.MatchResultsData.SetResults(matchResults, true);
+            // Store results — pass isLocalMatch from CharacterSelectData so Rematch routes correctly
+            bool isLocal = Adaptabrawl.UI.CharacterSelectData.isLocalMatch;
+            Adaptabrawl.UI.MatchResultsData.SetResults(matchResults, isLocal);
 
             // Transition to results scene after delay
             StartCoroutine(TransitionToResultsAfterDelay());
@@ -273,7 +274,11 @@ namespace Adaptabrawl.Gameplay
         private System.Collections.IEnumerator TransitionToResultsAfterDelay()
         {
             yield return new WaitForSeconds(roundEndDelay);
-            SceneManager.LoadScene("MatchResults");
+
+            if (Adaptabrawl.UI.SceneTransitionManager.Instance != null)
+                Adaptabrawl.UI.SceneTransitionManager.Instance.TransitionToScene("MatchResults");
+            else
+                SceneManager.LoadScene("MatchResults");
         }
 
         /// <summary>

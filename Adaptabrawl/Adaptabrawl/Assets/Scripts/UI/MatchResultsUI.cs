@@ -14,6 +14,8 @@ namespace Adaptabrawl.UI
         [SerializeField] private TextMeshProUGUI winnerText;
         [SerializeField] private TextMeshProUGUI matchScoreText;
         [SerializeField] private TextMeshProUGUI roundResultsText;
+        [Tooltip("Optional. Shows arena from GameContext when assigned.")]
+        [SerializeField] private TextMeshProUGUI arenaNameText;
 
         [Header("Player 1 Results")]
         [SerializeField] private TextMeshProUGUI player1NameText;
@@ -26,9 +28,15 @@ namespace Adaptabrawl.UI
         [SerializeField] private Image player2Portrait;
 
         [Header("Buttons")]
+        [SerializeField] private Button continueButton;
         [SerializeField] private Button rematchButton;
+        [SerializeField] private Button rematchDifferentButton;
         [SerializeField] private Button mainMenuButton;
-        [SerializeField] private Button characterSelectButton;
+
+        [Header("Button Labels")]
+        [SerializeField] private TextMeshProUGUI continueButtonText;
+        [SerializeField] private TextMeshProUGUI rematchButtonText;
+        [SerializeField] private TextMeshProUGUI rematchDifferentButtonText;
 
         [Header("Animation")]
         [SerializeField] private float resultsDelay = 2f;
@@ -37,14 +45,17 @@ namespace Adaptabrawl.UI
         private void Start()
         {
             // Setup button listeners
+            if (continueButton != null)
+                continueButton.onClick.AddListener(Continue);
+
             if (rematchButton != null)
                 rematchButton.onClick.AddListener(Rematch);
 
+            if (rematchDifferentButton != null)
+                rematchDifferentButton.onClick.AddListener(RematchDifferentCharacters);
+
             if (mainMenuButton != null)
                 mainMenuButton.onClick.AddListener(ReturnToMainMenu);
-
-            if (characterSelectButton != null)
-                characterSelectButton.onClick.AddListener(ReturnToCharacterSelect);
 
             // Hide results initially
             if (resultsPanel != null)
@@ -56,15 +67,13 @@ namespace Adaptabrawl.UI
 
         private void LoadMatchResults()
         {
-            // Get results from MatchResultsData
-            if (MatchResultsData.hasResults)
-            {
+            bool fromStatic = MatchResultsData.hasResults;
+            bool fromContext = GameContext.Instance != null && GameContext.Instance.TryGetLatestFinishedMatch(out _);
+            if (fromStatic || fromContext)
                 StartCoroutine(ShowResultsAfterDelay());
-            }
             else
             {
-                // No results data, return to menu
-                Debug.LogWarning("No match results data found!");
+                Debug.LogWarning("[MatchResultsUI] No MatchResultsData and no GameContext match history.");
                 ReturnToMainMenu();
             }
         }
@@ -85,6 +94,19 @@ namespace Adaptabrawl.UI
 
         private void DisplayResults()
         {
+            if (GameContext.Instance != null && GameContext.Instance.TryGetLatestFinishedMatch(out var rec))
+            {
+                DisplayResultsFromGameContext(rec);
+                ApplyButtonLabels(rec.localMatch);
+                return;
+            }
+
+            if (!MatchResultsData.hasResults || MatchResultsData.results == null)
+            {
+                Debug.LogWarning("[MatchResultsUI] No GameContext history and no MatchResultsData.");
+                return;
+            }
+
             var results = MatchResultsData.results;
 
             // Display winner
@@ -107,6 +129,9 @@ namespace Adaptabrawl.UI
             {
                 matchScoreText.text = $"{results.player1Wins} - {results.player2Wins}";
             }
+
+            if (arenaNameText != null)
+                arenaNameText.gameObject.SetActive(false);
 
             // Display player 1 info
             if (player1NameText != null)
@@ -132,6 +157,87 @@ namespace Adaptabrawl.UI
                 }
                 roundResultsText.text = roundText;
             }
+
+            ApplyButtonLabels(MatchResultsData.isLocalMatch);
+        }
+
+        private void DisplayResultsFromGameContext(FinishedMatchRecord rec)
+        {
+            if (rec == null) return;
+
+            if (arenaNameText != null)
+            {
+                bool hasArena = !string.IsNullOrWhiteSpace(rec.arenaName);
+                arenaNameText.gameObject.SetActive(hasArena);
+                if (hasArena)
+                    arenaNameText.text = $"Arena: {rec.arenaName}";
+            }
+
+            if (winnerText != null)
+            {
+                if (rec.outcome == "Draw")
+                {
+                    winnerText.text = "DRAW!";
+                    winnerText.color = Color.white;
+                }
+                else if (rec.outcome == "P1")
+                {
+                    winnerText.text = $"{rec.p1FighterName} WINS!";
+                    winnerText.color = Color.cyan;
+                }
+                else if (rec.outcome == "P2")
+                {
+                    winnerText.text = $"{rec.p2FighterName} WINS!";
+                    winnerText.color = Color.yellow;
+                }
+                else
+                {
+                    winnerText.text = "MATCH OVER";
+                    winnerText.color = Color.white;
+                }
+            }
+
+            if (matchScoreText != null)
+                matchScoreText.text = $"{rec.p1FinalWins} - {rec.p2FinalWins}";
+
+            if (player1NameText != null)
+                player1NameText.text = $"{rec.p1DisplayName}\n{rec.p1FighterName}";
+            if (player1WinsText != null)
+                player1WinsText.text = $"Wins: {rec.p1FinalWins}";
+
+            if (player2NameText != null)
+                player2NameText.text = $"{rec.p2DisplayName}\n{rec.p2FighterName}";
+            if (player2WinsText != null)
+                player2WinsText.text = $"Wins: {rec.p2FinalWins}";
+
+            if (roundResultsText != null)
+            {
+                var snap = rec.roundWinnerCodesSnapshot;
+                string roundText = "Round Results:\n";
+                if (snap != null && snap.Count > 0)
+                {
+                    for (int i = 0; i < snap.Count; i++)
+                    {
+                        int code = snap[i];
+                        string winnerName = code == 1 ? rec.p1FighterName : code == 2 ? rec.p2FighterName : "Draw";
+                        roundText += $"Round {i + 1}: {winnerName}\n";
+                    }
+                }
+                else
+                    roundText += "(No round log)\n";
+                roundResultsText.text = roundText;
+            }
+        }
+
+        private void ApplyButtonLabels(bool isLocal)
+        {
+            // Set button labels based on match type
+            if (continueButtonText != null)
+                continueButtonText.text = isLocal ? "Back to Setup" : "Back to Lobby";
+            if (rematchButtonText != null)
+                rematchButtonText.text = "Rematch";
+            if (rematchDifferentButtonText != null)
+                rematchDifferentButtonText.text = "Change Characters";
         }
 
         private string GetFighterName(FighterController fighter)
@@ -142,33 +248,41 @@ namespace Adaptabrawl.UI
             return fighter.name;
         }
 
+        // Back to lobby (online) or start of SetupScene (local) — network session stays alive
+        private void Continue()
+        {
+            bool isLocal = MatchResultsData.isLocalMatch;
+            MatchResultsData.Clear();
+            TransitionTo(isLocal ? "SetupScene" : "LobbyScene");
+        }
+
+        // Same characters — skip all setup and reload game scene directly
         private void Rematch()
         {
-            // Store rematch flag
-            MatchResultsData.rematchRequested = true;
+            MatchResultsData.Clear();
+            string gameScene = CharacterSelectData.isLocalMatch ? "GameScene" : "OnlineGameScene";
+            TransitionTo(gameScene);
+        }
 
-            // Return to character select or directly to game
-            if (MatchResultsData.isLocalMatch)
-            {
-                SceneManager.LoadScene("SetupScene");
-            }
-            else
-            {
-                // For online, return to lobby
-                SceneManager.LoadScene("LobbyScene");
-            }
+        // Goes back to CharacterSelect in SetupScene, skipping controller config
+        private void RematchDifferentCharacters()
+        {
+            MatchResultsData.rematchSkipToCharacterSelect = true;
+            TransitionTo("SetupScene");
         }
 
         private void ReturnToMainMenu()
         {
             MatchResultsData.Clear();
-            SceneManager.LoadScene("StartScene");
+            TransitionTo("StartScene");
         }
 
-        private void ReturnToCharacterSelect()
+        private void TransitionTo(string sceneName)
         {
-            MatchResultsData.Clear();
-            SceneManager.LoadScene("SetupScene");
+            if (SceneTransitionManager.Instance != null)
+                SceneTransitionManager.Instance.TransitionToScene(sceneName);
+            else
+                SceneManager.LoadScene(sceneName);
         }
     }
 
@@ -178,6 +292,7 @@ namespace Adaptabrawl.UI
         public static bool hasResults = false;
         public static bool rematchRequested = false;
         public static bool isLocalMatch = false;
+        public static bool rematchSkipToCharacterSelect = false;
         public static MatchResults results;
 
         public static void SetResults(MatchResults matchResults, bool local)
@@ -192,6 +307,7 @@ namespace Adaptabrawl.UI
             hasResults = false;
             rematchRequested = false;
             isLocalMatch = false;
+            rematchSkipToCharacterSelect = false;
             results = null;
         }
     }

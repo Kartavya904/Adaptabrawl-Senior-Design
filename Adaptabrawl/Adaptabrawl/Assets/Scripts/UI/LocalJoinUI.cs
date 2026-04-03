@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Utilities;
 using System;
 using System.Collections;
+using Adaptabrawl.Gameplay;
 
 namespace Adaptabrawl.UI
 {
@@ -86,6 +87,11 @@ namespace Adaptabrawl.UI
             // Map device name to controller index (0=Keyboard, 1=Controller)
             int p2DeviceIndex = deviceName == "Controller" ? 1 : 0;
 
+            // Persist input devices in LobbyContext — P1 is always keyboard at local join stage
+            var lobby = LobbyContext.EnsureExists();
+            lobby.SetPlayerDisplayNames(lobby.p1Name, lobby.p2Name);
+            lobby.SetInputDevices(0, p2DeviceIndex);
+
             // Tell SetupSceneManager what devices were detected so ControllerConfig is pre-filled correctly
             setupManager.SetLocalDevices(0, p2DeviceIndex); // P1 is always Keyboard on host
 
@@ -112,8 +118,8 @@ namespace Adaptabrawl.UI
 
         private IEnumerator JoinCountdownRoutine()
         {
-            // Short 2-second countdown before moving to controller config.
-            for (int i = 2; i > 0; i--)
+            // 3-second countdown before moving to controller config (matches other setup phases).
+            for (int i = 3; i > 0; i--)
             {
                 if (countdownText != null)
                 {

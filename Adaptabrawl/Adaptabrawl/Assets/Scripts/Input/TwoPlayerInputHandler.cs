@@ -110,160 +110,166 @@ public class TwoPlayerInputHandler : MonoBehaviour
     private bool IsGameplayScene()
     {
         var sceneName = SceneManager.GetActiveScene().name;
-        return sceneName == "GameScene" || sceneName == "TestCharacter";
+        return sceneName == "GameScene" || sceneName == "OnlineGameScene" || sceneName == "TestCharacter";
     }
     
     void HandlePlayer1Input()
     {
         if (player1Controller == null || p1AnimBridge == null) return;
-        
+
         FighterDef fighter = player1Controller.FighterDef;
         if (fighter == null) return;
 
-        Gamepad pad = Gamepad.all.Count > p1GamepadIndex ? Gamepad.all[p1GamepadIndex] : null;
+        var lobby = LobbyContext.Instance;
+        bool strictLobby = lobby != null;
+        bool keyboardAllowed = !strictLobby || lobby.p1InputDevice != 1;
+        bool gamepadAllowed = !strictLobby || lobby.p1InputDevice == 1;
+
+        Gamepad pad = null;
+        if (strictLobby && gamepadAllowed)
+            LobbyContext.TryGetGamepadForPlayer(1, lobby.p1InputDevice, lobby.p2InputDevice, out pad);
+        else if (!strictLobby && Gamepad.all.Count > p1GamepadIndex)
+            pad = Gamepad.all[p1GamepadIndex];
 
         // ---- Movement logic ----
         if (p1Movement != null)
         {
             Vector2 moveInput = Vector2.zero;
-            
-            // Keyboard Movement
-            if (Input.GetKey(p1Left)) moveInput.x -= 1;
-            if (Input.GetKey(p1Right)) moveInput.x += 1;
-            if (Input.GetKey(p1Up)) moveInput.y += 1;
-            if (Input.GetKey(p1Down)) moveInput.y -= 1;
 
-            // Gamepad Movement
+            if (keyboardAllowed)
+            {
+                if (Input.GetKey(p1Left)) moveInput.x -= 1;
+                if (Input.GetKey(p1Right)) moveInput.x += 1;
+                if (Input.GetKey(p1Up)) moveInput.y += 1;
+                if (Input.GetKey(p1Down)) moveInput.y -= 1;
+            }
+
             if (pad != null)
             {
                 Vector2 stick = pad.leftStick.ReadValue();
                 if (stick.sqrMagnitude > 0.05f) moveInput += stick;
-                
                 Vector2 dpad = pad.dpad.ReadValue();
                 if (dpad.sqrMagnitude > 0.05f) moveInput += dpad;
             }
 
-            // Clamp so we don't go too fast diagonally
             moveInput.x = Mathf.Clamp(moveInput.x, -1f, 1f);
             moveInput.y = Mathf.Clamp(moveInput.y, -1f, 1f);
-            
             p1Movement.SetMoveInput(moveInput);
 
-            bool jumpPressed = Input.GetKeyDown(p1Up) || (pad != null && pad.buttonSouth.wasPressedThisFrame);
+            bool jumpPressed = (keyboardAllowed && Input.GetKeyDown(p1Up)) || (pad != null && pad.buttonSouth.wasPressedThisFrame);
             if (jumpPressed) p1Movement.Jump();
-            
-            bool dodgePressed = Input.GetKeyDown(p1Dodge) || (pad != null && pad.buttonEast.wasPressedThisFrame);
+
+            bool dodgePressed = (keyboardAllowed && Input.GetKeyDown(p1Dodge)) || (pad != null && pad.buttonEast.wasPressedThisFrame);
             if (dodgePressed) p1Movement.Dash(moveInput);
         }
-        
+
         // ---- Attack & Special Logic ----
-        bool lightPressed = Input.GetKeyDown(p1LightAttack) || (pad != null && pad.buttonWest.wasPressedThisFrame);
+        bool lightPressed = (keyboardAllowed && Input.GetKeyDown(p1LightAttack)) || (pad != null && pad.buttonWest.wasPressedThisFrame);
         if (lightPressed && fighter.lightAttack != null)
         {
             AnimatedMoveDef animMove = fighter.lightAttack as AnimatedMoveDef;
-            if (animMove != null && p1AnimBridge.CanPlayMove())
-                p1AnimBridge.PlayMove(animMove);
+            if (animMove != null && p1AnimBridge.CanPlayMove()) p1AnimBridge.PlayMove(animMove);
         }
-        
-        bool heavyPressed = Input.GetKeyDown(p1HeavyAttack) || (pad != null && pad.buttonNorth.wasPressedThisFrame);
+
+        bool heavyPressed = (keyboardAllowed && Input.GetKeyDown(p1HeavyAttack)) || (pad != null && pad.buttonNorth.wasPressedThisFrame);
         if (heavyPressed && fighter.heavyAttack != null)
         {
             AnimatedMoveDef animMove = fighter.heavyAttack as AnimatedMoveDef;
-            if (animMove != null && p1AnimBridge.CanPlayMove())
-                p1AnimBridge.PlayMove(animMove);
+            if (animMove != null && p1AnimBridge.CanPlayMove()) p1AnimBridge.PlayMove(animMove);
         }
-        
-        bool special1Pressed = Input.GetKeyDown(p1Special1) || (pad != null && pad.leftShoulder.wasPressedThisFrame);
+
+        bool special1Pressed = (keyboardAllowed && Input.GetKeyDown(p1Special1)) || (pad != null && pad.leftShoulder.wasPressedThisFrame);
         if (special1Pressed && fighter.specialMoves != null && fighter.specialMoves.Length > 0)
         {
             AnimatedMoveDef animMove = fighter.specialMoves[0] as AnimatedMoveDef;
-            if (animMove != null && p1AnimBridge.CanPlayMove())
-                p1AnimBridge.PlayMove(animMove);
+            if (animMove != null && p1AnimBridge.CanPlayMove()) p1AnimBridge.PlayMove(animMove);
         }
-        
-        bool special2Pressed = Input.GetKeyDown(p1Special2) || (pad != null && pad.rightShoulder.wasPressedThisFrame);
+
+        bool special2Pressed = (keyboardAllowed && Input.GetKeyDown(p1Special2)) || (pad != null && pad.rightShoulder.wasPressedThisFrame);
         if (special2Pressed && fighter.specialMoves != null && fighter.specialMoves.Length > 1)
         {
             AnimatedMoveDef animMove = fighter.specialMoves[1] as AnimatedMoveDef;
-            if (animMove != null && p1AnimBridge.CanPlayMove())
-                p1AnimBridge.PlayMove(animMove);
+            if (animMove != null && p1AnimBridge.CanPlayMove()) p1AnimBridge.PlayMove(animMove);
         }
     }
     
     void HandlePlayer2Input()
     {
         if (player2Controller == null || p2AnimBridge == null) return;
-        
+
         FighterDef fighter = player2Controller.FighterDef;
         if (fighter == null) return;
 
-        Gamepad pad = Gamepad.all.Count > p2GamepadIndex ? Gamepad.all[p2GamepadIndex] : null;
+        var lobby = LobbyContext.Instance;
+        bool strictLobby = lobby != null;
+        bool keyboardAllowed = !strictLobby || lobby.p2InputDevice != 1;
+        bool gamepadAllowed = !strictLobby || lobby.p2InputDevice == 1;
+
+        Gamepad pad = null;
+        if (strictLobby && gamepadAllowed)
+            LobbyContext.TryGetGamepadForPlayer(2, lobby.p1InputDevice, lobby.p2InputDevice, out pad);
+        else if (!strictLobby && Gamepad.all.Count > p2GamepadIndex)
+            pad = Gamepad.all[p2GamepadIndex];
 
         // ---- Movement logic ----
         if (p2Movement != null)
         {
             Vector2 moveInput = Vector2.zero;
-            
-            // Keyboard Movement
-            if (Input.GetKey(p2Left)) moveInput.x -= 1;
-            if (Input.GetKey(p2Right)) moveInput.x += 1;
-            if (Input.GetKey(p2Up)) moveInput.y += 1;
-            if (Input.GetKey(p2Down)) moveInput.y -= 1;
 
-            // Gamepad Movement
+            if (keyboardAllowed)
+            {
+                if (Input.GetKey(p2Left)) moveInput.x -= 1;
+                if (Input.GetKey(p2Right)) moveInput.x += 1;
+                if (Input.GetKey(p2Up)) moveInput.y += 1;
+                if (Input.GetKey(p2Down)) moveInput.y -= 1;
+            }
+
             if (pad != null)
             {
                 Vector2 stick = pad.leftStick.ReadValue();
                 if (stick.sqrMagnitude > 0.05f) moveInput += stick;
-                
                 Vector2 dpad = pad.dpad.ReadValue();
                 if (dpad.sqrMagnitude > 0.05f) moveInput += dpad;
             }
 
-            // Clamp so we don't go too fast diagonally
             moveInput.x = Mathf.Clamp(moveInput.x, -1f, 1f);
             moveInput.y = Mathf.Clamp(moveInput.y, -1f, 1f);
-            
             p2Movement.SetMoveInput(moveInput);
 
-            bool jumpPressed = Input.GetKeyDown(p2Up) || (pad != null && pad.buttonSouth.wasPressedThisFrame);
+            bool jumpPressed = (keyboardAllowed && Input.GetKeyDown(p2Up)) || (pad != null && pad.buttonSouth.wasPressedThisFrame);
             if (jumpPressed) p2Movement.Jump();
-            
-            bool dodgePressed = Input.GetKeyDown(p2Dodge) || (pad != null && pad.buttonEast.wasPressedThisFrame);
+
+            bool dodgePressed = (keyboardAllowed && Input.GetKeyDown(p2Dodge)) || (pad != null && pad.buttonEast.wasPressedThisFrame);
             if (dodgePressed) p2Movement.Dash(moveInput);
         }
-        
+
         // ---- Attack & Special Logic ----
-        bool lightPressed = Input.GetKeyDown(p2LightAttack) || (pad != null && pad.buttonWest.wasPressedThisFrame);
+        bool lightPressed = (keyboardAllowed && Input.GetKeyDown(p2LightAttack)) || (pad != null && pad.buttonWest.wasPressedThisFrame);
         if (lightPressed && fighter.lightAttack != null)
         {
             AnimatedMoveDef animMove = fighter.lightAttack as AnimatedMoveDef;
-            if (animMove != null && p2AnimBridge.CanPlayMove())
-                p2AnimBridge.PlayMove(animMove);
+            if (animMove != null && p2AnimBridge.CanPlayMove()) p2AnimBridge.PlayMove(animMove);
         }
-        
-        bool heavyPressed = Input.GetKeyDown(p2HeavyAttack) || (pad != null && pad.buttonNorth.wasPressedThisFrame);
+
+        bool heavyPressed = (keyboardAllowed && Input.GetKeyDown(p2HeavyAttack)) || (pad != null && pad.buttonNorth.wasPressedThisFrame);
         if (heavyPressed && fighter.heavyAttack != null)
         {
             AnimatedMoveDef animMove = fighter.heavyAttack as AnimatedMoveDef;
-            if (animMove != null && p2AnimBridge.CanPlayMove())
-                p2AnimBridge.PlayMove(animMove);
+            if (animMove != null && p2AnimBridge.CanPlayMove()) p2AnimBridge.PlayMove(animMove);
         }
-        
-        bool special1Pressed = Input.GetKeyDown(p2Special1) || (pad != null && pad.leftShoulder.wasPressedThisFrame);
+
+        bool special1Pressed = (keyboardAllowed && Input.GetKeyDown(p2Special1)) || (pad != null && pad.leftShoulder.wasPressedThisFrame);
         if (special1Pressed && fighter.specialMoves != null && fighter.specialMoves.Length > 0)
         {
             AnimatedMoveDef animMove = fighter.specialMoves[0] as AnimatedMoveDef;
-            if (animMove != null && p2AnimBridge.CanPlayMove())
-                p2AnimBridge.PlayMove(animMove);
+            if (animMove != null && p2AnimBridge.CanPlayMove()) p2AnimBridge.PlayMove(animMove);
         }
-        
-        bool special2Pressed = Input.GetKeyDown(p2Special2) || (pad != null && pad.rightShoulder.wasPressedThisFrame);
+
+        bool special2Pressed = (keyboardAllowed && Input.GetKeyDown(p2Special2)) || (pad != null && pad.rightShoulder.wasPressedThisFrame);
         if (special2Pressed && fighter.specialMoves != null && fighter.specialMoves.Length > 1)
         {
             AnimatedMoveDef animMove = fighter.specialMoves[1] as AnimatedMoveDef;
-            if (animMove != null && p2AnimBridge.CanPlayMove())
-                p2AnimBridge.PlayMove(animMove);
+            if (animMove != null && p2AnimBridge.CanPlayMove()) p2AnimBridge.PlayMove(animMove);
         }
     }
 }

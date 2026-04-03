@@ -296,19 +296,75 @@ namespace Adaptabrawl.Networking
                 cancellationToken);
         }
 
-        private static void TryJoinMulticastListen(UdpClient udp)
+        /// <summary>
+        /// Joins the LAN discovery multicast group on every IPv4 interface that looks usable.
+        /// Windows often only receives multicasts on the interface you explicitly join; a single default join
+        /// misses packets when another PC uses Wi‑Fi and you use Ethernet (same router).
+        /// </summary>
+        public static void TryJoinMulticastListen(UdpClient udp)
         {
+            if (udp == null)
+                return;
+
+            var socket = udp.Client;
+            var group = LanMulticastGroup;
+            var anyJoined = false;
+
+            foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (ni.OperationalStatus != OperationalStatus.Up)
+                    continue;
+                if (ni.NetworkInterfaceType == NetworkInterfaceType.Loopback)
+                    continue;
+
+                foreach (var ua in ni.GetIPProperties().UnicastAddresses)
+                {
+                    if (ua.Address.AddressFamily != AddressFamily.InterNetwork)
+                        continue;
+                    if (IPAddress.IsLoopback(ua.Address))
+                        continue;
+                    var b = ua.Address.GetAddressBytes();
+                    if (b.Length >= 2 && b[0] == 169 && b[1] == 254)
+                        continue;
+
+                    try
+                    {
+                        socket.SetSocketOption(
+                            SocketOptionLevel.IP,
+                            SocketOptionName.AddMembership,
+                            new MulticastOption(group, ua.Address));
+                        anyJoined = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogWarning($"[LanRoomDiscovery] Multicast join on {ua.Address}: {ex.Message}");
+                    }
+                }
+            }
+
+            if (!anyJoined)
+            {
+                try
+                {
+                    socket.SetSocketOption(
+                        SocketOptionLevel.IP,
+                        SocketOptionName.AddMembership,
+                        new MulticastOption(group));
+                    anyJoined = true;
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogWarning($"[LanRoomDiscovery] Multicast listen failed; using broadcast only: {ex.Message}");
+                }
+            }
+
             try
             {
-                udp.Client.SetSocketOption(
-                    SocketOptionLevel.IP,
-                    SocketOptionName.AddMembership,
-                    new MulticastOption(LanMulticastGroup));
-                udp.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastLoopback, true);
+                socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastLoopback, true);
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.LogWarning($"[LanRoomDiscovery] Multicast listen failed; using broadcast only: {ex.Message}");
+                // ignored
             }
         }
 

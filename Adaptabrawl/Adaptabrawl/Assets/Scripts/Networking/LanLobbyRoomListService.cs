@@ -132,18 +132,7 @@ namespace Adaptabrawl.Networking
                 client.Client.Bind(new IPEndPoint(IPAddress.Any, beaconListenPort));
                 client.Client.ReceiveTimeout = 750;
 
-                try
-                {
-                    client.Client.SetSocketOption(
-                        SocketOptionLevel.IP,
-                        SocketOptionName.AddMembership,
-                        new MulticastOption(LanRoomDiscovery.LanMulticastGroup));
-                    client.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastLoopback, true);
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogWarning($"[LanLobbyRoomListService] Multicast join: {ex.Message}");
-                }
+                LanRoomDiscovery.TryJoinMulticastListen(client);
 
                 _udp = client;
 

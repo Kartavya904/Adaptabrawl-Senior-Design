@@ -32,6 +32,9 @@ namespace Adaptabrawl.UI
 
         [Tooltip("Optional: lists room codes heard on LAN (PublicRoomLobbyContext scanner). Wire a TMP under Join panel.")]
         [SerializeField] private TextMeshProUGUI discoveredLanRoomsText;
+
+        [Tooltip("Optional: pick a row to fill the join box with host IPv4:port (bypasses UDP discovery if firewall blocks it).")]
+        [SerializeField] private TMP_Dropdown discoveredLanRoomDropdown;
         
         [Header("Waiting Room UI (Host Only)")]
         [SerializeField] private GameObject waitingRoomPanel;
@@ -47,6 +50,19 @@ namespace Adaptabrawl.UI
         [SerializeField] private Button cancelButton;
         
         private bool isReady = false;
+
+        private void OnEnable()
+        {
+            var ctx = PublicRoomLobbyContext.EnsureExists();
+            ctx.CurrentRoomsChanged += OnPublicRoomsChanged;
+            OnPublicRoomsChanged(ctx.CurrentPublicRooms);
+        }
+
+        private void OnDisable()
+        {
+            if (PublicRoomLobbyContext.Instance != null)
+                PublicRoomLobbyContext.Instance.CurrentRoomsChanged -= OnPublicRoomsChanged;
+        }
         
         private void Start()
         {
@@ -100,18 +116,12 @@ namespace Adaptabrawl.UI
             if (roomCodeInput != null && roomCodeInput.placeholder is TextMeshProUGUI ph)
                 ph.text = "6-digit code or host IP (e.g. 192.168.1.5:7777)";
                 
-            if (PublicRoomLobbyContext.Instance != null)
-                PublicRoomLobbyContext.Instance.CurrentRoomsChanged += OnPublicRoomsChanged;
-
             // Ensure we start on the Choice panel
             ShowChoicePanel();
         }
         
         private void OnDestroy()
         {
-            if (PublicRoomLobbyContext.Instance != null)
-                PublicRoomLobbyContext.Instance.CurrentRoomsChanged -= OnPublicRoomsChanged;
-
             if (lobbyManager != null)
             {
                 lobbyManager.OnRoomCodeGenerated -= OnRoomCodeGenerated;
@@ -311,17 +321,62 @@ namespace Adaptabrawl.UI
             if (joinErrorText != null) joinErrorText.text = "";
             if (joinRoomPanel != null) joinRoomPanel.SetActive(true);
 
-            PublicRoomLobbyContext.Instance?.RequestRoomListRefresh();
+            var ctx = PublicRoomLobbyContext.EnsureExists();
+            ctx.SetLanRoomListActive(true);
+            ctx.RequestRoomListRefresh();
         }
 
         private void OnPublicRoomsChanged(IReadOnlyList<LanAdvertisedRoom> rooms)
         {
-            if (discoveredLanRoomsText == null)
+            var ctx = PublicRoomLobbyContext.Instance;
+            var interval = ctx != null ? ctx.PublicRoomScanIntervalSeconds : 5f;
+
+            if (discoveredLanRoomsText != null)
+                discoveredLanRoomsText.text = PublicRoomLobbyContext.FormatRoomsForDisplay(rooms, interval);
+
+            RefreshLanRoomDropdown(rooms);
+        }
+
+        private void RefreshLanRoomDropdown(IReadOnlyList<LanAdvertisedRoom> rooms)
+        {
+            if (discoveredLanRoomDropdown == null)
+                return;
+
+            discoveredLanRoomDropdown.onValueChanged.RemoveListener(OnLanRoomDropdownValueChanged);
+
+            var options = new List<TMP_Dropdown.OptionData>
+            {
+                new TMP_Dropdown.OptionData("LAN rooms (pick to fill IP:port)")
+            };
+
+            if (rooms != null)
+            {
+                foreach (var r in rooms)
+                {
+                    var label = $"{r.RoomCode}  {r.HostIpv4}:{r.GamePort}";
+                    options.Add(new TMP_Dropdown.OptionData(label));
+                }
+            }
+
+            discoveredLanRoomDropdown.ClearOptions();
+            discoveredLanRoomDropdown.AddOptions(options);
+            discoveredLanRoomDropdown.value = 0;
+            discoveredLanRoomDropdown.RefreshShownValue();
+            discoveredLanRoomDropdown.onValueChanged.AddListener(OnLanRoomDropdownValueChanged);
+        }
+
+        private void OnLanRoomDropdownValueChanged(int index)
+        {
+            if (discoveredLanRoomDropdown == null || index <= 0 || roomCodeInput == null)
                 return;
 
             var ctx = PublicRoomLobbyContext.Instance;
-            var interval = ctx != null ? ctx.PublicRoomScanIntervalSeconds : 5f;
-            discoveredLanRoomsText.text = PublicRoomLobbyContext.FormatRoomsForDisplay(rooms, interval);
+            var rooms = ctx?.CurrentPublicRooms;
+            if (rooms == null || index - 1 >= rooms.Count)
+                return;
+
+            var r = rooms[index - 1];
+            roomCodeInput.text = $"{r.HostIpv4}:{r.GamePort}";
         }
         
         private void UpdateReadyUI()

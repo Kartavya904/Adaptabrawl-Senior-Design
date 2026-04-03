@@ -266,7 +266,7 @@ namespace Adaptabrawl.Networking
         /// <summary>/24-style broadcast (x.y.z.255). Matches typical home routers; avoids IPv4Mask API differences across Unity targets.</summary>
         private static IPAddress ComputeBroadcastAddressForTypicalHomeLan(byte[] ipBytes)
         {
-            return new IPAddress(new[] { ipBytes[0], ipBytes[1], ipBytes[2], 255 });
+            return new IPAddress(new byte[] { ipBytes[0], ipBytes[1], ipBytes[2], 255 });
         }
 
         private static string NormalizeCode(string code) => code == null ? string.Empty : code.Trim();

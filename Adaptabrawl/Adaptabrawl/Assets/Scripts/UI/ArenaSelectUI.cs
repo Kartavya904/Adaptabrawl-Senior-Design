@@ -252,7 +252,10 @@ namespace Adaptabrawl.UI
                 ArenaSelectData.selectedArenaName = availableArenas[aIdx];
             }
 
-            LobbyContext.Instance?.SetLastArenaIndex(aIdx);
+            if (availableArenas.Count > 0 && aIdx >= 0 && aIdx < availableArenas.Count)
+                LobbyContext.Instance?.SetLastArenaSelection(aIdx, availableArenas[aIdx]);
+            else
+                LobbyContext.Instance?.SetLastArenaSelection(aIdx, "");
 
             // Set the panel's Image source to the sprite for the selected arena (elements 0, 1, 2).
             ApplyArenaBackground(aIdx);

@@ -29,8 +29,8 @@ namespace Adaptabrawl.Gameplay
         public static string CharacterConfirmLine(int device01, bool isPlayer1)
         {
             if (device01 == 1)
-                return "Triangle — lock in";
-            return isPlayer1 ? "Space — lock in" : "Enter — lock in";
+                return "X (Cross) — lock in";
+            return isPlayer1 ? "F — lock in" : "Enter — lock in";
         }
 
         public static string CharacterCancelLine(int device01, bool isPlayer1)
@@ -66,10 +66,11 @@ namespace Adaptabrawl.Gameplay
         {
             string dev = DeviceLabel(device01);
             string browse = CharacterBrowseLine(device01, isPlayer1);
+            string cancel = CharacterCancelLine(device01, isPlayer1);
             if (lockedIn)
-                return $"LOCKED IN\n<size=65%><color=#aaaaaa>{dev}</color>\n{CharacterCancelLine(device01, isPlayer1)}</size>";
+                return $"LOCKED IN\n<size=62%><color=#aaaaaa>{dev}</color>\n{cancel}\n<size=52%>Unlock to browse fighters again.</size>";
             string confirm = CharacterConfirmLine(device01, isPlayer1);
-            return $"Lock in\n<size=65%><color=#88ccff>{dev}</color>\n{confirm}\n{browse}</size>";
+            return $"Lock in\n<size=62%><color=#88ccff>{dev}</color>\n{confirm}\n{browse}\n<size=52%><color=#999999>When locked: {cancel}</color></size>";
         }
 
         public static string ControllerReadyButtonRich(bool ready, int device01, bool isPlayer1)
@@ -81,10 +82,11 @@ namespace Adaptabrawl.Gameplay
 
         public static string ArenaReadyButtonRich(bool ready, int device01, bool isPlayer1)
         {
-            if (ready)
-                return $"READY!\n<size=65%>{ArenaUnreadyLine(device01, isPlayer1)}</size>";
             string dev = DeviceLabel(device01);
-            return $"Ready\n<size=65%><color=#88ccff>{dev}</color>\n{ArenaReadyLine(device01, isPlayer1)}</size>";
+            string undo = ArenaUnreadyLine(device01, isPlayer1);
+            if (ready)
+                return $"READY!\n<size=62%>{undo}\n<size=52%>Use the same control to undo.</size>";
+            return $"Ready\n<size=62%><color=#88ccff>{dev}</color>\n{ArenaReadyLine(device01, isPlayer1)}\n<size=52%><color=#999>After ready: {undo}</color></size>";
         }
     }
 }

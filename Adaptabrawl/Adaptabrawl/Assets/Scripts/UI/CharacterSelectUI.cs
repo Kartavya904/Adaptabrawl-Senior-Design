@@ -271,7 +271,7 @@ namespace Adaptabrawl.UI
                         if (h > 0.5f) direction = 1;
                         else if (h < -0.5f) direction = -1;
                     }
-                    confirm = pad.buttonNorth.wasPressedThisFrame; // △ Triangle
+                    confirm = pad.buttonSouth.wasPressedThisFrame; // X / Cross — lock in
                 }
             }
             else // Keyboard
@@ -280,7 +280,7 @@ namespace Adaptabrawl.UI
                 {
                     if (UnityEngine.Input.GetKeyDown(KeyCode.D)) direction = 1;
                     else if (UnityEngine.Input.GetKeyDown(KeyCode.A)) direction = -1;
-                    confirm = UnityEngine.Input.GetKeyDown(KeyCode.Space);
+                    confirm = UnityEngine.Input.GetKeyDown(KeyCode.F);
                 }
                 else
                 {

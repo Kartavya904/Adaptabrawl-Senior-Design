@@ -65,6 +65,7 @@ namespace Adaptabrawl.UI
                     _localP2FighterIndex = LobbyContext.Instance.p2LastFighterIndex;
                 }
 
+                ResetCharacterLockInStateForCharacterPhase();
                 ShowCharacterSelect();
                 TryPushRematchFighterIndicesToNetwork();
                 return;
@@ -179,6 +180,7 @@ namespace Adaptabrawl.UI
                 yield return new WaitForSeconds(1f);
             }
             OnControllerToCharacterCountdownTick?.Invoke(0);
+            ResetCharacterLockInStateForCharacterPhase();
             ShowCharacterSelect();
             ControllerPhaseCountdownActive = false;
         }
@@ -232,6 +234,7 @@ namespace Adaptabrawl.UI
                 yield return new WaitForSeconds(1f);
             }
             OnControllerToCharacterCountdownTick?.Invoke(0);
+            ResetCharacterLockInStateForCharacterPhase();
             ShowCharacterSelect();
             ControllerPhaseCountdownActive = false;
         }
@@ -586,6 +589,22 @@ namespace Adaptabrawl.UI
         public void ShowCharacterSelect()
         {
             SetPanels(false, false, true, false);
+        }
+
+        /// <summary>
+        /// Clears lock-in when starting a <b>new</b> character phase (after controller ready countdown or rematch skip).
+        /// Not used when returning from arena — players keep their picks until they unlock.
+        /// </summary>
+        private void ResetCharacterLockInStateForCharacterPhase()
+        {
+            _localP1CharacterReady = false;
+            _localP2CharacterReady = false;
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening && NetworkManager.Singleton.IsServer && IsSpawned)
+            {
+                p1CharacterReady.Value = false;
+                p2CharacterReady.Value = false;
+            }
+            OnCharacterConfigChanged?.Invoke();
         }
 
         public void ShowArenaSelect()

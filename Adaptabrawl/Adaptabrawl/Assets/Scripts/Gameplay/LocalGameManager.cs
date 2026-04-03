@@ -78,6 +78,8 @@ namespace Adaptabrawl.Gameplay
             // Spawn fighters first so GameManager.InitializeMatch() can find them.
             SpawnFighters(fighter1Def, fighter2Def);
 
+            GameContext.EnsureExists().BeginLocalMatch(player1, player2);
+
             // Bootstrap GameManager — try the serialized reference, then the same GameObject,
             // then the scene, and finally add one if nothing exists.
             if (gameManager == null)
@@ -170,6 +172,8 @@ namespace Adaptabrawl.Gameplay
 
         private void OnRoundEnd(FighterController winner)
         {
+            GameContext.Instance?.RecordRoundEnd(winner);
+
             if (matchResults == null) return;
 
             matchResults.totalRounds++;
@@ -183,8 +187,20 @@ namespace Adaptabrawl.Gameplay
 
         private void OnMatchEnd(FighterController winner)
         {
-            // The GameManager will handle creating the MatchResults object and transitioning to the scene.
-            // LocalGameManager merely sets up local overrides.
+            if (gameManager == null || player1 == null || player2 == null) return;
+            var rw = gameManager.RoundWins;
+            int p1w = rw.ContainsKey(player1) ? rw[player1] : 0;
+            int p2w = rw.ContainsKey(player2) ? rw[player2] : 0;
+            GameContext.Instance?.FinalizeMatch(winner, p1w, p2w, gameManager.CurrentRound);
+        }
+
+        private void OnDestroy()
+        {
+            if (gameManager != null)
+            {
+                gameManager.OnRoundEnd -= OnRoundEnd;
+                gameManager.OnMatchEnd -= OnMatchEnd;
+            }
         }
 
         public void RestartMatch()

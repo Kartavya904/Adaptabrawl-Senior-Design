@@ -34,6 +34,9 @@ namespace Adaptabrawl.Gameplay
         [Tooltip("Last arena list index chosen in setup (for reference / future rematch).")]
         public int lastArenaIndex;
 
+        [Tooltip("Human-readable arena name from setup (same order as ArenaSelectUI list).")]
+        public string lastArenaName = "";
+
         [Header("Match Info")]
         public bool isLocalMatch;
 
@@ -78,6 +81,7 @@ namespace Adaptabrawl.Gameplay
             p1LastFighterIndex = 0;
             p2LastFighterIndex = 0;
             lastArenaIndex = 0;
+            lastArenaName = "";
 
             // Sync legacy static class
             CharacterSelectData.isLocalMatch = localMatch;
@@ -101,6 +105,13 @@ namespace Adaptabrawl.Gameplay
         public void SetLastArenaIndex(int arenaIdx)
         {
             lastArenaIndex = arenaIdx;
+        }
+
+        /// <summary>Stores both roster index and display name for <see cref="GameContext"/> / rematch.</summary>
+        public void SetLastArenaSelection(int arenaIdx, string displayName)
+        {
+            lastArenaIndex = arenaIdx;
+            lastArenaName = string.IsNullOrWhiteSpace(displayName) ? "" : displayName.Trim();
         }
 
         /// <summary>

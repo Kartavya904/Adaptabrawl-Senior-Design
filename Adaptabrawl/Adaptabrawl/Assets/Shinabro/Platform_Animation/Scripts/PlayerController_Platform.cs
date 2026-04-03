@@ -111,97 +111,141 @@ public class PlayerController_Platform : MonoBehaviour
     {
         if (isNetworkControlled) return netRight;
         Gamepad pad = GetGamepad();
-        bool padRight = pad != null && (pad.leftStick.x.ReadValue() > 0.5f || pad.dpad.right.isPressed);
-        return Input.GetKey(keyRight) || padRight;
+        if (gamepadIndex >= 0)
+            return pad != null && (pad.leftStick.x.ReadValue() > 0.5f || pad.dpad.right.isPressed);
+        return Input.GetKey(keyRight);
     }
 
     private bool IsLeftPressed()
     {
         if (isNetworkControlled) return netLeft;
         Gamepad pad = GetGamepad();
-        bool padLeft = pad != null && (pad.leftStick.x.ReadValue() < -0.5f || pad.dpad.left.isPressed);
-        return Input.GetKey(keyLeft) || padLeft;
+        if (gamepadIndex >= 0)
+            return pad != null && (pad.leftStick.x.ReadValue() < -0.5f || pad.dpad.left.isPressed);
+        return Input.GetKey(keyLeft);
     }
 
     private bool IsCrouchPressed()
     {
         if (isNetworkControlled) return netCrouch;
         Gamepad pad = GetGamepad();
-        bool padDown = pad != null && (pad.leftStick.y.ReadValue() < -0.5f || pad.dpad.down.isPressed);
-        return Input.GetKey(keyCrouch) || padDown;
+        if (gamepadIndex >= 0)
+            return pad != null && (pad.leftStick.y.ReadValue() < -0.5f || pad.dpad.down.isPressed);
+        return Input.GetKey(keyCrouch);
     }
 
     private bool IsSprintPressed()
     {
         if (isNetworkControlled) return netSprint;
         Gamepad pad = GetGamepad();
-        bool padSprint = pad != null && pad.leftTrigger.isPressed;
-        return Input.GetKey(keySprint) || padSprint;
+        if (gamepadIndex >= 0)
+            return pad != null && pad.leftTrigger.isPressed;
+        return Input.GetKey(keySprint);
     }
 
     private bool WasJumpPressed()
     {
         if (isNetworkControlled) return netJump;
         Gamepad pad = GetGamepad();
-        bool padJump = pad != null && pad.buttonSouth.wasPressedThisFrame;
-        return Input.GetKeyDown(keyJump) || padJump;
+        if (gamepadIndex >= 0)
+            return pad != null && pad.buttonSouth.wasPressedThisFrame;
+        return Input.GetKeyDown(keyJump);
     }
 
     private bool WasAttackPressed()
     {
         if (isNetworkControlled) return netAttack;
         Gamepad pad = GetGamepad();
-        bool padAttack = pad != null && pad.buttonWest.wasPressedThisFrame; // X/Square
-        // Defaulting to Mouse0 for fallback legacy support along with keyAttack
-        return Input.GetKeyDown(keyAttack) || Input.GetMouseButtonDown(0) || padAttack;
+        if (gamepadIndex >= 0)
+            return pad != null && pad.buttonWest.wasPressedThisFrame;
+        return Input.GetKeyDown(keyAttack) || Input.GetMouseButtonDown(0);
     }
 
     private bool IsBlockPressed()
     {
         if (isNetworkControlled) return netBlock;
         Gamepad pad = GetGamepad();
-        bool padBlock = pad != null && pad.rightTrigger.isPressed;
-        return Input.GetKey(keyBlock) || Input.GetMouseButton(1) || padBlock;
+        if (gamepadIndex >= 0)
+            return pad != null && pad.rightTrigger.isPressed;
+        return Input.GetKey(keyBlock) || Input.GetMouseButton(1);
     }
 
     private bool WasBlockPressed()
     {
         if (isNetworkControlled) return netBlockDown;
         Gamepad pad = GetGamepad();
-        bool padBlock = pad != null && pad.rightTrigger.wasPressedThisFrame;
-        return Input.GetKeyDown(keyBlock) || Input.GetMouseButtonDown(1) || padBlock;
+        if (gamepadIndex >= 0)
+            return pad != null && pad.rightTrigger.wasPressedThisFrame;
+        return Input.GetKeyDown(keyBlock) || Input.GetMouseButtonDown(1);
     }
 
     private bool WasBlockReleased()
     {
         if (isNetworkControlled) return netBlockUp;
         Gamepad pad = GetGamepad();
-        bool padBlock = pad != null && pad.rightTrigger.wasReleasedThisFrame;
-        return Input.GetKeyUp(keyBlock) || Input.GetMouseButtonUp(1) || padBlock;
+        if (gamepadIndex >= 0)
+            return pad != null && pad.rightTrigger.wasReleasedThisFrame;
+        return Input.GetKeyUp(keyBlock) || Input.GetMouseButtonUp(1);
     }
 
     private bool WasDodgePressed()
     {
         if (isNetworkControlled) return netDodge;
         Gamepad pad = GetGamepad();
-        bool padDodge = pad != null && pad.buttonEast.wasPressedThisFrame; // B/Circle
-        return Input.GetKeyDown(keyDodge) || padDodge;
+        if (gamepadIndex >= 0)
+            return pad != null && pad.buttonEast.wasPressedThisFrame;
+        return Input.GetKeyDown(keyDodge);
     }
 
     private bool WasSkillPressed(int index)
     {
         if (isNetworkControlled) return index >= 0 && index < 8 ? netSkills[index] : false;
-        KeyCode[] keys = { skill1, skill2, skill3, skill4, skill5, skill6, skill7, skill8 };
-        if (index >= 0 && index < keys.Length && Input.GetKeyDown(keys[index])) return true;
-        
-        // Example pad mapping for first 4 skills: D-Pad or Shoulders
         Gamepad pad = GetGamepad();
-        if (pad != null)
+        if (gamepadIndex >= 0)
         {
+            if (pad == null) return false;
             if (index == 0) return pad.leftShoulder.wasPressedThisFrame;
             if (index == 1) return pad.rightShoulder.wasPressedThisFrame;
+            return false;
         }
-        return false;
+        KeyCode[] keys = { skill1, skill2, skill3, skill4, skill5, skill6, skill7, skill8 };
+        return index >= 0 && index < keys.Length && Input.GetKeyDown(keys[index]);
+    }
+
+    /// <summary>
+    /// Called by LocalGameManager to assign an input device to this player.
+    /// padIndex >= 0 means gamepad-only; -1 means keyboard-only.
+    /// When playerNumber == 2 and no gamepad is assigned, keys are remapped to
+    /// arrow keys so P2's keyboard doesn't clash with P1's WASD bindings.
+    /// </summary>
+    public void ConfigureForPlayer(int playerNumber, int padIndex)
+    {
+        gamepadIndex = padIndex;
+
+        if (playerNumber == 2 && padIndex < 0)
+        {
+            // Remap P2 to arrow keys + right-side keys so it doesn't share P1's WASD
+            keyLeft   = KeyCode.LeftArrow;
+            keyRight  = KeyCode.RightArrow;
+            keyJump   = KeyCode.UpArrow;
+            keyCrouch = KeyCode.DownArrow;
+            keyAttack = KeyCode.L;
+            keyBlock  = KeyCode.Semicolon;
+            keyDodge  = KeyCode.RightShift;
+            keySprint = KeyCode.RightControl;
+            skill1    = KeyCode.Keypad1;
+            skill2    = KeyCode.Keypad2;
+            skill3    = KeyCode.Keypad3;
+            skill4    = KeyCode.Keypad4;
+            skill5    = KeyCode.Keypad5;
+            skill6    = KeyCode.Keypad6;
+            skill7    = KeyCode.Keypad7;
+            skill8    = KeyCode.Keypad8;
+        }
+
+        Debug.Log($"[PlayerController_Platform] Player {playerNumber} configured — " +
+                  $"gamepadIndex={padIndex}, " +
+                  $"device={(padIndex >= 0 ? $"Gamepad {padIndex}" : "Keyboard")}");
     }
     // ----------------------------
 

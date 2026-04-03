@@ -164,14 +164,28 @@ namespace Adaptabrawl.Gameplay
 
         private void SetupPlayerInput(GameObject fighterObj, int playerNumber)
         {
-            // Setup input handler for the player
-            var inputHandler = fighterObj.GetComponent<Input.PlayerInputHandler>();
-            if (inputHandler == null)
-                inputHandler = fighterObj.AddComponent<Input.PlayerInputHandler>();
+            var pcp = fighterObj.GetComponentInChildren<PlayerController_Platform>();
+            if (pcp == null)
+            {
+                Debug.LogWarning($"[LocalGameManager] No PlayerController_Platform found under P{playerNumber} — input not configured.");
+                return;
+            }
 
-            // Configure input for player number
-            // This would require a method on PlayerInputHandler to set player index
-            // inputHandler.SetPlayerIndex(playerNumber);
+            int padIndex = PickGamepadForPlayer(playerNumber);
+            pcp.ConfigureForPlayer(playerNumber, padIndex);
+        }
+
+        /// <summary>
+        /// Assigns gamepads in order: P1 → pad 0, P2 → pad 1.
+        /// If there aren't enough gamepads for a player they fall back to keyboard (-1).
+        /// Keyboard players never receive gamepad input, and gamepad players never
+        /// receive keyboard input — enforced in PCP.ConfigureForPlayer.
+        /// </summary>
+        private static int PickGamepadForPlayer(int playerNumber)
+        {
+            int padCount = UnityEngine.InputSystem.Gamepad.all.Count;
+            int wantedPad = playerNumber - 1; // 1-based player → 0-based pad index
+            return wantedPad < padCount ? wantedPad : -1;
         }
 
         private void OnRoundEnd(FighterController winner)

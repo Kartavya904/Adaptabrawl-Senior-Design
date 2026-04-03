@@ -21,7 +21,7 @@ namespace Adaptabrawl.Networking
         [SerializeField] private int discoveryPort = 7788;
 
         [Tooltip("How long the joining device waits for a host reply on the LAN.")]
-        [SerializeField] private int joinDiscoveryTimeoutMs = 8000;
+        [SerializeField] private int joinDiscoveryTimeoutMs = 15000;
 
         [Header("Room Code")]
         private string currentRoomCode = "";
@@ -159,8 +159,11 @@ namespace Adaptabrawl.Networking
 
                 if (!ok)
                 {
+                    Debug.LogWarning(
+                        "[LobbyManager] Discovery timed out. Same router (Wi‑Fi or Ethernet OK), both Private, correct code. " +
+                        "Windows often never shows a firewall prompt—manually allow Unity/your game for UDP (Private) or open inbound UDP for discovery + game ports.");
                     OnRoomJoinFailed?.Invoke(
-                        "Could not find that room on this network. Same Wi‑Fi, correct code, host must be waiting. On Windows set the network to Private, and allow UDP (game + Editor) through the firewall on both PCs.");
+                        "No room found. Same Wi‑Fi/router (Ethernet vs Wi‑Fi is OK), correct code, host waiting. Set both PCs to Private. If it still fails, allow Unity or your game through Windows Firewall for UDP (firewall may never ask).");
                     return;
                 }
 

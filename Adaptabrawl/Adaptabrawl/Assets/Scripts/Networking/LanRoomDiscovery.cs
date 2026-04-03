@@ -11,12 +11,15 @@ using UnityEngine;
 namespace Adaptabrawl.Networking
 {
     /// <summary>
-    /// Same-LAN room discovery over UDP broadcast. Host answers FIND requests with the game IP/port
-    /// so clients can connect via UnityTransport without typing an IP address.
+    /// Same-LAN room discovery: UDP broadcast + administratively-scoped multicast (239.x).
+    /// Multicast often survives Wi‑Fi ↔ Ethernet paths where raw broadcast is filtered.
     /// </summary>
     public static class LanRoomDiscovery
     {
         private const string Prefix = "ABDISC|";
+
+        /// <summary>Fixed group for Adaptabrawl LAN discovery (not routed to the internet).</summary>
+        private static readonly IPAddress LanMulticastGroup = IPAddress.Parse("239.255.192.177");
 
         private static Thread s_HostThread;
         private static volatile bool s_HostRunning;
@@ -62,8 +65,11 @@ namespace Adaptabrawl.Networking
                 s_HostUdp.Client.Bind(new IPEndPoint(IPAddress.Any, discoveryPort));
                 s_HostUdp.Client.ReceiveTimeout = 500;
 
+                TryJoinMulticastListen(s_HostUdp);
+
                 Debug.Log(
-                    $"[LanRoomDiscovery] Host listening on UDP port {discoveryPort} (room {roomCode}). Allow inbound UDP {discoveryPort} in firewall if joins fail.");
+                    $"[LanRoomDiscovery] Host listening UDP *:{discoveryPort} + multicast {LanMulticastGroup} (room {roomCode}). " +
+                    "If joins fail: Windows often shows no popup—add inbound UDP rules for this port and your game port, or try both PCs on Private network.");
 
                 while (s_HostRunning)
                 {
@@ -164,6 +170,16 @@ namespace Adaptabrawl.Networking
                         using var udp = new UdpClient();
                         udp.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                         udp.EnableBroadcast = true;
+                        try
+                        {
+                            udp.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 32);
+                            udp.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastLoopback, true);
+                        }
+                        catch
+                        {
+                            // ignored
+                        }
+
                         var req = Encoding.UTF8.GetBytes($"{Prefix}FIND|{normalized}\n");
 
                         var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
@@ -214,8 +230,24 @@ namespace Adaptabrawl.Networking
                 cancellationToken);
         }
 
+        private static void TryJoinMulticastListen(UdpClient udp)
+        {
+            try
+            {
+                udp.Client.SetSocketOption(
+                    SocketOptionLevel.IP,
+                    SocketOptionName.AddMembership,
+                    new MulticastOption(LanMulticastGroup));
+                udp.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastLoopback, true);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[LanRoomDiscovery] Multicast listen failed; using broadcast only: {ex.Message}");
+            }
+        }
+
         /// <summary>
-        /// 255.255.255.255 is often dropped on Wi‑Fi / Windows; subnet broadcasts (e.g. 192.168.1.255) are much more reliable.
+        /// Broadcast + per-interface broadcast + LAN multicast so Wi‑Fi/Ethernet guests can reach the host.
         /// </summary>
         private static void SendFindToAllBroadcastEndpoints(UdpClient udp, byte[] req, int discoveryPort)
         {
@@ -235,6 +267,7 @@ namespace Adaptabrawl.Networking
                 }
             }
 
+            TrySend(new IPEndPoint(LanMulticastGroup, discoveryPort));
             TrySend(new IPEndPoint(IPAddress.Broadcast, discoveryPort));
 
             foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())

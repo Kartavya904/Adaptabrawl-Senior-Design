@@ -86,13 +86,38 @@ namespace Adaptabrawl.UI
             }
         }
 
+        /// <summary>LAN / online party flow (auto-host + join-by-code). Must stay in Build Settings.</summary>
+        public const string OnlinePartyRoomSceneName = "OnlinePartyRoomScene";
+
         public void PlayOnline()
         {
             LobbyContext.EnsureExists().Init(false);
             PublicRoomLobbyContext.EnsureExists().SetLanRoomListActive(true);
             CharacterSelectData.isLocalMatch = false;
-            // Load lobby scene for online play
-            SceneManager.LoadScene("LobbyScene");
+
+            if (TryGetBuildIndexBySceneName(OnlinePartyRoomSceneName) >= 0)
+                SceneManager.LoadScene(OnlinePartyRoomSceneName);
+            else
+            {
+                Debug.LogWarning(
+                    "[MainMenu] OnlinePartyRoomScene is not in Build Settings — falling back to LobbyScene. " +
+                    "Run Tools → Adaptabrawl → Setup Online Party Room Scene.");
+                SceneManager.LoadScene("LobbyScene");
+            }
+        }
+
+        private static int TryGetBuildIndexBySceneName(string sceneName)
+        {
+            for (var i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
+            {
+                var path = SceneUtility.GetScenePathByBuildIndex(i);
+                if (string.IsNullOrEmpty(path))
+                    continue;
+                if (System.IO.Path.GetFileNameWithoutExtension(path) == sceneName)
+                    return i;
+            }
+
+            return -1;
         }
 
         public void OpenSettings()

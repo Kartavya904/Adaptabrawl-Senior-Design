@@ -15,6 +15,9 @@ EditorBuildSettings:
     path: Assets/Scenes/LobbyScene.unity
     guid: 2e74db638c093164d9c1cc3242dc00d7
   - enabled: 1
+    path: Assets/Scenes/OnlinePartyRoomScene.unity
+    guid: 5ebbbf1bdf6697349b15a7b2262cd824
+  - enabled: 1
     path: Assets/Scenes/SettingsScene.unity
     guid: ef973138984e3b242b06fccc73786db4
   - enabled: 1

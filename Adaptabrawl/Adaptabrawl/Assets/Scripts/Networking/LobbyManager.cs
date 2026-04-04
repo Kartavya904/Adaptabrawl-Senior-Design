@@ -34,6 +34,11 @@ namespace Adaptabrawl.Networking
         [Header("Room Code")]
         private string currentRoomCode = "";
 
+        [Header("Party room (new flow)")]
+        [Tooltip("When true, the host loads SetupScene as soon as a second player connects (no Ready step). Leave false for the classic LobbyScene UI.")]
+        [SerializeField]
+        private bool autoStartWhenBothPlayersConnected;
+
         /// <summary>Shown on host waiting UI; guest can type this IP in the join field if discovery fails.</summary>
         public string LastHostLanIpv4 { get; private set; } = "";
 
@@ -291,6 +296,7 @@ namespace Adaptabrawl.Networking
                 {
                     Debug.Log("[LobbyManager] An opponent joined our room!");
                     OnRoomJoined?.Invoke();
+                    TryAutoStartWhenPartyFull();
                 }
             }
             else
@@ -305,6 +311,27 @@ namespace Adaptabrawl.Networking
                         ReceiveReadyMessage);
                 }
             }
+        }
+
+        private void TryAutoStartWhenPartyFull()
+        {
+            if (!autoStartWhenBothPlayersConnected)
+                return;
+
+            var nm = NetworkManager.Singleton;
+            if (nm == null || !nm.IsServer || !nm.IsListening)
+                return;
+
+            if (nm.ConnectedClientsIds.Count < 2)
+                return;
+
+            StartCoroutine(CoAutoStartMatchNextFrame());
+        }
+
+        private System.Collections.IEnumerator CoAutoStartMatchNextFrame()
+        {
+            yield return null;
+            StartMatch();
         }
 
         public void SetReady(bool ready)
@@ -394,5 +421,6 @@ namespace Adaptabrawl.Networking
         public bool IsHost => isHost;
         public bool IsReady => isReady;
         public bool OpponentReady => opponentReady;
+        public bool AutoStartWhenBothPlayersConnected => autoStartWhenBothPlayersConnected;
     }
 }

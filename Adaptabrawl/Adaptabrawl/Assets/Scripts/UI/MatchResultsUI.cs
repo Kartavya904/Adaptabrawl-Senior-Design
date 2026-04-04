@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
+using System.IO;
 using Adaptabrawl.Gameplay;
 using System.Collections;
 using System.Collections.Generic;
@@ -351,7 +352,7 @@ namespace Adaptabrawl.UI
         private void ApplyButtonLabels(bool isLocal)
         {
             if (continueButtonText != null)
-                continueButtonText.text = isLocal ? "Back to Setup" : "Back to Lobby";
+                continueButtonText.text = isLocal ? "Back to Setup" : "Back to Online";
             if (rematchButtonText != null)
                 rematchButtonText.text = "Rematch";
             if (rematchDifferentButtonText != null)
@@ -371,7 +372,10 @@ namespace Adaptabrawl.UI
             CancelAutoMainMenuTimer();
             bool isLocal = MatchResultsData.isLocalMatch;
             MatchResultsData.Clear();
-            TransitionTo(isLocal ? "SetupScene" : "LobbyScene");
+            if (isLocal)
+                TransitionTo("SetupScene");
+            else
+                TransitionToOnlinePartyOrLobby();
         }
 
         private void Rematch()
@@ -394,6 +398,28 @@ namespace Adaptabrawl.UI
             CancelAutoMainMenuTimer();
             MatchResultsData.Clear();
             TransitionTo("StartScene");
+        }
+
+        private void TransitionToOnlinePartyOrLobby()
+        {
+            if (TryGetBuildIndexBySceneName(MainMenu.OnlinePartyRoomSceneName) >= 0)
+                TransitionTo(MainMenu.OnlinePartyRoomSceneName);
+            else
+                TransitionTo("LobbyScene");
+        }
+
+        private static int TryGetBuildIndexBySceneName(string sceneName)
+        {
+            for (var i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
+            {
+                var path = SceneUtility.GetScenePathByBuildIndex(i);
+                if (string.IsNullOrEmpty(path))
+                    continue;
+                if (Path.GetFileNameWithoutExtension(path) == sceneName)
+                    return i;
+            }
+
+            return -1;
         }
 
         private void TransitionTo(string sceneName)

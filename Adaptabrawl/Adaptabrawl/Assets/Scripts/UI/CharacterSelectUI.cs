@@ -278,8 +278,15 @@ namespace Adaptabrawl.UI
                     }
                     confirm = pad.buttonSouth.wasPressedThisFrame; // X / Cross — lock in
                 }
+                else
+                {
+                    // No gamepad found for this player (e.g. both set to Controller but only 1 physical pad).
+                    // Fall back to keyboard so the player can still navigate character select.
+                    controllerIndex = 0;
+                }
             }
-            else // Keyboard
+
+            if (controllerIndex == 0) // Keyboard (or gamepad-fallback)
             {
                 if (player == 1)
                 {

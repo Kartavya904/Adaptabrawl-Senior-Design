@@ -37,6 +37,9 @@ namespace Adaptabrawl.Gameplay
         [Tooltip("Human-readable arena name from setup (same order as ArenaSelectUI list).")]
         public string lastArenaName = "";
 
+        [Tooltip("Background sprite from arena select (same as the panel Image); game scene backdrop uses this.")]
+        public Sprite lastArenaImage;
+
         [Header("Match Info")]
         public bool isLocalMatch;
 
@@ -82,6 +85,7 @@ namespace Adaptabrawl.Gameplay
             p2LastFighterIndex = 0;
             lastArenaIndex = 0;
             lastArenaName = "";
+            lastArenaImage = null;
 
             // Sync legacy static class
             CharacterSelectData.isLocalMatch = localMatch;
@@ -107,11 +111,16 @@ namespace Adaptabrawl.Gameplay
             lastArenaIndex = arenaIdx;
         }
 
-        /// <summary>Stores both roster index and display name for <see cref="GameContext"/> / rematch.</summary>
-        public void SetLastArenaSelection(int arenaIdx, string displayName)
+        /// <summary>
+        /// Stores arena index, display name, and the same background sprite shown on the arena select panel
+        /// (for <see cref="GameContext"/> / rematch / game backdrop).
+        /// </summary>
+        /// <param name="arenaSprite">Sprite applied to the arena select background; null clears it.</param>
+        public void SetLastArenaSelection(int arenaIdx, string displayName, Sprite arenaSprite = null)
         {
             lastArenaIndex = arenaIdx;
             lastArenaName = string.IsNullOrWhiteSpace(displayName) ? "" : displayName.Trim();
+            lastArenaImage = arenaSprite;
         }
 
         /// <summary>

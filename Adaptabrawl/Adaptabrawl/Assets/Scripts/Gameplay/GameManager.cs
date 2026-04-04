@@ -267,14 +267,6 @@ namespace Adaptabrawl.Gameplay
             bool isLocal = Adaptabrawl.UI.CharacterSelectData.isLocalMatch;
             Adaptabrawl.UI.MatchResultsData.SetResults(matchResults, isLocal);
 
-            // Transition to results scene after delay
-            StartCoroutine(TransitionToResultsAfterDelay());
-        }
-
-        private System.Collections.IEnumerator TransitionToResultsAfterDelay()
-        {
-            yield return new WaitForSeconds(roundEndDelay);
-
             if (Adaptabrawl.UI.SceneTransitionManager.Instance != null)
                 Adaptabrawl.UI.SceneTransitionManager.Instance.TransitionToScene("MatchResults");
             else

@@ -110,12 +110,19 @@ namespace Adaptabrawl.Editor
             menuRt.sizeDelta = new Vector2(520, 420);
 
             var menuImg = menuPanel.AddComponent<Image>();
-            menuImg.color = new Color(0.08f, 0.08f, 0.1f, 0.95f);
+            menuImg.color = new Color(0.07f, 0.09f, 0.14f, 0.98f);
             menuImg.raycastTarget = true;
+            var uiSprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
+            if (uiSprite != null)
+            {
+                menuImg.sprite = uiSprite;
+                menuImg.type = Image.Type.Sliced;
+            }
 
             var menuVert = menuPanel.AddComponent<VerticalLayoutGroup>();
             menuVert.padding = new RectOffset(32, 32, 28, 28);
             menuVert.spacing = 14f;
+            menuVert.childAlignment = TextAnchor.MiddleCenter;
             menuVert.childControlHeight = true;
             menuVert.childControlWidth = true;
             menuVert.childForceExpandHeight = false;
@@ -128,13 +135,14 @@ namespace Adaptabrawl.Editor
             titleTmp.fontSize = 40;
             titleTmp.fontStyle = FontStyles.Bold;
             titleTmp.alignment = TextAlignmentOptions.Center;
-            titleTmp.color = Color.white;
+            titleTmp.color = new Color(0.78f, 0.93f, 1f, 1f);
+            titleTmp.raycastTarget = false;
             var titleLe = titleGo.AddComponent<LayoutElement>();
             titleLe.minHeight = 56f;
 
-            Button resume = CreateMenuButton(menuPanel, "ResumeButton", "Resume");
-            Button settings = CreateMenuButton(menuPanel, "SettingsButton", "Settings");
-            Button mainMenu = CreateMenuButton(menuPanel, "MainMenuButton", "Main Menu");
+            Button resume = CreateMenuButton(menuPanel, "ResumeButton", "Resume", destructive: false);
+            Button settings = CreateMenuButton(menuPanel, "SettingsButton", "Settings", destructive: false);
+            Button mainMenu = CreateMenuButton(menuPanel, "MainMenuButton", "Main Menu", destructive: true);
 
             SerializedObject so = new SerializedObject(controller);
             so.FindProperty("pauseOverlayRoot").objectReferenceValue = overlay;
@@ -145,6 +153,11 @@ namespace Adaptabrawl.Editor
             so.FindProperty("resumeButton").objectReferenceValue = resume;
             so.FindProperty("settingsButton").objectReferenceValue = settings;
             so.FindProperty("mainMenuButton").objectReferenceValue = mainMenu;
+            var focusProp = so.FindProperty("pauseMenuFocusOrder");
+            focusProp.arraySize = 3;
+            focusProp.GetArrayElementAtIndex(0).objectReferenceValue = resume;
+            focusProp.GetArrayElementAtIndex(1).objectReferenceValue = settings;
+            focusProp.GetArrayElementAtIndex(2).objectReferenceValue = mainMenu;
             so.ApplyModifiedPropertiesWithoutUndo();
 
             if (scene.name == "OnlineGameScene")
@@ -208,13 +221,37 @@ namespace Adaptabrawl.Editor
                 tmp.font = TMP_Settings.defaultFontAsset;
         }
 
-        private static Button CreateMenuButton(GameObject menuPanel, string name, string label)
+        private static Button CreateMenuButton(GameObject menuPanel, string name, string label, bool destructive)
         {
             var go = CreateChild(menuPanel, name);
             var img = go.AddComponent<Image>();
-            img.color = new Color(0.2f, 0.45f, 0.85f, 1f);
+            img.color = destructive
+                ? new Color(0.42f, 0.18f, 0.2f, 1f)
+                : new Color(0.14f, 0.26f, 0.42f, 1f);
+            var uiSprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
+            if (uiSprite != null)
+            {
+                img.sprite = uiSprite;
+                img.type = Image.Type.Sliced;
+            }
+
             var btn = go.AddComponent<Button>();
             btn.targetGraphic = img;
+            var cb = btn.colors;
+            cb.normalColor = Color.white;
+            if (destructive)
+            {
+                cb.highlightedColor = new Color(1f, 0.65f, 0.55f, 1f);
+                cb.selectedColor = new Color(0.98f, 0.55f, 0.5f, 1f);
+                cb.pressedColor = new Color(0.75f, 0.35f, 0.32f, 1f);
+            }
+            else
+            {
+                cb.highlightedColor = new Color(0.55f, 0.92f, 1f, 1f);
+                cb.selectedColor = new Color(0.5f, 0.88f, 1f, 1f);
+                cb.pressedColor = new Color(0.4f, 0.65f, 0.85f, 1f);
+            }
+            btn.colors = cb;
 
             var le = go.AddComponent<LayoutElement>();
             le.minHeight = 52f;

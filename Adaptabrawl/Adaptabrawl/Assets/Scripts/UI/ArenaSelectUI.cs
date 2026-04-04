@@ -221,21 +221,41 @@ namespace Adaptabrawl.UI
         }
 
         /// <summary>
+        /// Writes the arena index/name/sprite from <see cref="SetupSceneManager"/> into
+        /// <see cref="LobbyContext"/> so the game scene can read it on all peers.
+        /// </summary>
+        private void PushCurrentArenaToLobbyContext()
+        {
+            if (setupManager == null) return;
+            bool networked = NetworkManager.Singleton != null;
+            int aIdx = networked ? setupManager.arenaIndex.Value : setupManager.LocalArenaIndex;
+            TryGetArenaSpriteForIndex(aIdx, out Sprite sprite);
+            if (availableArenas.Count > 0 && aIdx >= 0 && aIdx < availableArenas.Count)
+                LobbyContext.EnsureExists().SetLastArenaSelection(aIdx, availableArenas[aIdx], sprite);
+            else
+                LobbyContext.EnsureExists().SetLastArenaSelection(aIdx, "", null);
+        }
+
+        /// <summary>
         /// Sets the arena background Image's source sprite to the one at the given arena index.
         /// availableArenas and arenaBackgrounds are aligned: 0, 1, 2.
         /// </summary>
         private void ApplyArenaBackground(int arenaIndex)
         {
             if (arenaBackgroundImage == null) return;
-            if (arenaBackgrounds == null || arenaBackgrounds.Count == 0) return;
+            if (!TryGetArenaSpriteForIndex(arenaIndex, out Sprite s) || s == null) return;
 
+            arenaBackgroundImage.sprite = s;
+            arenaBackgroundImage.enabled = true;
+        }
+
+        private bool TryGetArenaSpriteForIndex(int arenaIndex, out Sprite sprite)
+        {
+            sprite = null;
+            if (arenaBackgrounds == null || arenaBackgrounds.Count == 0) return false;
             int idx = Mathf.Clamp(arenaIndex, 0, arenaBackgrounds.Count - 1);
-            Sprite s = arenaBackgrounds[idx];
-            if (s != null)
-            {
-                arenaBackgroundImage.sprite = s;
-                arenaBackgroundImage.enabled = true;
-            }
+            sprite = arenaBackgrounds[idx];
+            return true;
         }
 
         private void UpdateUI()
@@ -256,10 +276,11 @@ namespace Adaptabrawl.UI
                 ArenaSelectData.selectedArenaName = availableArenas[aIdx];
             }
 
+            TryGetArenaSpriteForIndex(aIdx, out Sprite arenaSprite);
             if (availableArenas.Count > 0 && aIdx >= 0 && aIdx < availableArenas.Count)
-                LobbyContext.Instance?.SetLastArenaSelection(aIdx, availableArenas[aIdx]);
+                LobbyContext.EnsureExists().SetLastArenaSelection(aIdx, availableArenas[aIdx], arenaSprite);
             else
-                LobbyContext.Instance?.SetLastArenaSelection(aIdx, "");
+                LobbyContext.EnsureExists().SetLastArenaSelection(aIdx, "", null);
 
             // Set the panel's Image source to the sprite for the selected arena (elements 0, 1, 2).
             ApplyArenaBackground(aIdx);
@@ -358,6 +379,10 @@ namespace Adaptabrawl.UI
 
             if (countdownText != null)
                 countdownText.gameObject.SetActive(false);
+
+            // Ensure every machine has the final arena in LobbyContext before the game scene loads
+            // (covers edge cases where UI did not run another UpdateUI pass).
+            PushCurrentArenaToLobbyContext();
 
             // Host (or local instance) actually triggers the scene load.
             string gameSceneName = CharacterSelectData.isLocalMatch ? "GameScene" : "OnlineGameScene";

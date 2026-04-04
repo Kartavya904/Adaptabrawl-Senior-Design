@@ -243,10 +243,6 @@ namespace Adaptabrawl.UI
                 if (!r2 && p2CanInteract)
                     HandleCharacterNavigation(2, p2CtrlIdx, p1CtrlIdx, p2CtrlIdx, ref _p2NavCooldown);
 
-                if (r1 && p1CanInteract)
-                    HandleCharacterUnlockInput(1, p1CtrlIdx, p1CtrlIdx, p2CtrlIdx);
-                if (r2 && p2CanInteract)
-                    HandleCharacterUnlockInput(2, p2CtrlIdx, p1CtrlIdx, p2CtrlIdx);
             }
         }
 
@@ -260,23 +256,6 @@ namespace Adaptabrawl.UI
             }
             characterToArenaCountdownText.gameObject.SetActive(true);
             characterToArenaCountdownText.text = n.ToString();
-        }
-
-        private void HandleCharacterUnlockInput(int player, int deviceForPlayer, int p1Device, int p2Device)
-        {
-            if (setupManager == null || setupManager.CharacterPhaseCountdownActive) return;
-            if (deviceForPlayer == 1 && LobbyContext.TryGetGamepadForPlayer(player, p1Device, p2Device, out var pad))
-            {
-                if (pad.buttonEast.wasPressedThisFrame)
-                    RequestConfirmSelection(player);
-            }
-            else if (deviceForPlayer == 0)
-            {
-                if (player == 1 && UnityEngine.Input.GetKeyDown(KeyCode.Escape))
-                    RequestConfirmSelection(1);
-                if (player == 2 && UnityEngine.Input.GetKeyDown(KeyCode.Backspace))
-                    RequestConfirmSelection(2);
-            }
         }
 
         private void HandleCharacterNavigation(int player, int controllerIndex, int p1Device, int p2Device, ref float cooldown)

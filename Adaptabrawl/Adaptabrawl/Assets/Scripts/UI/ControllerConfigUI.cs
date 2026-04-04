@@ -122,12 +122,10 @@ namespace Adaptabrawl.UI
                 if (p1Idx == 1 && LobbyContext.TryGetGamepadForPlayer(1, p1Idx, p2Idx, out var g1))
                 {
                     if (!r1 && g1.buttonNorth.wasPressedThisFrame) RequestToggleReady(1);
-                    if (r1 && g1.buttonEast.wasPressedThisFrame) RequestToggleReady(1);
                 }
                 else if (p1Idx == 0)
                 {
                     if (!r1 && UnityEngine.Input.GetKeyDown(KeyCode.Space)) RequestToggleReady(1);
-                    if (r1 && UnityEngine.Input.GetKeyDown(KeyCode.Escape)) RequestToggleReady(1);
                 }
             }
 
@@ -136,12 +134,10 @@ namespace Adaptabrawl.UI
                 if (p2Idx == 1 && LobbyContext.TryGetGamepadForPlayer(2, p1Idx, p2Idx, out var g2))
                 {
                     if (!r2 && g2.buttonNorth.wasPressedThisFrame) RequestToggleReady(2);
-                    if (r2 && g2.buttonEast.wasPressedThisFrame) RequestToggleReady(2);
                 }
                 else if (p2Idx == 0)
                 {
                     if (!r2 && r1 && UnityEngine.Input.GetKeyDown(KeyCode.Space)) RequestToggleReady(2);
-                    if (r2 && UnityEngine.Input.GetKeyDown(KeyCode.Backspace)) RequestToggleReady(2);
                 }
             }
         }

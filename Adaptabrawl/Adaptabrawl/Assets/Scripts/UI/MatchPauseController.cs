@@ -123,18 +123,20 @@ namespace Adaptabrawl.UI
 
         private void HandleLocalInput()
         {
-            if (PausePressedThisFrame())
-            {
-                if (_frozenLocally)
-                    ResumeLocalFreeze();
-                else
-                    EnterLocalPause();
-            }
+            bool menuVisible = _frozenLocally && pauseMenuPanel != null && pauseMenuPanel.activeSelf;
+            if (!PauseOrUnpausePressedThisFrame(menuVisible))
+                return;
+
+            if (_frozenLocally)
+                ResumeLocalFreeze();
+            else
+                EnterLocalPause();
         }
 
         private void HandleOnlineInput()
         {
-            if (!PausePressedThisFrame())
+            bool menuOpen = _coordinator != null && _coordinator.MenuOpen;
+            if (!PauseOrUnpausePressedThisFrame(menuOpen))
                 return;
 
             if (_coordinator.MenuOpen)
@@ -146,14 +148,20 @@ namespace Adaptabrawl.UI
             _coordinator.TogglePauseIntentFromLocalPlayer();
         }
 
-        private static bool PausePressedThisFrame()
+        /// <summary>
+        /// Escape / Start always; Circle/B only while the pause menu is open so in-match Circle stays combat (dodge).
+        /// </summary>
+        private static bool PauseOrUnpausePressedThisFrame(bool pauseMenuIsOpen)
         {
             if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
                 return true;
 
             foreach (var pad in Gamepad.all)
             {
-                if (pad != null && pad.startButton.wasPressedThisFrame)
+                if (pad == null) continue;
+                if (pad.startButton.wasPressedThisFrame)
+                    return true;
+                if (pauseMenuIsOpen && pad.buttonEast.wasPressedThisFrame)
                     return true;
             }
 

@@ -47,6 +47,8 @@ namespace Adaptabrawl.UI
         [SerializeField] private float resultsDelay = 2f;
         [SerializeField] private Animator resultsAnimator;
 
+        private bool _resultsShown;
+
         private void Start()
         {
             // Setup button listeners
@@ -92,10 +94,19 @@ namespace Adaptabrawl.UI
 
             DisplayResults();
             SetupResultsMenuNavigation();
+            _resultsShown = true;
 
             // Play animation if available
             if (resultsAnimator != null)
                 resultsAnimator.SetTrigger("ShowResults");
+        }
+
+        private void LateUpdate()
+        {
+            if (!_resultsShown || resultsPanel == null || !resultsPanel.activeSelf) return;
+            if (!BackInputUtility.WasBackOrCancelPressedThisFrame()) return;
+            if (BackInputUtility.IsTextInputFocused()) return;
+            Continue();
         }
 
         private void SetupResultsMenuNavigation()

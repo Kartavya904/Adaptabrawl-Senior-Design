@@ -41,6 +41,12 @@ namespace Adaptabrawl.UI
         public System.Action OnArenaConfigChanged;
         public System.Action OnArenaCountdownRequested;
 
+        private void Awake()
+        {
+            if (GetComponent<SetupFlowBackInput>() == null)
+                gameObject.AddComponent<SetupFlowBackInput>();
+        }
+
         /// <summary>3,2,1 while waiting to open character select; 0 = finished / hide.</summary>
         public System.Action<int> OnControllerToCharacterCountdownTick;
         /// <summary>3,2,1 while waiting to open arena select; 0 = finished / hide.</summary>
@@ -619,5 +625,10 @@ namespace Adaptabrawl.UI
             if (characterSelectPanel != null) characterSelectPanel.SetActive(character);
             if (arenaSelectPanel != null) arenaSelectPanel.SetActive(arena);
         }
+
+        public bool IsLocalJoinPanelActive => localJoinPanel != null && localJoinPanel.activeInHierarchy;
+        public bool IsControllerConfigPanelActive => controllerConfigPanel != null && controllerConfigPanel.activeInHierarchy;
+        public bool IsCharacterSelectPanelActive => characterSelectPanel != null && characterSelectPanel.activeInHierarchy;
+        public bool IsArenaSelectPanelActive => arenaSelectPanel != null && arenaSelectPanel.activeInHierarchy;
     }
 }

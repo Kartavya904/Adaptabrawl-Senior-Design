@@ -134,5 +134,13 @@ namespace Adaptabrawl.UI
                 : new Selectable[] { playButton, settingsButton, quitButton };
             MenuNavigationGroup.SelectFirstAvailable(main);
         }
+
+        private void LateUpdate()
+        {
+            if (playOptionsPanel == null || !playOptionsPanel.activeSelf) return;
+            if (!BackInputUtility.WasBackOrCancelPressedThisFrame()) return;
+            if (BackInputUtility.IsTextInputFocused()) return;
+            ShowMainMenu();
+        }
     }
 }

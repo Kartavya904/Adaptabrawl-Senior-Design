@@ -28,6 +28,9 @@ namespace Adaptabrawl.Networking
         /// <summary>UDP port for periodic room beacons (LAN room list). Separate from discovery answer port.</summary>
         public const int DefaultBeaconPort = 7790;
 
+        /// <summary>How many consecutive UDP ports to try for FIND/answer (base = discoveryPort). Skips <see cref="DefaultBeaconPort"/> offset collisions.</summary>
+        public const int DiscoveryPortAttemptCount = 8;
+
         public static void StartHostResponder(string roomCode, ushort gamePort, int discoveryPort, int beaconPort = DefaultBeaconPort)
         {
             StopHostResponder();
@@ -63,10 +66,47 @@ namespace Adaptabrawl.Networking
         {
             try
             {
-                s_HostUdp = new UdpClient();
-                s_HostUdp.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                s_HostUdp.Client.Bind(new IPEndPoint(IPAddress.Any, discoveryPort));
-                s_HostUdp.Client.ReceiveTimeout = 500;
+                var boundDiscoveryPort = -1;
+                for (var i = 0; i < DiscoveryPortAttemptCount; i++)
+                {
+                    var candidate = discoveryPort + i;
+                    if (candidate > 65535)
+                        break;
+                    if (candidate == beaconPort)
+                        continue;
+
+                    UdpClient tryClient = null;
+                    try
+                    {
+                        tryClient = new UdpClient();
+                        tryClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                        tryClient.Client.Bind(new IPEndPoint(IPAddress.Any, candidate));
+                        tryClient.Client.ReceiveTimeout = 500;
+                        s_HostUdp = tryClient;
+                        boundDiscoveryPort = candidate;
+                        tryClient = null;
+                        break;
+                    }
+                    catch (SocketException)
+                    {
+                        try
+                        {
+                            tryClient?.Close();
+                        }
+                        catch
+                        {
+                            // ignored
+                        }
+                    }
+                }
+
+                if (boundDiscoveryPort < 0 || s_HostUdp == null)
+                {
+                    Debug.LogError(
+                        $"[LanRoomDiscovery] Could not bind any discovery port in range {discoveryPort}..{discoveryPort + DiscoveryPortAttemptCount - 1} " +
+                        $"(skipping beacon {beaconPort}). Another Adaptabrawl window may be using them on this PC.");
+                    return;
+                }
 
                 TryJoinMulticastListen(s_HostUdp);
 
@@ -77,9 +117,9 @@ namespace Adaptabrawl.Networking
                     advertisedIp = "127.0.0.1";
 
                 Debug.Log(
-                    $"[LanRoomDiscovery] Host listening UDP *:{discoveryPort} + multicast {LanMulticastGroup} (room {roomCode}). " +
+                    $"[LanRoomDiscovery] Host listening UDP *:{boundDiscoveryPort} + multicast {LanMulticastGroup} (room {roomCode}). " +
                     $"Beacons to LAN on port {beaconPort} every {beaconInterval.TotalSeconds:0}s. " +
-                    "If joins fail: Windows often shows no popup—add inbound UDP rules for this port and your game port, or try both PCs on Private network.");
+                    "Same-PC testing: FIND is also sent to 127.0.0.1 on these ports. If joins fail, allow UDP in Windows Firewall.");
 
                 while (s_HostRunning)
                 {
@@ -123,11 +163,6 @@ namespace Adaptabrawl.Networking
                         break;
                     }
                 }
-            }
-            catch (SocketException ex)
-            {
-                Debug.LogError(
-                    $"[LanRoomDiscovery] Could not bind discovery port {discoveryPort} ({ex.SocketErrorCode}). Another copy of the game or app may be using it. {ex.Message}");
             }
             catch (Exception e)
             {
@@ -225,7 +260,8 @@ namespace Adaptabrawl.Networking
             string roomCode,
             int discoveryPort,
             int timeoutMs,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            int beaconPort = DefaultBeaconPort)
         {
             var normalized = NormalizeCode(roomCode);
             return Task.Run(
@@ -256,7 +292,16 @@ namespace Adaptabrawl.Networking
                         {
                             if (DateTime.UtcNow >= nextFindUtc)
                             {
-                                SendPayloadToAllLanEndpoints(udp, req, discoveryPort);
+                                for (var i = 0; i < DiscoveryPortAttemptCount; i++)
+                                {
+                                    var p = discoveryPort + i;
+                                    if (p > 65535)
+                                        break;
+                                    if (p == beaconPort)
+                                        continue;
+                                    SendPayloadToAllLanEndpoints(udp, req, p);
+                                }
+
                                 nextFindUtc = DateTime.UtcNow.AddMilliseconds(findIntervalMs);
                             }
 
@@ -389,6 +434,9 @@ namespace Adaptabrawl.Networking
                 }
             }
 
+            // Same-machine: OS often does not loop global broadcast back to another local process; loopback is reliable.
+            TrySend(new IPEndPoint(IPAddress.Loopback, port));
+
             TrySend(new IPEndPoint(LanMulticastGroup, port));
             TrySend(new IPEndPoint(IPAddress.Broadcast, port));
 
@@ -511,6 +559,25 @@ namespace Adaptabrawl.Networking
                 var idx = raw.LastIndexOf(':');
                 hostPart = raw.Substring(0, idx).Trim();
                 if (!int.TryParse(raw.Substring(idx + 1).Trim(), out port) || port < 1 || port > 65535)
+                    return false;
+            }
+
+            // .NET parses dotless numeric strings as IPv4 (e.g. "689111" → 0.10.131.215). Our 6-digit room codes
+            // must not take this path so they can resolve via the LAN list / discovery join flow.
+            if (hostPart.Length == 6)
+            {
+                var allDigit = true;
+                for (var i = 0; i < hostPart.Length; i++)
+                {
+                    var c = hostPart[i];
+                    if (c < '0' || c > '9')
+                    {
+                        allDigit = false;
+                        break;
+                    }
+                }
+
+                if (allDigit)
                     return false;
             }
 

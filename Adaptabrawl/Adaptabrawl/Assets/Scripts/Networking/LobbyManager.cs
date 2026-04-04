@@ -1,4 +1,6 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -8,13 +10,17 @@ using UnityEngine.SceneManagement;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Collections;
+using Adaptabrawl.Gameplay;
 
 namespace Adaptabrawl.Networking
 {
     public class LobbyManager : MonoBehaviour
     {
-        /// <summary>Fixed NGO / Unity Transport UDP listen port for LAN matches. Host and direct-join clients assume this port.</summary>
+        /// <summary>Preferred NGO / Unity Transport UDP listen port for LAN hosts. Direct IP join without :port assumes this.</summary>
         public const ushort DefaultLanGamePort = 7777;
+
+        /// <summary>Second listen port when <see cref="DefaultLanGamePort"/> is already taken on the same PC (two Editor/build windows).</summary>
+        public const ushort SameMachineFallbackLanGamePort = 7778;
 
         [Header("Lobby Settings")]
 #pragma warning disable CS0414
@@ -23,11 +29,18 @@ namespace Adaptabrawl.Networking
 #pragma warning restore CS0414
 
         [Header("LAN game port")]
-        [Tooltip("Host always binds this UDP port (default 7777). Room codes and discovery advertise this port so joins stay in sync.")]
+        [Tooltip("Preferred UDP port for hosting (default 7777). Room code / discovery advertise the port that actually binds.")]
         [SerializeField]
         private ushort gameListenPort = DefaultLanGamePort;
 
-        [Tooltip("After releasing the network stack, wait this long so the OS can free UDP 7777 before binding again.")]
+        [Tooltip("If the preferred port is already in use on this PC (e.g. second game window), try this port next so both instances can run.")]
+        [SerializeField]
+        private ushort sameMachineFallbackGamePort = SameMachineFallbackLanGamePort;
+
+        [SerializeField]
+        private bool trySameMachineFallbackPort = true;
+
+        [Tooltip("After releasing the network stack, wait this long so the OS can free UDP before binding again.")]
         [SerializeField]
         [Range(0f, 2f)]
         private float secondsToWaitAfterShutdownBeforeBind = 0.25f;
@@ -72,7 +85,7 @@ namespace Adaptabrawl.Networking
         public System.Action OnOpponentReady;
         public System.Action OnMatchStart;
         public System.Action OnDisconnected;
-        /// <summary>Fired when the host cannot bind <see cref="gameListenPort"/> (usually another process already uses UDP 7777).</summary>
+        /// <summary>Fired when the host cannot bind any candidate game port on this machine.</summary>
         public System.Action<string> OnHostBindFailed;
 
         private Coroutine _createRoomRoutine;
@@ -151,17 +164,41 @@ namespace Adaptabrawl.Networking
             currentRoomCode = "";
 
             var roomCode = GenerateRandomCode();
-            transport.SetConnectionData(true, "127.0.0.1", gameListenPort, "0.0.0.0");
+            var candidates = BuildHostPortCandidates();
+            ushort chosenPort = 0;
 
-            if (!nm.StartHost())
+            for (var i = 0; i < candidates.Count; i++)
             {
+                var candidate = candidates[i];
+                transport.SetConnectionData(true, "127.0.0.1", candidate, "0.0.0.0");
+
+                if (nm.StartHost())
+                {
+                    chosenPort = candidate;
+                    if (i > 0)
+                    {
+                        Debug.Log(
+                            $"[LobbyManager] Port {gameListenPort} is in use on this PC — hosting this window on {chosenPort}. " +
+                            "To join the other session on this machine, use Join a room with that window’s code (it stays on " +
+                            $"{gameListenPort}). This window’s guests must use this window’s code or {LanAddressHints.GetPrimaryLanIpv4()}:{chosenPort}.");
+                    }
+
+                    break;
+                }
+
                 nm.Shutdown();
+                yield return null;
+                if (secondsToWaitAfterShutdownBeforeBind > 0f)
+                    yield return new WaitForSecondsRealtime(secondsToWaitAfterShutdownBeforeBind);
+            }
+
+            if (chosenPort == 0)
+            {
                 isHost = false;
                 currentRoomCode = "";
+                var tried = string.Join(", ", candidates);
                 var msg =
-                    $"Could not start host on UDP port {gameListenPort}. Another window (second Unity Play, build, or other app) may already be using that port. " +
-                    "Close every other copy of this game or Editor play session on this PC, then try again. " +
-                    $"Games on a different PC on the same Wi‑Fi still use port {gameListenPort} on their own machine — that is fine.";
+                    $"Could not start host on UDP port(s): {tried}. Close extra Unity Play / build windows on this PC, or free those ports, then try again.";
                 Debug.LogError("[LobbyManager] " + msg);
                 OnHostBindFailed?.Invoke(msg);
                 _createRoomRoutine = null;
@@ -170,14 +207,14 @@ namespace Adaptabrawl.Networking
 
             isHost = true;
             currentRoomCode = roomCode;
-            LastHostGamePort = gameListenPort;
+            LastHostGamePort = chosenPort;
             LastHostLanIpv4 = LanAddressHints.GetPrimaryLanIpv4();
 
             Debug.Log(
-                $"[LobbyManager] LAN host 0.0.0.0:{gameListenPort}, discovery {discoveryPort}, room {currentRoomCode}. " +
-                $"Guest can join with code or {LastHostLanIpv4}:{gameListenPort}");
+                $"[LobbyManager] LAN host 0.0.0.0:{chosenPort}, discovery {discoveryPort}, room {currentRoomCode}. " +
+                $"Guest can join with code or {LastHostLanIpv4}:{chosenPort}");
 
-            LanRoomDiscovery.StartHostResponder(currentRoomCode, gameListenPort, discoveryPort, beaconPort);
+            LanRoomDiscovery.StartHostResponder(currentRoomCode, chosenPort, discoveryPort, beaconPort);
 
             nm.OnClientConnectedCallback -= OnClientConnected;
             nm.OnClientConnectedCallback += OnClientConnected;
@@ -187,6 +224,22 @@ namespace Adaptabrawl.Networking
             OnRoomCodeGenerated?.Invoke(currentRoomCode);
             OnWaitingForOpponent?.Invoke();
             _createRoomRoutine = null;
+        }
+
+        private List<ushort> BuildHostPortCandidates()
+        {
+            var list = new List<ushort> { gameListenPort };
+            if (!trySameMachineFallbackPort)
+                return list;
+
+            if (sameMachineFallbackGamePort == 0 || sameMachineFallbackGamePort == gameListenPort)
+                return list;
+
+            if (sameMachineFallbackGamePort == discoveryPort || sameMachineFallbackGamePort == beaconPort)
+                return list;
+
+            list.Add(sameMachineFallbackGamePort);
+            return list;
         }
 
         private void FailHostSetup(string message)
@@ -207,7 +260,7 @@ namespace Adaptabrawl.Networking
             _joinCts?.Cancel();
         }
 
-        /// <summary>Join via room-code discovery, or use <see cref="JoinRoomByDirectIpv4"/>.</summary>
+        /// <summary>Join via 6-digit code (prefers LAN room list IP:port), then UDP discovery fallback.</summary>
         public void JoinRoom(string roomCode)
         {
             roomCode = roomCode?.Trim() ?? "";
@@ -219,8 +272,36 @@ namespace Adaptabrawl.Networking
 
             _joinCts?.Cancel();
             _joinCts?.Dispose();
+
+            if (TryJoinUsingLanRoomList(roomCode))
+                return;
+
             _joinCts = new CancellationTokenSource();
             JoinRoomAsync(roomCode, _joinCts.Token);
+        }
+
+        /// <summary>Uses <see cref="PublicRoomLobbyContext.CurrentPublicRooms"/> (same data as the on-screen LAN list) to direct-connect.</summary>
+        private bool TryJoinUsingLanRoomList(string sixDigitCode)
+        {
+            var ctx = PublicRoomLobbyContext.Instance;
+            var rooms = ctx?.CurrentPublicRooms;
+            if (rooms == null || rooms.Count == 0)
+                return false;
+
+            for (var i = 0; i < rooms.Count; i++)
+            {
+                var r = rooms[i];
+                var listCode = r.RoomCode?.Trim() ?? "";
+                if (listCode.Length != 6)
+                    continue;
+                if (!string.Equals(listCode, sixDigitCode, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                JoinRoomByDirectIpv4(r.HostIpv4, r.GamePort);
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>Bypasses UDP discovery; use when broadcast/multicast never reaches this PC (firewall, some routers).</summary>
@@ -292,7 +373,8 @@ namespace Adaptabrawl.Networking
                     roomCode,
                     discoveryPort,
                     joinDiscoveryTimeoutMs,
-                    ct);
+                    ct,
+                    beaconPort);
 
                 if (ct.IsCancellationRequested)
                     return;
@@ -303,7 +385,7 @@ namespace Adaptabrawl.Networking
                         "[LobbyManager] Discovery timed out. Same router (Wi‑Fi or Ethernet OK), both Private, correct code. " +
                         "Windows often never shows a firewall prompt—manually allow Unity/your game for UDP (Private) or open inbound UDP for discovery + game ports.");
                     OnRoomJoinFailed?.Invoke(
-                        $"No room found by automatic search (UDP blocked or isolated Wi‑Fi). Ask the host for their IPv4 (ipconfig), then type 192.168.x.x:{gameListenPort} here, or use the 6-digit code again.");
+                        "No room found by automatic search (UDP blocked or isolated Wi‑Fi). Ask the host for their IPv4 (ipconfig) and the port shown under the room code (often 7777), or use the 6-digit code again.");
                     return;
                 }
 

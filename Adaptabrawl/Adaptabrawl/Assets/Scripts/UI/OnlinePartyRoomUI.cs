@@ -165,7 +165,7 @@ namespace Adaptabrawl.UI
             if (subtitleText != null)
                 subtitleText.text =
                     "You are hosting on this device. Share the code with a friend on the same Wi‑Fi or LAN (Ethernet counts). " +
-                    "They can enter it here with Join a room.";
+                    "They can enter it here with Join a room. Two windows on one PC: first uses port 7777; if this one uses 7778, join the other session with Join a room and its code.";
             if (statusBannerText != null)
                 statusBannerText.text = "Creating your room…";
         }

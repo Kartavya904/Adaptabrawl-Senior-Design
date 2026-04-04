@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine.InputSystem;
@@ -31,6 +32,9 @@ namespace Adaptabrawl.UI
 
             if (p2JoinButton != null)
                 p2JoinButton.onClick.AddListener(() => RequestPlayer2Join("Keyboard"));
+
+            if (p2JoinButton != null && EventSystem.current != null)
+                MenuNavigationGroup.SelectFirstAvailable(new Selectable[] { p2JoinButton });
 
             UpdateUI(false);
         }

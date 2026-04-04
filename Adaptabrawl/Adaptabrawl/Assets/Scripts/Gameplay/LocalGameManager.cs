@@ -176,16 +176,25 @@ namespace Adaptabrawl.Gameplay
         }
 
         /// <summary>
-        /// Assigns gamepads in order: P1 → pad 0, P2 → pad 1.
-        /// If there aren't enough gamepads for a player they fall back to keyboard (-1).
-        /// Keyboard players never receive gamepad input, and gamepad players never
-        /// receive keyboard input — enforced in PCP.ConfigureForPlayer.
+        /// Uses lobby / character-select device choice: keyboard vs controller, and maps
+        /// the first and second controller users to <see cref="Gamepad.all"/> slots.
         /// </summary>
         private static int PickGamepadForPlayer(int playerNumber)
         {
-            int padCount = UnityEngine.InputSystem.Gamepad.all.Count;
-            int wantedPad = playerNumber - 1; // 1-based player → 0-based pad index
-            return wantedPad < padCount ? wantedPad : -1;
+            int p1Dev = LobbyContext.Instance != null
+                ? LobbyContext.Instance.p1InputDevice
+                : CharacterSelectData.finalP1ControllerIndex;
+            int p2Dev = LobbyContext.Instance != null
+                ? LobbyContext.Instance.p2InputDevice
+                : CharacterSelectData.finalP2ControllerIndex;
+
+            int idx = LobbyContext.GetGamepadListIndexForPlayer(playerNumber, p1Dev, p2Dev);
+            if (idx < 0) return -1;
+
+            if (UnityEngine.InputSystem.Gamepad.all.Count <= idx)
+                return -1;
+
+            return idx;
         }
 
         private void OnRoundEnd(FighterController winner)

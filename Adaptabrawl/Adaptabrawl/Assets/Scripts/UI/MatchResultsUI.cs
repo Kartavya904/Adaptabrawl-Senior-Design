@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine.SceneManagement;
 using Adaptabrawl.Gameplay;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Adaptabrawl.UI
 {
@@ -32,6 +33,10 @@ namespace Adaptabrawl.UI
         [SerializeField] private Button rematchButton;
         [SerializeField] private Button rematchDifferentButton;
         [SerializeField] private Button mainMenuButton;
+
+        [Header("Controller / keyboard UI")]
+        [Tooltip("If empty, uses Continue → Rematch → Change Characters → Main Menu.")]
+        [SerializeField] private Selectable[] resultsFocusOrder;
 
         [Header("Button Labels")]
         [SerializeField] private TextMeshProUGUI continueButtonText;
@@ -86,10 +91,24 @@ namespace Adaptabrawl.UI
                 resultsPanel.SetActive(true);
 
             DisplayResults();
+            SetupResultsMenuNavigation();
 
             // Play animation if available
             if (resultsAnimator != null)
                 resultsAnimator.SetTrigger("ShowResults");
+        }
+
+        private void SetupResultsMenuNavigation()
+        {
+            Selectable[] order = resultsFocusOrder != null && resultsFocusOrder.Length > 0
+                ? resultsFocusOrder
+                : new Selectable[] { continueButton, rematchButton, rematchDifferentButton, mainMenuButton };
+
+            order = order.Where(s => s != null).ToArray();
+            if (order.Length == 0) return;
+
+            MenuNavigationGroup.ApplyVerticalChain(order, wrap: false);
+            MenuNavigationGroup.SelectFirstAvailable(order);
         }
 
         private void DisplayResults()

@@ -36,6 +36,9 @@ namespace Adaptabrawl.UI
         [SerializeField] private Button backButton;
         [SerializeField] private Button applyButton;
         [SerializeField] private Button resetButton;
+
+        [Tooltip("Optional top-to-bottom order for D-pad / stick UI navigation. If empty, a default chain is built from common controls.")]
+        [SerializeField] private Selectable[] menuFocusOrder;
         
         private Resolution[] resolutions;
         
@@ -53,6 +56,38 @@ namespace Adaptabrawl.UI
             InitializeUI();
             SetupButtonListeners();
             LoadCurrentSettings();
+            WireMenuControllerNavigation();
+        }
+
+        private void WireMenuControllerNavigation()
+        {
+            if (menuFocusOrder != null && menuFocusOrder.Length > 0)
+            {
+                MenuNavigationGroup.ApplyVerticalChain(menuFocusOrder, wrap: false);
+                MenuNavigationGroup.SelectFirstAvailable(menuFocusOrder);
+                return;
+            }
+
+            var list = new List<Selectable>();
+            void AddSel(Selectable s) { if (s != null) list.Add(s); }
+
+            AddSel(masterVolumeSlider);
+            AddSel(musicVolumeSlider);
+            AddSel(sfxVolumeSlider);
+            AddSel(qualityDropdown);
+            AddSel(resolutionDropdown);
+            AddSel(vsyncToggle);
+            AddSel(fpsDropdown);
+            AddSel(uiScaleSlider);
+            AddSel(colorBlindToggle);
+            AddSel(showHitboxesToggle);
+            if (applyButton != null) list.Add(applyButton);
+            if (resetButton != null) list.Add(resetButton);
+            if (backButton != null) list.Add(backButton);
+
+            if (list.Count == 0) return;
+            MenuNavigationGroup.ApplyVerticalChain(list, wrap: false);
+            MenuNavigationGroup.SelectFirstAvailable(list);
         }
         
         private void InitializeUI()

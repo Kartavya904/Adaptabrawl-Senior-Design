@@ -31,6 +31,11 @@ public class PlayerController_Platform : MonoBehaviour
     public KeyCode skill7 = KeyCode.Alpha7;
     public KeyCode skill8 = KeyCode.Alpha8;
 
+    [Header("Gamepad — movement")]
+    [Tooltip("Left stick X must exceed this (±) to count as left/right. D-pad always works.")]
+    [Range(0.05f, 0.95f)]
+    public float moveStickDeadZone = 0.22f;
+
     [Header("Rotation speed")]
     public float speed_rot;
 
@@ -107,103 +112,121 @@ public class PlayerController_Platform : MonoBehaviour
         return null;
     }
 
+    private bool GamepadMovementActive()
+    {
+        return gamepadIndex >= 0 && GetGamepad() != null;
+    }
+
+    private bool GamepadHorizontalRight(Gamepad pad)
+    {
+        float x = pad.leftStick.x.ReadValue();
+        if (x > moveStickDeadZone) return true;
+        Vector2 d = pad.dpad.ReadValue();
+        return d.x > 0.35f || pad.dpad.right.isPressed;
+    }
+
+    private bool GamepadHorizontalLeft(Gamepad pad)
+    {
+        float x = pad.leftStick.x.ReadValue();
+        if (x < -moveStickDeadZone) return true;
+        Vector2 d = pad.dpad.ReadValue();
+        return d.x < -0.35f || pad.dpad.left.isPressed;
+    }
+
+    private bool GamepadVerticalDown(Gamepad pad)
+    {
+        float y = pad.leftStick.y.ReadValue();
+        if (y < -moveStickDeadZone) return true;
+        Vector2 d = pad.dpad.ReadValue();
+        return d.y < -0.35f || pad.dpad.down.isPressed;
+    }
+
     private bool IsRightPressed()
     {
         if (isNetworkControlled) return netRight;
-        Gamepad pad = GetGamepad();
-        if (gamepadIndex >= 0)
-            return pad != null && (pad.leftStick.x.ReadValue() > 0.5f || pad.dpad.right.isPressed);
+        if (GamepadMovementActive())
+            return GamepadHorizontalRight(GetGamepad());
         return Input.GetKey(keyRight);
     }
 
     private bool IsLeftPressed()
     {
         if (isNetworkControlled) return netLeft;
-        Gamepad pad = GetGamepad();
-        if (gamepadIndex >= 0)
-            return pad != null && (pad.leftStick.x.ReadValue() < -0.5f || pad.dpad.left.isPressed);
+        if (GamepadMovementActive())
+            return GamepadHorizontalLeft(GetGamepad());
         return Input.GetKey(keyLeft);
     }
 
     private bool IsCrouchPressed()
     {
         if (isNetworkControlled) return netCrouch;
-        Gamepad pad = GetGamepad();
-        if (gamepadIndex >= 0)
-            return pad != null && (pad.leftStick.y.ReadValue() < -0.5f || pad.dpad.down.isPressed);
+        if (GamepadMovementActive())
+            return GamepadVerticalDown(GetGamepad());
         return Input.GetKey(keyCrouch);
     }
 
     private bool IsSprintPressed()
     {
         if (isNetworkControlled) return netSprint;
-        Gamepad pad = GetGamepad();
-        if (gamepadIndex >= 0)
-            return pad != null && pad.leftTrigger.isPressed;
+        if (GamepadMovementActive())
+            return GetGamepad().leftTrigger.isPressed;
         return Input.GetKey(keySprint);
     }
 
     private bool WasJumpPressed()
     {
         if (isNetworkControlled) return netJump;
-        Gamepad pad = GetGamepad();
-        if (gamepadIndex >= 0)
-            return pad != null && pad.buttonSouth.wasPressedThisFrame;
+        if (GamepadMovementActive())
+            return GetGamepad().buttonSouth.wasPressedThisFrame;
         return Input.GetKeyDown(keyJump);
     }
 
     private bool WasAttackPressed()
     {
         if (isNetworkControlled) return netAttack;
-        Gamepad pad = GetGamepad();
-        if (gamepadIndex >= 0)
-            return pad != null && pad.buttonWest.wasPressedThisFrame;
+        if (GamepadMovementActive())
+            return GetGamepad().buttonWest.wasPressedThisFrame;
         return Input.GetKeyDown(keyAttack) || Input.GetMouseButtonDown(0);
     }
 
     private bool IsBlockPressed()
     {
         if (isNetworkControlled) return netBlock;
-        Gamepad pad = GetGamepad();
-        if (gamepadIndex >= 0)
-            return pad != null && pad.rightTrigger.isPressed;
+        if (GamepadMovementActive())
+            return GetGamepad().rightTrigger.isPressed;
         return Input.GetKey(keyBlock) || Input.GetMouseButton(1);
     }
 
     private bool WasBlockPressed()
     {
         if (isNetworkControlled) return netBlockDown;
-        Gamepad pad = GetGamepad();
-        if (gamepadIndex >= 0)
-            return pad != null && pad.rightTrigger.wasPressedThisFrame;
+        if (GamepadMovementActive())
+            return GetGamepad().rightTrigger.wasPressedThisFrame;
         return Input.GetKeyDown(keyBlock) || Input.GetMouseButtonDown(1);
     }
 
     private bool WasBlockReleased()
     {
         if (isNetworkControlled) return netBlockUp;
-        Gamepad pad = GetGamepad();
-        if (gamepadIndex >= 0)
-            return pad != null && pad.rightTrigger.wasReleasedThisFrame;
+        if (GamepadMovementActive())
+            return GetGamepad().rightTrigger.wasReleasedThisFrame;
         return Input.GetKeyUp(keyBlock) || Input.GetMouseButtonUp(1);
     }
 
     private bool WasDodgePressed()
     {
         if (isNetworkControlled) return netDodge;
-        Gamepad pad = GetGamepad();
-        if (gamepadIndex >= 0)
-            return pad != null && pad.buttonEast.wasPressedThisFrame;
+        if (GamepadMovementActive())
+            return GetGamepad().buttonEast.wasPressedThisFrame;
         return Input.GetKeyDown(keyDodge);
     }
 
     private bool WasSkillPressed(int index)
     {
         if (isNetworkControlled) return index >= 0 && index < 8 ? netSkills[index] : false;
-        Gamepad pad = GetGamepad();
-        if (gamepadIndex >= 0)
+        if (GamepadMovementActive())
         {
-            if (pad == null) return false;
+            Gamepad pad = GetGamepad();
             if (index == 0) return pad.leftShoulder.wasPressedThisFrame;
             if (index == 1) return pad.rightShoulder.wasPressedThisFrame;
             return false;

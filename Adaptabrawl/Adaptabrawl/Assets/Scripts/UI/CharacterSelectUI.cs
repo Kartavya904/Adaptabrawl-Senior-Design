@@ -93,6 +93,9 @@ namespace Adaptabrawl.UI
         [SerializeField] private Button startButton; // Deprecated, Server loads automatically
         [SerializeField] private Button backButton;
 
+        [Tooltip("Optional top-to-bottom focus order for gamepad UI. If empty, uses P1 arrows → confirm → P2 arrows → confirm → back.")]
+        [SerializeField] private Selectable[] characterSelectFocusOrder;
+
         private GameObject _player1Preview;
         private GameObject _player2Preview;
         private bool _previewSequenceStartedP1;
@@ -146,6 +149,29 @@ namespace Adaptabrawl.UI
             }
 
             UpdateUI();
+            WireCharacterSelectMenuNavigation();
+        }
+
+        private void WireCharacterSelectMenuNavigation()
+        {
+            Selectable[] order = characterSelectFocusOrder != null && characterSelectFocusOrder.Length > 0
+                ? characterSelectFocusOrder
+                : new Selectable[]
+                {
+                    player1LeftButton, player1RightButton, player1ConfirmButton,
+                    player2LeftButton, player2RightButton, player2ConfirmButton,
+                    backButton
+                };
+
+            var list = new List<Selectable>();
+            foreach (var s in order)
+            {
+                if (s != null) list.Add(s);
+            }
+
+            if (list.Count == 0) return;
+            MenuNavigationGroup.ApplyVerticalChain(list, wrap: false);
+            MenuNavigationGroup.SelectFirstAvailable(list);
         }
 
         private void OnEnable()

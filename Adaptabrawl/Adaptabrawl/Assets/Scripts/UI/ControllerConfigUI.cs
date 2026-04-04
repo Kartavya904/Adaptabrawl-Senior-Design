@@ -34,6 +34,9 @@ namespace Adaptabrawl.UI
         [Header("Phase countdown (optional TMP — 3,2,1 before character select)")]
         [SerializeField] private TextMeshProUGUI controllerPhaseCountdownText;
 
+        [Tooltip("Optional vertical focus order. If empty: P1 toggle → P1 ready → P2 toggle → P2 ready → back.")]
+        [SerializeField] private Selectable[] controllerConfigFocusOrder;
+
         private string[] configOptions = { "Keyboard", "Controller" };
 
         private void Start()
@@ -68,6 +71,24 @@ namespace Adaptabrawl.UI
             }
 
             UpdateUI();
+            WireControllerConfigMenuNavigation();
+        }
+
+        private void WireControllerConfigMenuNavigation()
+        {
+            Selectable[] order = controllerConfigFocusOrder != null && controllerConfigFocusOrder.Length > 0
+                ? controllerConfigFocusOrder
+                : new Selectable[] { p1ToggleBtn, p1ReadyBtn, p2ToggleBtn, p2ReadyBtn, backButton };
+
+            var list = new System.Collections.Generic.List<Selectable>();
+            foreach (var s in order)
+            {
+                if (s != null) list.Add(s);
+            }
+
+            if (list.Count == 0) return;
+            MenuNavigationGroup.ApplyVerticalChain(list, wrap: false);
+            MenuNavigationGroup.SelectFirstAvailable(list);
         }
 
         private void OnControllerToCharacterCountdownTick(int n)

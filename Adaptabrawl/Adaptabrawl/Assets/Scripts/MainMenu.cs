@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using Adaptabrawl.Gameplay;
 
 namespace Adaptabrawl.UI
@@ -17,6 +18,11 @@ namespace Adaptabrawl.UI
         [SerializeField] private UnityEngine.UI.Button quitButton;
         [SerializeField] private UnityEngine.UI.Button backButton;
         [SerializeField] private UnityEngine.UI.Button localPlayButton;
+
+        [Header("Controller / keyboard UI (optional overrides)")]
+        [Tooltip("If empty, uses Play → Settings → Quit (main) and Local Play → Online → Back (play options).")]
+        [SerializeField] private Selectable[] mainMenuFocusOrder;
+        [SerializeField] private Selectable[] playOptionsFocusOrder;
 
         private void Start()
         {
@@ -39,8 +45,24 @@ namespace Adaptabrawl.UI
             if (localPlayButton != null)
                 localPlayButton.onClick.AddListener(PlayLocal);
 
+            WireMenuNavigation();
+
             // Show main menu by default
             ShowMainMenu();
+        }
+
+        private void WireMenuNavigation()
+        {
+            Selectable[] main = mainMenuFocusOrder != null && mainMenuFocusOrder.Length > 0
+                ? mainMenuFocusOrder
+                : new Selectable[] { playButton, settingsButton, quitButton };
+
+            Selectable[] play = playOptionsFocusOrder != null && playOptionsFocusOrder.Length > 0
+                ? playOptionsFocusOrder
+                : new Selectable[] { localPlayButton, onlineButton, backButton };
+
+            MenuNavigationGroup.ApplyVerticalChain(main, wrap: true);
+            MenuNavigationGroup.ApplyVerticalChain(play, wrap: true);
         }
 
         public void PlayLocal()
@@ -93,6 +115,11 @@ namespace Adaptabrawl.UI
                 mainMenuPanel.SetActive(false);
             if (playOptionsPanel != null)
                 playOptionsPanel.SetActive(true);
+
+            Selectable[] play = playOptionsFocusOrder != null && playOptionsFocusOrder.Length > 0
+                ? playOptionsFocusOrder
+                : new Selectable[] { localPlayButton, onlineButton, backButton };
+            MenuNavigationGroup.SelectFirstAvailable(play);
         }
 
         private void ShowMainMenu()
@@ -101,6 +128,11 @@ namespace Adaptabrawl.UI
                 playOptionsPanel.SetActive(false);
             if (mainMenuPanel != null)
                 mainMenuPanel.SetActive(true);
+
+            Selectable[] main = mainMenuFocusOrder != null && mainMenuFocusOrder.Length > 0
+                ? mainMenuFocusOrder
+                : new Selectable[] { playButton, settingsButton, quitButton };
+            MenuNavigationGroup.SelectFirstAvailable(main);
         }
     }
 }

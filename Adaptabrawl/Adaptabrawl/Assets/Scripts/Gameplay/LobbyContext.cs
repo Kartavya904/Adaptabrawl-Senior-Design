@@ -120,16 +120,40 @@ namespace Adaptabrawl.Gameplay
         /// </summary>
         public static bool TryGetGamepadForPlayer(int playerOneOrTwo, int p1UsesGamepad01, int p2UsesGamepad01, out Gamepad pad)
         {
-            pad = null;
+            int idx = GetGamepadListIndexForPlayer(playerOneOrTwo, p1UsesGamepad01, p2UsesGamepad01);
+            if (idx < 0)
+            {
+                pad = null;
+                return false;
+            }
+
+            if (Gamepad.all.Count <= idx)
+            {
+                pad = null;
+                return false;
+            }
+
+            pad = Gamepad.all[idx];
+            return pad != null;
+        }
+
+        /// <summary>
+        /// Index into <see cref="Gamepad.all"/> for this player, or -1 if they use keyboard only.
+        /// First player on gamepad gets device 0; if both use gamepads, P2 gets device 1.
+        /// </summary>
+        public static int GetGamepadListIndexForPlayer(int playerOneOrTwo, int p1UsesGamepad01, int p2UsesGamepad01)
+        {
             bool p1g = p1UsesGamepad01 == 1;
             bool p2g = p2UsesGamepad01 == 1;
-            if (playerOneOrTwo == 1 && !p1g) return false;
-            if (playerOneOrTwo == 2 && !p2g) return false;
+            if (playerOneOrTwo == 1)
+            {
+                if (!p1g) return -1;
+                return 0;
+            }
 
-            int slot = (playerOneOrTwo == 1) ? 0 : (p1g ? 1 : 0);
-            if (Gamepad.all.Count <= slot) return false;
-            pad = Gamepad.all[slot];
-            return pad != null;
+            if (playerOneOrTwo != 2) return -1;
+            if (!p2g) return -1;
+            return p1g ? 1 : 0;
         }
 
         // ── Setters (write through to legacy statics for backward compat) ──────

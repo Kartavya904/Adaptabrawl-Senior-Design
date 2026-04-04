@@ -51,6 +51,9 @@ namespace Adaptabrawl.UI
         [Header("Countdown")]
         [SerializeField] private TextMeshProUGUI countdownText;
 
+        [Tooltip("Optional vertical focus order. If empty: arena arrows → P1 ready → P2 ready → back.")]
+        [SerializeField] private Selectable[] arenaFocusOrder;
+
         private bool _countdownRunning;
 
         private void Start()
@@ -80,6 +83,24 @@ namespace Adaptabrawl.UI
 
             SyncLobbyDevicesFromSetupManager();
             UpdateUI();
+            WireArenaMenuNavigation();
+        }
+
+        private void WireArenaMenuNavigation()
+        {
+            Selectable[] order = arenaFocusOrder != null && arenaFocusOrder.Length > 0
+                ? arenaFocusOrder
+                : new Selectable[] { leftArrowButton, rightArrowButton, p1ReadyButton, p2ReadyButton, backButton };
+
+            var list = new List<Selectable>();
+            foreach (var s in order)
+            {
+                if (s != null) list.Add(s);
+            }
+
+            if (list.Count == 0) return;
+            MenuNavigationGroup.ApplyVerticalChain(list, wrap: false);
+            MenuNavigationGroup.SelectFirstAvailable(list);
         }
 
         private void Update()

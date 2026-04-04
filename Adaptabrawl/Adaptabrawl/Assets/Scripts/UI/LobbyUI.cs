@@ -80,6 +80,7 @@ namespace Adaptabrawl.UI
                 lobbyManager.OnOpponentReady += OnOpponentReady;
                 lobbyManager.OnMatchStart += OnMatchStart;
                 lobbyManager.OnDisconnected += OnDisconnected;
+                lobbyManager.OnHostBindFailed += OnHostBindFailed;
             }
             
             // Setup Choice Path buttons
@@ -169,7 +170,25 @@ namespace Adaptabrawl.UI
                 lobbyManager.OnOpponentReady -= OnOpponentReady;
                 lobbyManager.OnMatchStart -= OnMatchStart;
                 lobbyManager.OnDisconnected -= OnDisconnected;
+                lobbyManager.OnHostBindFailed -= OnHostBindFailed;
             }
+        }
+
+        private void OnHostBindFailed(string message)
+        {
+            if (joinErrorText != null)
+            {
+                joinErrorText.text = message;
+                joinErrorText.color = Color.red;
+            }
+
+            if (roomCodeText != null)
+            {
+                roomCodeText.text = message;
+                roomCodeText.color = Color.red;
+            }
+
+            ShowCreatePanel();
         }
         
         private void CreateRoom()
@@ -254,7 +273,11 @@ namespace Adaptabrawl.UI
             if (roomCodeText != null)
             {
                 roomCodeText.text = $"Room Code: {code}";
+                roomCodeText.color = Color.white;
             }
+
+            if (joinErrorText != null)
+                joinErrorText.text = "";
             
             // Waiting-room copy is set in OnWaitingForOpponent once the host socket is up (includes IP:port for direct join).
 

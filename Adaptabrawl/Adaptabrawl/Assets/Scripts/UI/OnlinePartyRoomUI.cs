@@ -77,6 +77,7 @@ namespace Adaptabrawl.UI
                 lobbyManager.OnRoomJoinFailed += OnRoomJoinFailed;
                 lobbyManager.OnDisconnected += OnDisconnected;
                 lobbyManager.OnMatchStart += OnMatchStart;
+                lobbyManager.OnHostBindFailed += OnHostBindFailed;
             }
 
             if (joinRoomButton != null)
@@ -89,7 +90,7 @@ namespace Adaptabrawl.UI
                 joinModalCancelButton.onClick.AddListener(CloseJoinModal);
 
             if (joinCodeInput != null && joinCodeInput.placeholder is TextMeshProUGUI ph)
-                ph.text = "6-digit code or 192.168.x.x:port";
+                ph.text = "6-digit code or 192.168.x.x (port 7777 if omitted)";
 
             if (joinModalErrorText != null)
                 joinModalErrorText.text = "";
@@ -138,7 +139,23 @@ namespace Adaptabrawl.UI
                 lobbyManager.OnRoomJoinFailed -= OnRoomJoinFailed;
                 lobbyManager.OnDisconnected -= OnDisconnected;
                 lobbyManager.OnMatchStart -= OnMatchStart;
+                lobbyManager.OnHostBindFailed -= OnHostBindFailed;
             }
+        }
+
+        private void OnHostBindFailed(string message)
+        {
+            if (statusBannerText != null)
+            {
+                statusBannerText.text = message;
+                statusBannerText.color = new Color(1f, 0.55f, 0.45f);
+            }
+
+            if (roomCodeBigText != null)
+                roomCodeBigText.text = "— — — — — —";
+            if (directConnectText != null)
+                directConnectText.text = "";
+            _hostingStarted = false;
         }
 
         private void RefreshStaticCopy()
@@ -181,7 +198,10 @@ namespace Adaptabrawl.UI
             if (roomCodeBigText != null)
                 roomCodeBigText.text = code;
             if (statusBannerText != null)
+            {
                 statusBannerText.text = "Room ready — waiting for player 2";
+                statusBannerText.color = new Color(1f, 0.84f, 0.35f);
+            }
         }
 
         private void OnWaitingForOpponent()
@@ -315,7 +335,7 @@ namespace Adaptabrawl.UI
                     if (joinModalErrorText != null)
                     {
                         joinModalErrorText.text =
-                            "Use a 6-digit code, or IPv4 like 192.168.1.5 (add :PORT if not 7777).";
+                            "Use a 6-digit code, or IPv4 like 192.168.1.5 (add :7777 only if the host changed the default port).";
                         joinModalErrorText.color = Color.red;
                     }
                     yield break;

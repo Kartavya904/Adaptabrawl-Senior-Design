@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
 using Adaptabrawl.Gameplay;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -43,33 +44,42 @@ namespace Adaptabrawl.UI
         [SerializeField] private TextMeshProUGUI rematchButtonText;
         [SerializeField] private TextMeshProUGUI rematchDifferentButtonText;
 
-        [Header("Animation")]
-        [SerializeField] private float resultsDelay = 2f;
+        [Header("Presentation")]
+        [Tooltip("If set, these objects are shown one after another. If empty, a default order is built from the fields above.")]
+        [SerializeField] private GameObject[] revealSequence;
+        [SerializeField] private float revealStaggerSeconds = 0.12f;
         [SerializeField] private Animator resultsAnimator;
 
+        [Header("Auto main menu")]
+        [Tooltip("After this many seconds with no button press, load StartScene (main menu).")]
+        [SerializeField] private float autoMainMenuSeconds = 30f;
+
         private bool _resultsShown;
+        private Coroutine _showRoutine;
+        private Coroutine _autoMenuRoutine;
 
         private void Start()
         {
-            // Setup button listeners
             if (continueButton != null)
                 continueButton.onClick.AddListener(Continue);
-
             if (rematchButton != null)
                 rematchButton.onClick.AddListener(Rematch);
-
             if (rematchDifferentButton != null)
                 rematchDifferentButton.onClick.AddListener(RematchDifferentCharacters);
-
             if (mainMenuButton != null)
                 mainMenuButton.onClick.AddListener(ReturnToMainMenu);
 
-            // Hide results initially
             if (resultsPanel != null)
                 resultsPanel.SetActive(false);
 
-            // Load match results data
             LoadMatchResults();
+        }
+
+        private void OnDestroy()
+        {
+            CancelAutoMainMenuTimer();
+            if (_showRoutine != null)
+                StopCoroutine(_showRoutine);
         }
 
         private void LoadMatchResults()
@@ -77,7 +87,7 @@ namespace Adaptabrawl.UI
             bool fromStatic = MatchResultsData.hasResults;
             bool fromContext = GameContext.Instance != null && GameContext.Instance.TryGetLatestFinishedMatch(out _);
             if (fromStatic || fromContext)
-                StartCoroutine(ShowResultsAfterDelay());
+                _showRoutine = StartCoroutine(ShowResultsRoutine());
             else
             {
                 Debug.LogWarning("[MatchResultsUI] No MatchResultsData and no GameContext match history.");
@@ -85,20 +95,107 @@ namespace Adaptabrawl.UI
             }
         }
 
-        private System.Collections.IEnumerator ShowResultsAfterDelay()
+        private IEnumerator ShowResultsRoutine()
         {
-            yield return new WaitForSeconds(resultsDelay);
+            var steps = BuildRevealList();
+            foreach (var go in steps)
+            {
+                if (go != null)
+                    go.SetActive(false);
+            }
 
             if (resultsPanel != null)
                 resultsPanel.SetActive(true);
 
             DisplayResults();
+
+            foreach (var go in steps)
+            {
+                if (go == null || ShouldSkipReveal(go)) continue;
+                go.SetActive(true);
+                if (revealStaggerSeconds > 0f)
+                    yield return new WaitForSeconds(revealStaggerSeconds);
+            }
+
             SetupResultsMenuNavigation();
             _resultsShown = true;
 
-            // Play animation if available
             if (resultsAnimator != null)
                 resultsAnimator.SetTrigger("ShowResults");
+
+            if (autoMainMenuSeconds > 0f)
+                _autoMenuRoutine = StartCoroutine(AutoMainMenuTimerRoutine());
+        }
+
+        private List<GameObject> BuildRevealList()
+        {
+            var list = new List<GameObject>();
+            void Add(GameObject go)
+            {
+                if (go != null && !list.Contains(go))
+                    list.Add(go);
+            }
+
+            if (revealSequence != null && revealSequence.Length > 0)
+            {
+                foreach (var go in revealSequence)
+                    Add(go);
+                return list;
+            }
+
+            if (arenaNameText != null)
+                Add(arenaNameText.gameObject);
+            if (winnerText != null)
+                Add(winnerText.gameObject);
+            if (matchScoreText != null)
+                Add(matchScoreText.gameObject);
+            if (player1NameText != null)
+                Add(PanelOrSelf(player1NameText.gameObject));
+            if (player2NameText != null)
+                Add(PanelOrSelf(player2NameText.gameObject));
+            if (roundResultsText != null)
+                Add(roundResultsText.gameObject);
+            if (continueButton != null)
+                Add(continueButton.gameObject);
+            if (rematchButton != null)
+                Add(rematchButton.gameObject);
+            if (rematchDifferentButton != null)
+                Add(rematchDifferentButton.gameObject);
+            if (mainMenuButton != null)
+                Add(mainMenuButton.gameObject);
+
+            return list;
+        }
+
+        private static GameObject PanelOrSelf(GameObject leaf)
+        {
+            Transform p = leaf.transform.parent;
+            if (p != null && p.name.Contains("Panel"))
+                return p.gameObject;
+            return leaf;
+        }
+
+        private bool ShouldSkipReveal(GameObject go)
+        {
+            if (arenaNameText != null && go == arenaNameText.gameObject)
+                return string.IsNullOrWhiteSpace(arenaNameText.text);
+            return false;
+        }
+
+        private IEnumerator AutoMainMenuTimerRoutine()
+        {
+            yield return new WaitForSeconds(autoMainMenuSeconds);
+            _autoMenuRoutine = null;
+            ReturnToMainMenu();
+        }
+
+        private void CancelAutoMainMenuTimer()
+        {
+            if (_autoMenuRoutine != null)
+            {
+                StopCoroutine(_autoMenuRoutine);
+                _autoMenuRoutine = null;
+            }
         }
 
         private void LateUpdate()
@@ -139,7 +236,6 @@ namespace Adaptabrawl.UI
 
             var results = MatchResultsData.results;
 
-            // Display winner
             if (winnerText != null)
             {
                 if (results.winner != null)
@@ -154,28 +250,22 @@ namespace Adaptabrawl.UI
                 }
             }
 
-            // Display match score
             if (matchScoreText != null)
-            {
                 matchScoreText.text = $"{results.player1Wins} - {results.player2Wins}";
-            }
 
             if (arenaNameText != null)
-                arenaNameText.gameObject.SetActive(false);
+                arenaNameText.text = "";
 
-            // Display player 1 info
             if (player1NameText != null)
                 player1NameText.text = GetFighterName(results.player1);
             if (player1WinsText != null)
                 player1WinsText.text = $"Wins: {results.player1Wins}";
 
-            // Display player 2 info
             if (player2NameText != null)
                 player2NameText.text = GetFighterName(results.player2);
             if (player2WinsText != null)
                 player2WinsText.text = $"Wins: {results.player2Wins}";
 
-            // Display round-by-round results
             if (roundResultsText != null)
             {
                 string roundText = "Round Results:\n";
@@ -197,10 +287,9 @@ namespace Adaptabrawl.UI
 
             if (arenaNameText != null)
             {
-                bool hasArena = !string.IsNullOrWhiteSpace(rec.arenaName);
-                arenaNameText.gameObject.SetActive(hasArena);
-                if (hasArena)
-                    arenaNameText.text = $"Arena: {rec.arenaName}";
+                arenaNameText.text = string.IsNullOrWhiteSpace(rec.arenaName)
+                    ? ""
+                    : $"Arena: {rec.arenaName}";
             }
 
             if (winnerText != null)
@@ -261,7 +350,6 @@ namespace Adaptabrawl.UI
 
         private void ApplyButtonLabels(bool isLocal)
         {
-            // Set button labels based on match type
             if (continueButtonText != null)
                 continueButtonText.text = isLocal ? "Back to Setup" : "Back to Lobby";
             if (rematchButtonText != null)
@@ -278,31 +366,32 @@ namespace Adaptabrawl.UI
             return fighter.name;
         }
 
-        // Back to lobby (online) or start of SetupScene (local) — network session stays alive
         private void Continue()
         {
+            CancelAutoMainMenuTimer();
             bool isLocal = MatchResultsData.isLocalMatch;
             MatchResultsData.Clear();
             TransitionTo(isLocal ? "SetupScene" : "LobbyScene");
         }
 
-        // Same characters — skip all setup and reload game scene directly
         private void Rematch()
         {
+            CancelAutoMainMenuTimer();
             MatchResultsData.Clear();
             string gameScene = CharacterSelectData.isLocalMatch ? "GameScene" : "OnlineGameScene";
             TransitionTo(gameScene);
         }
 
-        // Goes back to CharacterSelect in SetupScene, skipping controller config
         private void RematchDifferentCharacters()
         {
+            CancelAutoMainMenuTimer();
             MatchResultsData.rematchSkipToCharacterSelect = true;
             TransitionTo("SetupScene");
         }
 
         private void ReturnToMainMenu()
         {
+            CancelAutoMainMenuTimer();
             MatchResultsData.Clear();
             TransitionTo("StartScene");
         }
@@ -316,7 +405,6 @@ namespace Adaptabrawl.UI
         }
     }
 
-    // Static class to pass match results between scenes
     public static class MatchResultsData
     {
         public static bool hasResults = false;
@@ -342,7 +430,6 @@ namespace Adaptabrawl.UI
         }
     }
 
-    // Data structure for match results
     [System.Serializable]
     public class MatchResults
     {
@@ -355,4 +442,3 @@ namespace Adaptabrawl.UI
         public int totalRounds;
     }
 }
-

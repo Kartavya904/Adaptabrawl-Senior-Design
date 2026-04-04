@@ -1,6 +1,8 @@
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
 using Adaptabrawl.Gameplay;
@@ -31,12 +33,17 @@ namespace Adaptabrawl.UI
         [SerializeField] private Button settingsButton;
         [SerializeField] private Button mainMenuButton;
 
+        [Header("Controller / keyboard menu")]
+        [Tooltip("Vertical focus order. If empty: Resume → Settings → Main Menu.")]
+        [SerializeField] private Selectable[] pauseMenuFocusOrder;
+
         [Header("Networking (optional — OnlineGameScene)")]
         [SerializeField] private OnlineMutualPauseCoordinator netCoordinator;
 
         private float _previousTimeScale = 1f;
         private bool _frozenLocally;
         private OnlineMutualPauseCoordinator _coordinator;
+        private bool _pauseMenuWasOpen;
 
         private void Awake()
         {
@@ -70,6 +77,48 @@ namespace Adaptabrawl.UI
 
             if (pausedTitleText != null)
                 pausedTitleText.text = "Paused";
+        }
+
+        private void LateUpdate()
+        {
+            if (!IsGameplayScene()) return;
+
+            bool menuOpen = pauseMenuPanel != null && pauseMenuPanel.activeSelf;
+            if (menuOpen)
+            {
+                RestorePauseMenuFocusIfNeeded();
+            }
+            else if (_pauseMenuWasOpen)
+            {
+                _pauseMenuWasOpen = false;
+            }
+        }
+
+        private void RestorePauseMenuFocusIfNeeded()
+        {
+            if (pauseMenuPanel == null || !pauseMenuPanel.activeSelf) return;
+            var es = EventSystem.current;
+            if (es == null) return;
+
+            var selected = es.currentSelectedGameObject;
+            if (selected != null && selected.transform.IsChildOf(pauseMenuPanel.transform))
+                return;
+
+            SetupPauseMenuFocus();
+        }
+
+        private void SetupPauseMenuFocus()
+        {
+            Selectable[] order = pauseMenuFocusOrder != null && pauseMenuFocusOrder.Length > 0
+                ? pauseMenuFocusOrder
+                : new Selectable[] { resumeButton, settingsButton, mainMenuButton };
+
+            order = order.Where(s => s != null).ToArray();
+            if (order.Length == 0) return;
+
+            MenuNavigationGroup.ApplyVerticalChain(order, wrap: false);
+            MenuNavigationGroup.SelectFirstAvailable(order);
+            _pauseMenuWasOpen = true;
         }
 
         private void WireButtons()
@@ -179,6 +228,8 @@ namespace Adaptabrawl.UI
                 pauseRequestPanel.SetActive(false);
             if (pauseMenuPanel != null)
                 pauseMenuPanel.SetActive(true);
+
+            SetupPauseMenuFocus();
         }
 
         private void ResumeLocalFreeze()
@@ -216,6 +267,7 @@ namespace Adaptabrawl.UI
                 _previousTimeScale = Time.timeScale;
                 Time.timeScale = 0f;
                 _frozenLocally = true;
+                SetupPauseMenuFocus();
                 return;
             }
 

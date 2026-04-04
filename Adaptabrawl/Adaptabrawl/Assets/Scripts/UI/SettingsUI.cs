@@ -59,6 +59,13 @@ namespace Adaptabrawl.UI
             WireMenuControllerNavigation();
         }
 
+        private void LateUpdate()
+        {
+            if (!BackInputUtility.WasBackOrCancelPressedThisFrame()) return;
+            if (BackInputUtility.IsTextInputFocused()) return;
+            GoBack();
+        }
+
         private void WireMenuControllerNavigation()
         {
             if (menuFocusOrder != null && menuFocusOrder.Length > 0)
@@ -326,7 +333,14 @@ namespace Adaptabrawl.UI
         
         private void GoBack()
         {
-            SceneManager.LoadScene("StartScene");
+            string prev = PlayerPrefs.GetString("PreviousScene", "");
+            PlayerPrefs.DeleteKey("PreviousScene");
+            PlayerPrefs.DeleteKey("WasPaused");
+
+            if (!string.IsNullOrEmpty(prev))
+                SceneManager.LoadScene(prev);
+            else
+                SceneManager.LoadScene("StartScene");
         }
     }
 }

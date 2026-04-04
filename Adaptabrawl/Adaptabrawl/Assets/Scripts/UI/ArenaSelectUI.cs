@@ -56,6 +56,8 @@ namespace Adaptabrawl.UI
 
         private bool _countdownRunning;
 
+        public bool IsCountdownActive => _countdownRunning;
+
         private void Start()
         {
             if (setupManager == null)
@@ -113,7 +115,6 @@ namespace Adaptabrawl.UI
             bool p1Ready = networked ? setupManager.p1ArenaReady.Value : setupManager.LocalP1ArenaReady;
             bool p2Ready = networked ? setupManager.p2ArenaReady.Value : setupManager.LocalP2ArenaReady;
 
-            // LobbyContext is the source of truth for device type; fall back to setupManager
             int p1CtrlIdx = LobbyContext.Instance != null ? LobbyContext.Instance.p1InputDevice
                           : (networked ? setupManager.p1ControllerIndex.Value : setupManager.LocalP1ControllerIndex);
             int p2CtrlIdx = LobbyContext.Instance != null ? LobbyContext.Instance.p2InputDevice
@@ -128,15 +129,6 @@ namespace Adaptabrawl.UI
                     p1Confirm = UnityEngine.Input.GetKeyDown(KeyCode.Space);
                 if (p1Confirm) RequestReady(1);
             }
-            else if (p1Ready && (isHost || isLocal || !networked))
-            {
-                bool p1Unready = false;
-                if (p1CtrlIdx == 1 && LobbyContext.TryGetGamepadForPlayer(1, p1CtrlIdx, p2CtrlIdx, out var gp1u))
-                    p1Unready = gp1u.buttonEast.wasPressedThisFrame;
-                else if (p1CtrlIdx != 1)
-                    p1Unready = UnityEngine.Input.GetKeyDown(KeyCode.Escape);
-                if (p1Unready) RequestReady(1);
-            }
 
             if (!p2Ready && (!isHost || isLocal || !networked))
             {
@@ -146,15 +138,6 @@ namespace Adaptabrawl.UI
                 else if (p2CtrlIdx != 1)
                     p2Confirm = UnityEngine.Input.GetKeyDown(KeyCode.Return);
                 if (p2Confirm) RequestReady(2);
-            }
-            else if (p2Ready && (!isHost || isLocal || !networked))
-            {
-                bool p2Unready = false;
-                if (p2CtrlIdx == 1 && LobbyContext.TryGetGamepadForPlayer(2, p1CtrlIdx, p2CtrlIdx, out var gp2u))
-                    p2Unready = gp2u.buttonEast.wasPressedThisFrame;
-                else if (p2CtrlIdx != 1)
-                    p2Unready = UnityEngine.Input.GetKeyDown(KeyCode.Backspace);
-                if (p2Unready) RequestReady(2);
             }
         }
 

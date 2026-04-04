@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using TMPro;
 using Adaptabrawl.Gameplay;
 using Adaptabrawl.Networking;
@@ -118,6 +119,42 @@ namespace Adaptabrawl.UI
                 
             // Ensure we start on the Choice panel
             ShowChoicePanel();
+        }
+
+        private void LateUpdate()
+        {
+            if (!BackInputUtility.WasBackOrCancelPressedThisFrame()) return;
+            if (BackInputUtility.IsTextInputFocused()) return;
+
+            if (lobbyPanel != null && lobbyPanel.activeSelf)
+            {
+                if (isReady)
+                    ToggleReady();
+                else
+                    CancelLobby();
+                return;
+            }
+
+            if (waitingRoomPanel != null && waitingRoomPanel.activeSelf)
+            {
+                CancelLobby();
+                return;
+            }
+
+            if (joinRoomPanel != null && joinRoomPanel.activeSelf)
+            {
+                ShowChoicePanel();
+                return;
+            }
+
+            if (createRoomPanel != null && createRoomPanel.activeSelf)
+            {
+                ShowChoicePanel();
+                return;
+            }
+
+            if (choicePanel != null && choicePanel.activeSelf)
+                SceneManager.LoadScene("StartScene");
         }
         
         private void OnDestroy()

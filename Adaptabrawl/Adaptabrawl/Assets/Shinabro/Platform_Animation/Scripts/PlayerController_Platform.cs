@@ -64,6 +64,8 @@ public class PlayerController_Platform : MonoBehaviour
     public string deathAnimationState = "Death";
 
     private float attackBufferTimer = 0f;
+    private float skillBufferTimer  = 0f;
+    private int   pendingSkillIndex = -1;  // -1 = no skill buffered
     private float transitionDelay = 0f;
 
     public bool isJump;
@@ -434,36 +436,47 @@ public class PlayerController_Platform : MonoBehaviour
         }
 
         if (!isJump)
-        {            
-            // Register input into buffer
+        {
+            // ---- Light-attack input buffer ----
             if (WasAttackPressed())
-            {
                 attackBufferTimer = inputBufferWindow;
-            }
-
-            // Decrease buffer timer
             if (attackBufferTimer > 0f)
-            {
                 attackBufferTimer -= Time.deltaTime;
+
+            // ---- Skill input buffer (checked outside !isAttacking so presses
+            //      during an attack animation are captured, not dropped) ----
+            for (int i = 0; i < 8; i++)
+            {
+                if (WasSkillPressed(i))
+                {
+                    pendingSkillIndex = i;
+                    skillBufferTimer  = inputBufferWindow;
+                    break; // only one skill buffered at a time; latest press wins
+                }
             }
+            if (skillBufferTimer > 0f)
+                skillBufferTimer -= Time.deltaTime;
+            else
+                pendingSkillIndex = -1;
 
             Attack();
-            
-            if (!isAttacking) 
+
+            if (!isAttacking)
             {
                 Dodge();
                 Jump();
                 Block();
                 Crouch();
 
-                Skill1();
-                Skill2();
-                Skill3();
-                Skill4();
-                Skill5();
-                Skill6();
-                Skill7();
-                Skill8();
+                // Execute buffered skill when the character is free to act
+                if (skillBufferTimer > 0f && pendingSkillIndex >= 0)
+                {
+                    int idx      = pendingSkillIndex;
+                    skillBufferTimer  = 0f;
+                    pendingSkillIndex = -1;
+                    anim.SetTrigger($"Skill{idx + 1}");
+                    StartCoroutine(DealDamageAfterDelay(0.4f, skillDamage));
+                }
             }
         }
 
@@ -659,14 +672,6 @@ public class PlayerController_Platform : MonoBehaviour
         isJump = false;
     }
 
-    void Skill1() { if (WasSkillPressed(0)) { anim.SetTrigger("Skill1"); StartCoroutine(DealDamageAfterDelay(0.4f, skillDamage)); } }
-    void Skill2() { if (WasSkillPressed(1)) { anim.SetTrigger("Skill2"); StartCoroutine(DealDamageAfterDelay(0.4f, skillDamage)); } }
-    void Skill3() { if (WasSkillPressed(2)) { anim.SetTrigger("Skill3"); StartCoroutine(DealDamageAfterDelay(0.4f, skillDamage)); } }
-    void Skill4() { if (WasSkillPressed(3)) { anim.SetTrigger("Skill4"); StartCoroutine(DealDamageAfterDelay(0.4f, skillDamage)); } }
-    void Skill5() { if (WasSkillPressed(4)) { anim.SetTrigger("Skill5"); StartCoroutine(DealDamageAfterDelay(0.4f, skillDamage)); } }
-    void Skill6() { if (WasSkillPressed(5)) { anim.SetTrigger("Skill6"); StartCoroutine(DealDamageAfterDelay(0.4f, skillDamage)); } }
-    void Skill7() { if (WasSkillPressed(6)) { anim.SetTrigger("Skill7"); StartCoroutine(DealDamageAfterDelay(0.4f, skillDamage)); } }
-    void Skill8() { if (WasSkillPressed(7)) { anim.SetTrigger("Skill8"); StartCoroutine(DealDamageAfterDelay(0.4f, skillDamage)); } }
 
     private void OnDrawGizmosSelected()
     {

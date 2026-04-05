@@ -9,6 +9,17 @@ namespace Adaptabrawl.UI
 {
     public class SettingsUI : MonoBehaviour
     {
+        private static readonly Color DropdownTemplateColor = new Color(0.12f, 0.12f, 0.16f, 0.98f);
+        private static readonly Color DropdownItemColor = new Color(0.18f, 0.18f, 0.24f, 1f);
+        private static readonly Color DropdownCheckmarkColor = new Color(0.85f, 0.2f, 0.2f, 1f);
+        private static readonly Color ToggleOnColor = new Color(0.15f, 0.60f, 0.25f, 1f);
+        private static readonly Color ToggleOffColor = new Color(0.20f, 0.20f, 0.28f, 1f);
+        private static readonly Color ToggleOnTextColor = new Color(0.90f, 1f, 0.92f, 1f);
+        private static readonly Color ToggleOffTextColor = new Color(0.75f, 0.75f, 0.80f, 1f);
+        private static readonly float[] UIScaleOptions = { 0.9f, 0.95f, 1f, 1.05f, 1.1f };
+        private static readonly string[] UIScaleOptionLabels = { "0.90x", "0.95x", "1.00x", "1.05x", "1.10x" };
+        private const float RowSpacing = 56f;
+
         [Header("References")]
         [SerializeField] private SettingsManager settingsManager;
         
@@ -25,9 +36,11 @@ namespace Adaptabrawl.UI
         [SerializeField] private TMP_Dropdown resolutionDropdown;
         [SerializeField] private Toggle vsyncToggle;
         [SerializeField] private TMP_Dropdown fpsDropdown;
+        [SerializeField] private TMP_Dropdown displayModeDropdown;
         
         [Header("Accessibility")]
         [SerializeField] private Slider uiScaleSlider;
+        [SerializeField] private TMP_Dropdown uiScaleDropdown;
         [SerializeField] private TextMeshProUGUI uiScaleText;
         [SerializeField] private Toggle colorBlindToggle;
         [SerializeField] private Toggle showHitboxesToggle;
@@ -44,19 +57,17 @@ namespace Adaptabrawl.UI
         
         private void Start()
         {
-            if (settingsManager == null)
-                settingsManager = SettingsManager.Instance;
-            
-            if (settingsManager == null)
-            {
-                GameObject settingsObj = new GameObject("SettingsManager");
-                settingsManager = settingsObj.AddComponent<SettingsManager>();
-            }
+            settingsManager = SettingsManager.EnsureExists();
             
             InitializeUI();
             SetupButtonListeners();
             LoadCurrentSettings();
             WireMenuControllerNavigation();
+        }
+
+        private void OnDestroy()
+        {
+            RemoveButtonListeners();
         }
 
         private void LateUpdate()
@@ -85,7 +96,8 @@ namespace Adaptabrawl.UI
             AddSel(resolutionDropdown);
             AddSel(vsyncToggle);
             AddSel(fpsDropdown);
-            AddSel(uiScaleSlider);
+            AddSel(displayModeDropdown);
+            AddSel(uiScaleDropdown != null ? uiScaleDropdown : uiScaleSlider);
             AddSel(colorBlindToggle);
             AddSel(showHitboxesToggle);
             if (applyButton != null) list.Add(applyButton);
@@ -99,8 +111,28 @@ namespace Adaptabrawl.UI
         
         private void InitializeUI()
         {
+            EnsureDisplayModeDropdown();
+            EnsureUIScaleControl();
+
+            EnsureDropdownTemplate(qualityDropdown);
+            EnsureDropdownTemplate(resolutionDropdown);
+            EnsureDropdownTemplate(fpsDropdown);
+            EnsureDropdownTemplate(displayModeDropdown);
+            EnsureDropdownTemplate(uiScaleDropdown);
+
             // Initialize resolution dropdown
-            resolutions = Screen.resolutions;
+            var distinctResolutions = new List<Resolution>();
+            var seenResolutions = new HashSet<string>();
+            foreach (var resolution in Screen.resolutions)
+            {
+                string key = $"{resolution.width}x{resolution.height}";
+                if (seenResolutions.Add(key))
+                    distinctResolutions.Add(resolution);
+            }
+            if (distinctResolutions.Count == 0)
+                distinctResolutions.Add(Screen.currentResolution);
+            resolutions = distinctResolutions.ToArray();
+
             if (resolutionDropdown != null)
             {
                 resolutionDropdown.ClearOptions();
@@ -146,6 +178,313 @@ namespace Adaptabrawl.UI
                 };
                 fpsDropdown.AddOptions(fpsOptions);
             }
+
+            if (displayModeDropdown != null)
+            {
+                displayModeDropdown.ClearOptions();
+                displayModeDropdown.AddOptions(new List<string>
+                {
+                    "Fullscreen",
+                    "Borderless",
+                    "Windowed"
+                });
+            }
+
+            if (uiScaleDropdown != null)
+            {
+                uiScaleDropdown.ClearOptions();
+                uiScaleDropdown.AddOptions(new List<string>(UIScaleOptionLabels));
+                uiScaleDropdown.RefreshShownValue();
+            }
+        }
+
+        private void ConfigureUIScaleSliderRange()
+        {
+            if (uiScaleSlider == null) return;
+            uiScaleSlider.minValue = SettingsManager.MinUIScale;
+            uiScaleSlider.maxValue = SettingsManager.MaxUIScale;
+            uiScaleSlider.wholeNumbers = false;
+        }
+
+        private void EnsureUIScaleControl()
+        {
+            if (uiScaleDropdown == null && uiScaleSlider != null)
+                uiScaleDropdown = CreateDropdownFromReference(uiScaleSlider.GetComponent<RectTransform>(), "UIScaleDropdown");
+
+            if (uiScaleSlider != null && uiScaleDropdown != null)
+                uiScaleSlider.gameObject.SetActive(false);
+
+            if (uiScaleDropdown == null)
+                ConfigureUIScaleSliderRange();
+        }
+
+        private void EnsureDisplayModeDropdown()
+        {
+            if (displayModeDropdown != null)
+                return;
+
+            RectTransform fpsRow = fpsDropdown != null ? fpsDropdown.transform.parent as RectTransform : null;
+            RectTransform vsyncRow = vsyncToggle != null ? vsyncToggle.transform.parent as RectTransform : null;
+            if (fpsRow == null || fpsRow.parent == null || vsyncRow == null)
+                return;
+
+            RectTransform existingRuntimeRow = FindChildRectByName(fpsRow.parent, "DisplayModeRow");
+            if (existingRuntimeRow != null)
+            {
+                displayModeDropdown = existingRuntimeRow.GetComponentInChildren<TMP_Dropdown>(true);
+                return;
+            }
+
+            GameObject clonedRow = Instantiate(fpsRow.gameObject, fpsRow.parent);
+            clonedRow.name = "DisplayModeRow";
+
+            RectTransform clonedRowRect = clonedRow.GetComponent<RectTransform>();
+            if (clonedRowRect != null)
+                clonedRowRect.anchoredPosition = new Vector2(clonedRowRect.anchoredPosition.x, vsyncRow.anchoredPosition.y - RowSpacing);
+
+            TextMeshProUGUI rowLabel = clonedRow.transform.Find("Label")?.GetComponent<TextMeshProUGUI>();
+            if (rowLabel != null)
+                rowLabel.text = "Display Mode";
+
+            displayModeDropdown = clonedRow.GetComponentInChildren<TMP_Dropdown>(true);
+            if (displayModeDropdown != null)
+                displayModeDropdown.gameObject.name = "DisplayModeDropdown";
+
+            ShiftRectY(FindChildRectByName(fpsRow.parent, "VideoDiv"), -RowSpacing);
+            ShiftRectY(FindChildRectByName(fpsRow.parent, "AccessLabel"), -RowSpacing);
+            ShiftRectY(uiScaleSlider != null ? uiScaleSlider.transform.parent as RectTransform : uiScaleDropdown != null ? uiScaleDropdown.transform.parent as RectTransform : null, -RowSpacing);
+            ShiftRectY(colorBlindToggle != null ? colorBlindToggle.transform.parent as RectTransform : null, -RowSpacing);
+            ShiftRectY(showHitboxesToggle != null ? showHitboxesToggle.transform.parent as RectTransform : null, -RowSpacing);
+        }
+
+        private void EnsureDropdownTemplate(TMP_Dropdown dropdown)
+        {
+            if (dropdown == null) return;
+
+            bool hasValidTemplate =
+                dropdown.template != null &&
+                dropdown.template.GetComponentInChildren<Toggle>(true) != null &&
+                dropdown.itemText != null;
+
+            if (!hasValidTemplate)
+                BuildRuntimeDropdownTemplate(dropdown);
+
+            dropdown.RefreshShownValue();
+        }
+
+        private void BuildRuntimeDropdownTemplate(TMP_Dropdown dropdown)
+        {
+            if (dropdown == null) return;
+
+            if (dropdown.captionText == null)
+                dropdown.captionText = dropdown.GetComponentInChildren<TextMeshProUGUI>(true);
+
+            RectTransform dropdownRect = dropdown.GetComponent<RectTransform>();
+            float controlHeight = dropdownRect != null ? Mathf.Max(30f, dropdownRect.rect.height) : 34f;
+            float templateHeight = controlHeight * 5f;
+
+            // Remove stale runtime template (if any) so references don't drift.
+            Transform oldTemplate = dropdown.transform.Find("RuntimeTemplate");
+            if (oldTemplate != null)
+                Destroy(oldTemplate.gameObject);
+
+            GameObject templateObj = new GameObject("RuntimeTemplate", typeof(RectTransform), typeof(Image), typeof(ScrollRect));
+            RectTransform templateRect = templateObj.GetComponent<RectTransform>();
+            templateRect.SetParent(dropdown.transform, false);
+            templateRect.anchorMin = new Vector2(0f, 0f);
+            templateRect.anchorMax = new Vector2(1f, 0f);
+            templateRect.pivot = new Vector2(0.5f, 1f);
+            templateRect.anchoredPosition = new Vector2(0f, -(controlHeight + 4f));
+            templateRect.sizeDelta = new Vector2(0f, templateHeight);
+
+            Image templateImage = templateObj.GetComponent<Image>();
+            templateImage.color = DropdownTemplateColor;
+
+            ScrollRect scrollRect = templateObj.GetComponent<ScrollRect>();
+            scrollRect.horizontal = false;
+            scrollRect.vertical = true;
+            scrollRect.movementType = ScrollRect.MovementType.Clamped;
+            scrollRect.scrollSensitivity = 20f;
+
+            GameObject viewportObj = new GameObject("Viewport", typeof(RectTransform), typeof(Image), typeof(Mask));
+            RectTransform viewportRect = viewportObj.GetComponent<RectTransform>();
+            viewportRect.SetParent(templateRect, false);
+            viewportRect.anchorMin = Vector2.zero;
+            viewportRect.anchorMax = Vector2.one;
+            viewportRect.sizeDelta = Vector2.zero;
+
+            Image viewportImage = viewportObj.GetComponent<Image>();
+            viewportImage.color = new Color(1f, 1f, 1f, 0.03f);
+            Mask viewportMask = viewportObj.GetComponent<Mask>();
+            viewportMask.showMaskGraphic = false;
+
+            GameObject contentObj = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+            RectTransform contentRect = contentObj.GetComponent<RectTransform>();
+            contentRect.SetParent(viewportRect, false);
+            contentRect.anchorMin = new Vector2(0f, 1f);
+            contentRect.anchorMax = new Vector2(1f, 1f);
+            contentRect.pivot = new Vector2(0.5f, 1f);
+            contentRect.anchoredPosition = Vector2.zero;
+            contentRect.sizeDelta = Vector2.zero;
+
+            VerticalLayoutGroup layout = contentObj.GetComponent<VerticalLayoutGroup>();
+            layout.childControlHeight = true;
+            layout.childControlWidth = true;
+            layout.childForceExpandHeight = false;
+            layout.childForceExpandWidth = true;
+            layout.spacing = 2f;
+
+            ContentSizeFitter fitter = contentObj.GetComponent<ContentSizeFitter>();
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+
+            GameObject itemObj = new GameObject("Item", typeof(RectTransform), typeof(Image), typeof(Toggle), typeof(LayoutElement));
+            RectTransform itemRect = itemObj.GetComponent<RectTransform>();
+            itemRect.SetParent(contentRect, false);
+            itemRect.anchorMin = new Vector2(0f, 0.5f);
+            itemRect.anchorMax = new Vector2(1f, 0.5f);
+            itemRect.sizeDelta = new Vector2(0f, controlHeight);
+
+            Image itemImage = itemObj.GetComponent<Image>();
+            itemImage.color = DropdownItemColor;
+
+            LayoutElement itemLayout = itemObj.GetComponent<LayoutElement>();
+            itemLayout.preferredHeight = controlHeight;
+
+            Toggle itemToggle = itemObj.GetComponent<Toggle>();
+            itemToggle.targetGraphic = itemImage;
+            itemToggle.isOn = true;
+
+            GameObject checkmarkObj = new GameObject("Item Checkmark", typeof(RectTransform), typeof(Image));
+            RectTransform checkmarkRect = checkmarkObj.GetComponent<RectTransform>();
+            checkmarkRect.SetParent(itemRect, false);
+            checkmarkRect.anchorMin = new Vector2(0f, 0.5f);
+            checkmarkRect.anchorMax = new Vector2(0f, 0.5f);
+            checkmarkRect.anchoredPosition = new Vector2(12f, 0f);
+            checkmarkRect.sizeDelta = new Vector2(14f, 14f);
+
+            Image checkmarkImage = checkmarkObj.GetComponent<Image>();
+            checkmarkImage.color = DropdownCheckmarkColor;
+            itemToggle.graphic = checkmarkImage;
+
+            GameObject labelObj = new GameObject("Item Label", typeof(RectTransform), typeof(TextMeshProUGUI));
+            RectTransform labelRect = labelObj.GetComponent<RectTransform>();
+            labelRect.SetParent(itemRect, false);
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = new Vector2(30f, 2f);
+            labelRect.offsetMax = new Vector2(-8f, -2f);
+
+            TextMeshProUGUI itemLabel = labelObj.GetComponent<TextMeshProUGUI>();
+            itemLabel.text = "Option";
+            itemLabel.alignment = TextAlignmentOptions.MidlineLeft;
+            itemLabel.color = Color.white;
+            itemLabel.textWrappingMode = TextWrappingModes.NoWrap;
+            itemLabel.raycastTarget = false;
+
+            if (dropdown.captionText != null)
+            {
+                itemLabel.font = dropdown.captionText.font;
+                itemLabel.fontSize = dropdown.captionText.fontSize;
+                itemLabel.fontStyle = dropdown.captionText.fontStyle;
+            }
+            else if (TMP_Settings.defaultFontAsset != null)
+            {
+                itemLabel.font = TMP_Settings.defaultFontAsset;
+                itemLabel.fontSize = 24f;
+                itemLabel.fontStyle = FontStyles.Normal;
+            }
+
+            scrollRect.viewport = viewportRect;
+            scrollRect.content = contentRect;
+
+            dropdown.template = templateRect;
+            dropdown.itemText = itemLabel;
+            dropdown.itemImage = checkmarkImage;
+
+            templateObj.SetActive(false);
+        }
+
+        private TMP_Dropdown CreateDropdownFromReference(RectTransform referenceRect, string objectName)
+        {
+            if (referenceRect == null || referenceRect.parent == null)
+                return null;
+
+            GameObject dropdownObj = new GameObject(objectName, typeof(RectTransform), typeof(Image), typeof(TMP_Dropdown));
+            RectTransform dropdownRect = dropdownObj.GetComponent<RectTransform>();
+            dropdownRect.SetParent(referenceRect.parent, false);
+            dropdownRect.anchorMin = referenceRect.anchorMin;
+            dropdownRect.anchorMax = referenceRect.anchorMax;
+            dropdownRect.pivot = referenceRect.pivot;
+            dropdownRect.anchoredPosition = referenceRect.anchoredPosition;
+            dropdownRect.sizeDelta = referenceRect.sizeDelta;
+            dropdownRect.localScale = referenceRect.localScale;
+            dropdownRect.SetSiblingIndex(referenceRect.GetSiblingIndex() + 1);
+
+            Image background = dropdownObj.GetComponent<Image>();
+            background.color = DropdownItemColor;
+
+            TMP_Dropdown dropdown = dropdownObj.GetComponent<TMP_Dropdown>();
+
+            GameObject labelObj = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
+            RectTransform labelRect = labelObj.GetComponent<RectTransform>();
+            labelRect.SetParent(dropdownRect, false);
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = new Vector2(10f, 2f);
+            labelRect.offsetMax = new Vector2(-30f, -2f);
+
+            TextMeshProUGUI label = labelObj.GetComponent<TextMeshProUGUI>();
+            label.text = "1.00x";
+            label.alignment = TextAlignmentOptions.MidlineLeft;
+            label.color = Color.white;
+            label.textWrappingMode = TextWrappingModes.NoWrap;
+            label.raycastTarget = false;
+            if (TMP_Settings.defaultFontAsset != null)
+                label.font = TMP_Settings.defaultFontAsset;
+            label.fontSize = 12f;
+
+            GameObject arrowObj = new GameObject("Arrow", typeof(RectTransform), typeof(TextMeshProUGUI));
+            RectTransform arrowRect = arrowObj.GetComponent<RectTransform>();
+            arrowRect.SetParent(dropdownRect, false);
+            arrowRect.anchorMin = new Vector2(1f, 0f);
+            arrowRect.anchorMax = new Vector2(1f, 1f);
+            arrowRect.pivot = new Vector2(0.5f, 0.5f);
+            arrowRect.sizeDelta = new Vector2(24f, 0f);
+            arrowRect.anchoredPosition = new Vector2(-12f, 0f);
+
+            TextMeshProUGUI arrowText = arrowObj.GetComponent<TextMeshProUGUI>();
+            arrowText.text = "▼";
+            arrowText.alignment = TextAlignmentOptions.Center;
+            arrowText.color = new Color(0.80f, 0.80f, 0.85f, 1f);
+            arrowText.raycastTarget = false;
+            if (TMP_Settings.defaultFontAsset != null)
+                arrowText.font = TMP_Settings.defaultFontAsset;
+            arrowText.fontSize = 11f;
+
+            dropdown.captionText = label;
+            dropdown.AddOptions(new List<string> { "Option" });
+            BuildRuntimeDropdownTemplate(dropdown);
+            dropdown.RefreshShownValue();
+
+            return dropdown;
+        }
+
+        private static RectTransform FindChildRectByName(Transform parent, string childName)
+        {
+            if (parent == null || string.IsNullOrWhiteSpace(childName))
+                return null;
+
+            Transform child = parent.Find(childName);
+            return child as RectTransform;
+        }
+
+        private static void ShiftRectY(RectTransform rect, float deltaY)
+        {
+            if (rect == null || Mathf.Approximately(deltaY, 0f))
+                return;
+
+            rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, rect.anchoredPosition.y + deltaY);
         }
         
         private void SetupButtonListeners()
@@ -167,9 +506,13 @@ namespace Adaptabrawl.UI
                 vsyncToggle.onValueChanged.AddListener(OnVSyncChanged);
             if (fpsDropdown != null)
                 fpsDropdown.onValueChanged.AddListener(OnFPSChanged);
+            if (displayModeDropdown != null)
+                displayModeDropdown.onValueChanged.AddListener(OnDisplayModeChanged);
             
             // Accessibility
-            if (uiScaleSlider != null)
+            if (uiScaleDropdown != null)
+                uiScaleDropdown.onValueChanged.AddListener(OnUIScaleOptionChanged);
+            else if (uiScaleSlider != null)
                 uiScaleSlider.onValueChanged.AddListener(OnUIScaleChanged);
             if (colorBlindToggle != null)
                 colorBlindToggle.onValueChanged.AddListener(OnColorBlindChanged);
@@ -184,6 +527,43 @@ namespace Adaptabrawl.UI
             if (resetButton != null)
                 resetButton.onClick.AddListener(ResetToDefaults);
         }
+
+        private void RemoveButtonListeners()
+        {
+            if (masterVolumeSlider != null)
+                masterVolumeSlider.onValueChanged.RemoveListener(OnMasterVolumeChanged);
+            if (musicVolumeSlider != null)
+                musicVolumeSlider.onValueChanged.RemoveListener(OnMusicVolumeChanged);
+            if (sfxVolumeSlider != null)
+                sfxVolumeSlider.onValueChanged.RemoveListener(OnSFXVolumeChanged);
+
+            if (qualityDropdown != null)
+                qualityDropdown.onValueChanged.RemoveListener(OnQualityChanged);
+            if (resolutionDropdown != null)
+                resolutionDropdown.onValueChanged.RemoveListener(OnResolutionChanged);
+            if (vsyncToggle != null)
+                vsyncToggle.onValueChanged.RemoveListener(OnVSyncChanged);
+            if (fpsDropdown != null)
+                fpsDropdown.onValueChanged.RemoveListener(OnFPSChanged);
+            if (displayModeDropdown != null)
+                displayModeDropdown.onValueChanged.RemoveListener(OnDisplayModeChanged);
+
+            if (uiScaleDropdown != null)
+                uiScaleDropdown.onValueChanged.RemoveListener(OnUIScaleOptionChanged);
+            if (uiScaleSlider != null)
+                uiScaleSlider.onValueChanged.RemoveListener(OnUIScaleChanged);
+            if (colorBlindToggle != null)
+                colorBlindToggle.onValueChanged.RemoveListener(OnColorBlindChanged);
+            if (showHitboxesToggle != null)
+                showHitboxesToggle.onValueChanged.RemoveListener(OnShowHitboxesChanged);
+
+            if (backButton != null)
+                backButton.onClick.RemoveListener(GoBack);
+            if (applyButton != null)
+                applyButton.onClick.RemoveListener(ApplySettings);
+            if (resetButton != null)
+                resetButton.onClick.RemoveListener(ResetToDefaults);
+        }
         
         private void LoadCurrentSettings()
         {
@@ -191,27 +571,108 @@ namespace Adaptabrawl.UI
             
             // Load audio settings
             if (masterVolumeSlider != null)
-                masterVolumeSlider.value = settingsManager.MasterVolume;
+                masterVolumeSlider.SetValueWithoutNotify(settingsManager.MasterVolume);
             if (musicVolumeSlider != null)
-                musicVolumeSlider.value = settingsManager.MusicVolume;
+                musicVolumeSlider.SetValueWithoutNotify(settingsManager.MusicVolume);
             if (sfxVolumeSlider != null)
-                sfxVolumeSlider.value = settingsManager.SFXVolume;
+                sfxVolumeSlider.SetValueWithoutNotify(settingsManager.SFXVolume);
             
             // Load video settings
             if (qualityDropdown != null)
-                qualityDropdown.value = settingsManager.QualityLevel;
+            {
+                int clampedQuality = Mathf.Clamp(settingsManager.QualityLevel, 0, Mathf.Max(0, qualityDropdown.options.Count - 1));
+                qualityDropdown.SetValueWithoutNotify(clampedQuality);
+                qualityDropdown.RefreshShownValue();
+            }
             if (vsyncToggle != null)
-                vsyncToggle.isOn = settingsManager.VSyncEnabled;
+                vsyncToggle.SetIsOnWithoutNotify(settingsManager.VSyncEnabled);
+            if (fpsDropdown != null)
+            {
+                fpsDropdown.SetValueWithoutNotify(FPSIndexFromTarget(settingsManager.TargetFPS));
+                fpsDropdown.RefreshShownValue();
+            }
+            if (displayModeDropdown != null)
+            {
+                displayModeDropdown.SetValueWithoutNotify(DisplayModeIndexFromMode(settingsManager.DisplayMode));
+                displayModeDropdown.RefreshShownValue();
+            }
             
             // Load accessibility settings
-            if (uiScaleSlider != null)
-                uiScaleSlider.value = settingsManager.UIScale;
+            if (uiScaleDropdown != null)
+            {
+                uiScaleDropdown.SetValueWithoutNotify(UIScaleIndexFromValue(settingsManager.UIScale));
+                uiScaleDropdown.RefreshShownValue();
+            }
+            else if (uiScaleSlider != null)
+            {
+                uiScaleSlider.SetValueWithoutNotify(Mathf.Clamp(settingsManager.UIScale, SettingsManager.MinUIScale, SettingsManager.MaxUIScale));
+            }
             if (colorBlindToggle != null)
-                colorBlindToggle.isOn = settingsManager.ColorBlindMode;
+                colorBlindToggle.SetIsOnWithoutNotify(settingsManager.ColorBlindMode);
             if (showHitboxesToggle != null)
-                showHitboxesToggle.isOn = settingsManager.ShowHitboxes;
+                showHitboxesToggle.SetIsOnWithoutNotify(settingsManager.ShowHitboxes);
             
             UpdateTextLabels();
+            UpdateToggleVisual(vsyncToggle);
+            UpdateToggleVisual(colorBlindToggle);
+            UpdateToggleVisual(showHitboxesToggle);
+        }
+
+        private static int FPSIndexFromTarget(int targetFps)
+        {
+            return targetFps switch
+            {
+                30 => 0,
+                60 => 1,
+                120 => 2,
+                144 => 3,
+                _ => 4 // Unlimited or custom value
+            };
+        }
+
+        private static int UIScaleIndexFromValue(float scale)
+        {
+            int closestIndex = 0;
+            float bestDelta = float.MaxValue;
+            for (int i = 0; i < UIScaleOptions.Length; i++)
+            {
+                float delta = Mathf.Abs(scale - UIScaleOptions[i]);
+                if (delta < bestDelta)
+                {
+                    bestDelta = delta;
+                    closestIndex = i;
+                }
+            }
+
+            return closestIndex;
+        }
+
+        private static float UIScaleValueFromIndex(int index)
+        {
+            int clamped = Mathf.Clamp(index, 0, UIScaleOptions.Length - 1);
+            return UIScaleOptions[clamped];
+        }
+
+        private static int DisplayModeIndexFromMode(FullScreenMode mode)
+        {
+            return mode switch
+            {
+                FullScreenMode.ExclusiveFullScreen => 0,
+                FullScreenMode.FullScreenWindow => 1,
+                FullScreenMode.Windowed => 2,
+                _ => 1
+            };
+        }
+
+        private static FullScreenMode DisplayModeFromIndex(int index)
+        {
+            return index switch
+            {
+                0 => FullScreenMode.ExclusiveFullScreen,
+                1 => FullScreenMode.FullScreenWindow,
+                2 => FullScreenMode.Windowed,
+                _ => FullScreenMode.FullScreenWindow
+            };
         }
         
         private void UpdateTextLabels()
@@ -222,8 +683,16 @@ namespace Adaptabrawl.UI
                 musicVolumeText.text = $"Music: {Mathf.RoundToInt(musicVolumeSlider.value * 100)}%";
             if (sfxVolumeText != null && sfxVolumeSlider != null)
                 sfxVolumeText.text = $"SFX: {Mathf.RoundToInt(sfxVolumeSlider.value * 100)}%";
-            if (uiScaleText != null && uiScaleSlider != null)
-                uiScaleText.text = $"UI Scale: {uiScaleSlider.value:F1}x";
+            if (uiScaleText != null)
+            {
+                float displayScale = uiScaleDropdown != null
+                    ? UIScaleValueFromIndex(uiScaleDropdown.value)
+                    : uiScaleSlider != null
+                        ? uiScaleSlider.value
+                        : SettingsManager.MinUIScale;
+
+                uiScaleText.text = $"UI Scale: {displayScale:F2}x";
+            }
         }
         
         // Audio callbacks
@@ -257,20 +726,24 @@ namespace Adaptabrawl.UI
         
         private void OnResolutionChanged(int index)
         {
+            if (resolutions == null || resolutions.Length == 0) return;
+            if (index < 0 || index >= resolutions.Length) return;
+
             Resolution resolution = resolutions[index];
-            Screen.SetResolution(resolution.width, resolution.height, Screen.fullScreen);
+            FullScreenMode mode = settingsManager != null ? settingsManager.DisplayMode : Screen.fullScreenMode;
+            Screen.SetResolution(resolution.width, resolution.height, mode != FullScreenMode.Windowed);
+            Screen.fullScreenMode = mode;
         }
         
         private void OnVSyncChanged(bool enabled)
         {
             if (settingsManager != null)
                 settingsManager.SetVSync(enabled);
+            UpdateToggleVisual(vsyncToggle);
         }
         
         private void OnFPSChanged(int index)
         {
-            if (settingsManager == null) return;
-            
             int fps = index switch
             {
                 0 => 30,
@@ -280,11 +753,19 @@ namespace Adaptabrawl.UI
                 4 => -1, // Unlimited
                 _ => 60
             };
-            
-            if (fps > 0)
+
+            if (settingsManager != null)
                 settingsManager.SetTargetFPS(fps);
             else
-                Application.targetFrameRate = -1;
+                Application.targetFrameRate = fps;
+        }
+
+        private void OnDisplayModeChanged(int index)
+        {
+            if (settingsManager == null)
+                return;
+
+            settingsManager.SetDisplayMode(DisplayModeFromIndex(index));
         }
         
         // Accessibility callbacks
@@ -294,17 +775,50 @@ namespace Adaptabrawl.UI
                 settingsManager.SetUIScale(value);
             UpdateTextLabels();
         }
+
+        private void OnUIScaleOptionChanged(int index)
+        {
+            if (settingsManager != null)
+                settingsManager.SetUIScale(UIScaleValueFromIndex(index));
+            UpdateTextLabels();
+        }
         
         private void OnColorBlindChanged(bool enabled)
         {
             if (settingsManager != null)
                 settingsManager.SetColorBlindMode(enabled);
+            UpdateToggleVisual(colorBlindToggle);
         }
         
         private void OnShowHitboxesChanged(bool enabled)
         {
             if (settingsManager != null)
                 settingsManager.SetShowHitboxes(enabled);
+            UpdateToggleVisual(showHitboxesToggle);
+        }
+
+        private void UpdateToggleVisual(Toggle toggle)
+        {
+            if (toggle == null)
+                return;
+
+            bool isOn = toggle.isOn;
+
+            if (toggle.targetGraphic is Image toggleBackground)
+                toggleBackground.color = isOn ? ToggleOnColor : ToggleOffColor;
+
+            if (toggle.graphic is Image checkmark)
+                checkmark.color = isOn ? ToggleOnTextColor : ToggleOffTextColor;
+
+            TextMeshProUGUI stateLabel = toggle.transform.Find("StateLabel")?.GetComponent<TextMeshProUGUI>();
+            if (stateLabel == null)
+                stateLabel = toggle.GetComponentInChildren<TextMeshProUGUI>(true);
+
+            if (stateLabel != null)
+            {
+                stateLabel.text = isOn ? "ON" : "OFF";
+                stateLabel.color = isOn ? ToggleOnTextColor : ToggleOffTextColor;
+            }
         }
         
         private void ApplySettings()
@@ -324,6 +838,7 @@ namespace Adaptabrawl.UI
             settingsManager.SetQualityLevel(2);
             settingsManager.SetVSync(true);
             settingsManager.SetTargetFPS(60);
+            settingsManager.SetDisplayMode(FullScreenMode.FullScreenWindow);
             settingsManager.SetUIScale(1f);
             settingsManager.SetColorBlindMode(false);
             settingsManager.SetShowHitboxes(false);
@@ -344,4 +859,3 @@ namespace Adaptabrawl.UI
         }
     }
 }
-

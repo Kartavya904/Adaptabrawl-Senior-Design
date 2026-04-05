@@ -93,9 +93,19 @@ namespace Adaptabrawl.Editor
                 settingsMgr = smGO.AddComponent<SettingsManager>();
             }
 
-            // Ensure SettingsUI is on the same GameObject
-            SettingsUI settingsUI = settingsMgr.GetComponent<SettingsUI>();
-            if (settingsUI == null) settingsUI = settingsMgr.gameObject.AddComponent<SettingsUI>();
+            // Keep SettingsUI scene-local so DontDestroyOnLoad manager lifecycle never carries UI state.
+            SettingsUI settingsUI = Object.FindFirstObjectByType<SettingsUI>();
+            if (settingsUI != null && settingsUI.gameObject == settingsMgr.gameObject)
+            {
+                Object.DestroyImmediate(settingsUI);
+                settingsUI = null;
+            }
+
+            if (settingsUI == null)
+            {
+                GameObject uiController = new GameObject("SettingsUIController");
+                settingsUI = uiController.AddComponent<SettingsUI>();
+            }
 
             // ─── Build root ───────────────────────────────────────────────────
             GameObject root = CreateRect("SettingsRoot", canvas.transform);
@@ -166,6 +176,9 @@ namespace Adaptabrawl.Editor
             Toggle vsyncToggle; CreateToggleRow("VSyncRow", panel.transform,
                 "VSync", ref sectionY, out vsyncToggle);
 
+            TMP_Dropdown displayModeDrop; CreateDropdownRow("DisplayModeRow", panel.transform,
+                "Display Mode", ref sectionY, out displayModeDrop);
+
             sectionY -= SECTION_GAP;
             CreateDividerLine("VideoDiv", panel.transform, sectionY);
             sectionY -= SECTION_GAP;
@@ -174,9 +187,8 @@ namespace Adaptabrawl.Editor
             CreateSectionLabel("AccessLabel", panel.transform, "-- ACCESSIBILITY --", sectionY);
             sectionY -= 36f;
 
-            Slider uiScaleSlider; TextMeshProUGUI uiScaleText;
-            CreateSliderRow("UIScaleRow", panel.transform, "UI Scale", ref sectionY,
-                out uiScaleSlider, out uiScaleText);
+            TMP_Dropdown uiScaleDrop;
+            CreateDropdownRow("UIScaleRow", panel.transform, "UI Scale", ref sectionY, out uiScaleDrop);
 
             Toggle colorBlindToggle; CreateToggleRow("ColorBlindRow", panel.transform,
                 "Color Blind Mode", ref sectionY, out colorBlindToggle);
@@ -203,8 +215,10 @@ namespace Adaptabrawl.Editor
             so.FindProperty("resolutionDropdown").objectReferenceValue = resDrop;
             so.FindProperty("vsyncToggle").objectReferenceValue        = vsyncToggle;
             so.FindProperty("fpsDropdown").objectReferenceValue        = fpsDrop;
-            so.FindProperty("uiScaleSlider").objectReferenceValue      = uiScaleSlider;
-            so.FindProperty("uiScaleText").objectReferenceValue        = uiScaleText;
+            so.FindProperty("displayModeDropdown").objectReferenceValue = displayModeDrop;
+            so.FindProperty("uiScaleSlider").objectReferenceValue      = null;
+            so.FindProperty("uiScaleDropdown").objectReferenceValue    = uiScaleDrop;
+            so.FindProperty("uiScaleText").objectReferenceValue        = null;
             so.FindProperty("colorBlindToggle").objectReferenceValue   = colorBlindToggle;
             so.FindProperty("showHitboxesToggle").objectReferenceValue = hitboxToggle;
             so.FindProperty("backButton").objectReferenceValue         = backBtn;
@@ -482,6 +496,101 @@ namespace Adaptabrawl.Editor
 
             dropdown.captionText = dropLabel;
             dropdown.AddOptions(new System.Collections.Generic.List<string> { "Option A", "Option B", "Option C" });
+            BuildDropdownTemplate(dropdown, dropLabel);
+        }
+
+        private static void BuildDropdownTemplate(TMP_Dropdown dropdown, TextMeshProUGUI captionText)
+        {
+            if (dropdown == null) return;
+
+            RectTransform dropdownRect = dropdown.GetComponent<RectTransform>();
+            float controlHeight = dropdownRect != null ? Mathf.Max(30f, dropdownRect.rect.height) : 34f;
+            float templateHeight = controlHeight * 5f;
+
+            GameObject templateObj = CreateRect("Template", dropdown.transform);
+            RectTransform templateRect = templateObj.GetComponent<RectTransform>();
+            templateRect.anchorMin = new Vector2(0f, 0f);
+            templateRect.anchorMax = new Vector2(1f, 0f);
+            templateRect.pivot = new Vector2(0.5f, 1f);
+            templateRect.anchoredPosition = new Vector2(0f, -(controlHeight + 4f));
+            templateRect.sizeDelta = new Vector2(0f, templateHeight);
+            SetColor(templateObj, new Color(0.12f, 0.12f, 0.16f, 0.98f));
+
+            var scrollRect = templateObj.AddComponent<ScrollRect>();
+            scrollRect.horizontal = false;
+            scrollRect.vertical = true;
+            scrollRect.movementType = ScrollRect.MovementType.Clamped;
+
+            GameObject viewportObj = CreateRect("Viewport", templateObj.transform);
+            FillParent(viewportObj);
+            SetColor(viewportObj, new Color(1f, 1f, 1f, 0.03f));
+            var viewportMask = viewportObj.AddComponent<Mask>();
+            viewportMask.showMaskGraphic = false;
+            RectTransform viewportRect = viewportObj.GetComponent<RectTransform>();
+
+            GameObject contentObj = CreateRect("Content", viewportObj.transform);
+            RectTransform contentRect = contentObj.GetComponent<RectTransform>();
+            contentRect.anchorMin = new Vector2(0f, 1f);
+            contentRect.anchorMax = new Vector2(1f, 1f);
+            contentRect.pivot = new Vector2(0.5f, 1f);
+            contentRect.anchoredPosition = Vector2.zero;
+            contentRect.sizeDelta = Vector2.zero;
+
+            var layout = contentObj.AddComponent<VerticalLayoutGroup>();
+            layout.childControlHeight = true;
+            layout.childControlWidth = true;
+            layout.childForceExpandHeight = false;
+            layout.childForceExpandWidth = true;
+            layout.spacing = 2f;
+
+            var fitter = contentObj.AddComponent<ContentSizeFitter>();
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+
+            GameObject itemObj = CreateRect("Item", contentObj.transform);
+            RectTransform itemRect = itemObj.GetComponent<RectTransform>();
+            itemRect.anchorMin = new Vector2(0f, 0.5f);
+            itemRect.anchorMax = new Vector2(1f, 0.5f);
+            itemRect.sizeDelta = new Vector2(0f, controlHeight);
+            SetColor(itemObj, new Color(0.18f, 0.18f, 0.24f, 1f));
+            itemObj.AddComponent<LayoutElement>().preferredHeight = controlHeight;
+
+            var toggle = itemObj.AddComponent<Toggle>();
+            var itemImage = itemObj.GetComponent<Image>();
+            toggle.targetGraphic = itemImage;
+            toggle.isOn = true;
+
+            GameObject checkObj = CreateRect("Checkmark", itemObj.transform);
+            RectTransform checkRect = checkObj.GetComponent<RectTransform>();
+            checkRect.anchorMin = new Vector2(0f, 0.5f);
+            checkRect.anchorMax = new Vector2(0f, 0.5f);
+            checkRect.anchoredPosition = new Vector2(12f, 0f);
+            checkRect.sizeDelta = new Vector2(14f, 14f);
+            SetColor(checkObj, TOGGLE_ON);
+            toggle.graphic = checkObj.GetComponent<Image>();
+
+            var itemLabel = CreateTMPText("ItemLabel", itemObj.transform,
+                "Option", 12f, FontStyles.Normal, TextAlignmentOptions.MidlineLeft, TEXT_PRIMARY);
+            var itemLabelRect = itemLabel.GetComponent<RectTransform>();
+            itemLabelRect.anchorMin = Vector2.zero;
+            itemLabelRect.anchorMax = Vector2.one;
+            itemLabelRect.offsetMin = new Vector2(30f, 2f);
+            itemLabelRect.offsetMax = new Vector2(-8f, -2f);
+            if (captionText != null)
+            {
+                itemLabel.font = captionText.font;
+                itemLabel.fontSize = captionText.fontSize;
+                itemLabel.fontStyle = captionText.fontStyle;
+            }
+            itemLabel.raycastTarget = false;
+
+            scrollRect.viewport = viewportRect;
+            scrollRect.content = contentRect;
+
+            dropdown.template = templateRect;
+            dropdown.itemText = itemLabel;
+            dropdown.itemImage = checkObj.GetComponent<Image>();
+            templateObj.SetActive(false);
         }
 
         // ─────────────────────────────────────────────────────────────────────

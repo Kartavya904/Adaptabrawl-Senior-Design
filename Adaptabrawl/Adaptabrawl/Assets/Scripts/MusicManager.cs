@@ -1,4 +1,5 @@
 using UnityEngine;
+using Adaptabrawl.Settings;
 
 namespace Adaptabrawl
 {
@@ -19,6 +20,7 @@ namespace Adaptabrawl
         [SerializeField] private float volume = 0.5f;
 
         private AudioSource audioSource;
+        private SettingsContext settingsContext;
 
         private void Awake()
         {
@@ -36,6 +38,7 @@ namespace Adaptabrawl
             audioSource.loop = true;
             audioSource.volume = volume;
             audioSource.playOnAwake = false;
+            ApplySavedMusicVolume();
 
             if (backgroundMusic == null)
             {
@@ -57,6 +60,33 @@ namespace Adaptabrawl
             }
         }
 
+        private void OnEnable()
+        {
+            settingsContext = SettingsContext.EnsureExists();
+            if (settingsContext != null)
+                settingsContext.SettingsChanged += HandleSettingsChanged;
+        }
+
+        private void OnDisable()
+        {
+            if (settingsContext != null)
+                settingsContext.SettingsChanged -= HandleSettingsChanged;
+            settingsContext = null;
+        }
+
+        private void HandleSettingsChanged()
+        {
+            if (settingsContext == null)
+                return;
+
+            SetVolume(settingsContext.musicVolume);
+        }
+
+        private void ApplySavedMusicVolume()
+        {
+            float savedMusicVolume = PlayerPrefs.GetFloat("MusicVolume", volume);
+            SetVolume(savedMusicVolume);
+        }
 
         /// <summary>Pause the music (e.g., on pause screen).</summary>
         public void Pause() => audioSource.Pause();
@@ -65,6 +95,11 @@ namespace Adaptabrawl
         public void Resume() => audioSource.UnPause();
 
         /// <summary>Smoothly set volume at runtime.</summary>
-        public void SetVolume(float v) => audioSource.volume = Mathf.Clamp01(v);
+        public void SetVolume(float v)
+        {
+            volume = Mathf.Clamp01(v);
+            if (audioSource != null)
+                audioSource.volume = volume;
+        }
     }
 }

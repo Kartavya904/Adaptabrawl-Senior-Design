@@ -66,7 +66,7 @@ namespace Adaptabrawl.Editor
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             EditorGUILayout.LabelField("Hitbox Configuration", EditorStyles.boldLabel);
             
-            EditorGUILayout.HelpBox("Configure multiple hitboxes for complex attacks. Each hitbox can have different timing, size, and damage multipliers.", MessageType.Info);
+            EditorGUILayout.HelpBox("Runtime now derives weapon hit volumes from the live mesh. Geometry fields below are deprecated asset data and are ignored during gameplay. Timing, damage, and status properties still apply.", MessageType.Warning);
             
             // Quick add buttons
             EditorGUILayout.BeginHorizontal();
@@ -103,7 +103,7 @@ namespace Adaptabrawl.Editor
             
             // Legacy fields (for backwards compatibility)
             EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField("Legacy Single Hitbox (Deprecated)", EditorStyles.miniLabel);
+            EditorGUILayout.LabelField("Deprecated Geometry Data", EditorStyles.miniLabel);
             EditorGUI.indentLevel++;
             EditorGUILayout.PropertyField(serializedObject.FindProperty("hitboxOffset"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("hitboxSize"));
@@ -304,4 +304,3 @@ namespace Adaptabrawl.Editor
         }
     }
 }
-

@@ -9,12 +9,14 @@ namespace Adaptabrawl.Combat
     {
         [Header("References")]
         [SerializeField] private FighterController fighterController;
+        [SerializeField] private Animator combatAnimator;
         
         [Header("State")]
         private CombatState currentState = CombatState.Idle;
         private MoveDef currentMove = null;
         private int currentFrame = 0;
         private int totalFrames = 0;
+        private bool hitboxWindowActive = false;
         
         [Header("Input Buffer")]
         private float inputBufferWindow = 0.1f;
@@ -39,6 +41,13 @@ namespace Adaptabrawl.Combat
         {
             if (fighterController == null)
                 fighterController = GetComponent<FighterController>();
+
+            ResolveCombatAnimator();
+        }
+
+        private void OnDisable()
+        {
+            DeactivateHitboxWindow();
         }
         
         private void Update()
@@ -86,20 +95,23 @@ namespace Adaptabrawl.Combat
                 if (currentState != CombatState.Active)
                 {
                     SetState(CombatState.Active);
-                    OnHitboxActive?.Invoke(currentMove);
+                    ActivateHitboxWindow();
                 }
             }
-            else if (currentFrame <= currentMove.totalFrames)
+            else if (currentFrame <= totalFrames)
             {
-                if (currentState != CombatState.Active)
+                if (currentState != CombatState.Recovery)
                 {
                     SetState(CombatState.Recovery);
-                    OnHitboxInactive?.Invoke();
+                    DeactivateHitboxWindow();
                 }
             }
             else
             {
-                // Move complete
+                // Hold the move until the live attack animation is actually finished.
+                if (IsMoveAnimationStillPlaying())
+                    return;
+
                 EndMove();
             }
         }
@@ -130,7 +142,12 @@ namespace Adaptabrawl.Combat
             {
                 return false;
             }
-            
+
+            // Do not allow attack spam while any current move is still running.
+            // We buffer the latest requested attack and execute it after the move ends.
+            if (currentMove != null && IsAttackMove(move))
+                return false;
+
             // Can cancel if in cancel window
             if (currentMove != null && inCancelWindow)
             {
@@ -141,15 +158,8 @@ namespace Adaptabrawl.Combat
                 if (currentMove.canCancelIntoOtherMoves)
                     return true;
             }
-            
-            // Can start if idle or in recovery
-            if (currentState == CombatState.Idle || 
-                currentState == CombatState.Recovery)
-            {
-                return true;
-            }
-            
-            return false;
+
+            return currentMove == null && currentState == CombatState.Idle;
         }
         
         private void BufferInput(MoveDef move)
@@ -162,7 +172,7 @@ namespace Adaptabrawl.Combat
         {
             currentMove = move;
             currentFrame = 0;
-            totalFrames = move.totalFrames;
+            totalFrames = ResolveMoveDurationFrames(move);
             inCancelWindow = false;
             cancelWindowStart = move.cancelWindowStart;
             cancelWindowEnd = move.cancelWindowEnd;
@@ -177,6 +187,8 @@ namespace Adaptabrawl.Combat
         
         private void EndMove()
         {
+            DeactivateHitboxWindow();
+
             if (currentMove != null)
             {
                 OnMoveEnded?.Invoke(currentMove);
@@ -249,6 +261,24 @@ namespace Adaptabrawl.Combat
                 OnStateChanged?.Invoke(newState);
             }
         }
+
+        private void ActivateHitboxWindow()
+        {
+            if (hitboxWindowActive)
+                return;
+
+            hitboxWindowActive = true;
+            OnHitboxActive?.Invoke(currentMove);
+        }
+
+        private void DeactivateHitboxWindow()
+        {
+            if (!hitboxWindowActive)
+                return;
+
+            hitboxWindowActive = false;
+            OnHitboxInactive?.Invoke();
+        }
         
         private void ApplyStatusEffects(Data.StatusEffectData[] effects)
         {
@@ -263,6 +293,79 @@ namespace Adaptabrawl.Combat
                 }
             }
         }
+
+        private static bool IsAttackMove(MoveDef move)
+        {
+            if (move == null)
+                return false;
+
+            return move.moveType == MoveType.LightAttack
+                || move.moveType == MoveType.HeavyAttack
+                || move.moveType == MoveType.Special;
+        }
+
+        private static int ResolveMoveDurationFrames(MoveDef move)
+        {
+            if (move is AnimatedMoveDef animatedMove)
+            {
+                int animationFrames = animatedMove.GetAnimationLengthFrames();
+                if (animationFrames > 0)
+                    return Mathf.Max(move.totalFrames, animationFrames);
+            }
+
+            return move.totalFrames;
+        }
+
+        private void ResolveCombatAnimator()
+        {
+            if (combatAnimator != null && combatAnimator.runtimeAnimatorController != null)
+                return;
+
+            PlayerController_Platform pcp = GetComponentInChildren<PlayerController_Platform>();
+            if (pcp != null)
+            {
+                combatAnimator = pcp.GetComponent<Animator>();
+                if (combatAnimator != null && combatAnimator.runtimeAnimatorController != null)
+                    return;
+            }
+
+            Animator[] animators = GetComponentsInChildren<Animator>(true);
+            foreach (Animator candidate in animators)
+            {
+                if (candidate != null && candidate.runtimeAnimatorController != null)
+                {
+                    combatAnimator = candidate;
+                    return;
+                }
+            }
+        }
+
+        private bool IsMoveAnimationStillPlaying()
+        {
+            if (!IsAttackMove(currentMove))
+                return false;
+
+            ResolveCombatAnimator();
+            if (combatAnimator == null || !combatAnimator.isActiveAndEnabled)
+                return false;
+
+            AnimatorStateInfo stateInfo = combatAnimator.GetCurrentAnimatorStateInfo(0);
+            if (combatAnimator.IsInTransition(0))
+                return true;
+
+            return stateInfo.IsTag("Attack")
+                || stateInfo.IsName("Attack1")
+                || stateInfo.IsName("Attack2")
+                || stateInfo.IsName("Attack3")
+                || stateInfo.IsName("Skill1")
+                || stateInfo.IsName("Skill2")
+                || stateInfo.IsName("Skill3")
+                || stateInfo.IsName("Skill4")
+                || stateInfo.IsName("Skill5")
+                || stateInfo.IsName("Skill6")
+                || stateInfo.IsName("Skill7")
+                || stateInfo.IsName("Skill8");
+        }
         
         // Public getters
         public CombatState CurrentState => currentState;
@@ -274,4 +377,3 @@ namespace Adaptabrawl.Combat
                              (inCancelWindow && currentMove != null);
     }
 }
-

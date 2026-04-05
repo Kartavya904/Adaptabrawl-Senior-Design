@@ -54,6 +54,7 @@ namespace Adaptabrawl.Fighters
 
             // Systems (root)
             EnsureComponent<StatusEffectSystem>(fighterObj);
+            EnsureComponent<Combat.DamageSystem>(fighterObj);
             EnsureComponent<Attack.AttackSystem>(fighterObj);
             EnsureComponent<Defend.DefenseSystem>(fighterObj);
             EnsureComponent<Evade.EvadeSystem>(fighterObj);

@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using Adaptabrawl.Gameplay;
 using Adaptabrawl.Data;
+using Adaptabrawl.Attack;
 
 /// <summary>
 /// Handles input for both players in a local 2-player match.
@@ -52,6 +53,8 @@ public class TwoPlayerInputHandler : MonoBehaviour
     
     private AnimationBridge p1AnimBridge;
     private AnimationBridge p2AnimBridge;
+    private AttackSystem p1AttackSystem;
+    private AttackSystem p2AttackSystem;
     
     private MovementController p1Movement;
     private MovementController p2Movement;
@@ -66,6 +69,7 @@ public class TwoPlayerInputHandler : MonoBehaviour
         if (player1Controller != null)
         {
             p1AnimBridge = player1Controller.GetComponent<AnimationBridge>();
+            p1AttackSystem = player1Controller.GetComponent<AttackSystem>();
             p1Movement = player1Controller.GetComponent<MovementController>();
             
             if (p1AnimBridge == null)
@@ -81,6 +85,7 @@ public class TwoPlayerInputHandler : MonoBehaviour
         if (player2Controller != null)
         {
             p2AnimBridge = player2Controller.GetComponent<AnimationBridge>();
+            p2AttackSystem = player2Controller.GetComponent<AttackSystem>();
             p2Movement = player2Controller.GetComponent<MovementController>();
             
             if (p2AnimBridge == null)
@@ -115,7 +120,7 @@ public class TwoPlayerInputHandler : MonoBehaviour
     
     void HandlePlayer1Input()
     {
-        if (player1Controller == null || p1AnimBridge == null) return;
+        if (player1Controller == null) return;
 
         FighterDef fighter = player1Controller.FighterDef;
         if (fighter == null) return;
@@ -165,37 +170,25 @@ public class TwoPlayerInputHandler : MonoBehaviour
 
         // ---- Attack & Special Logic ----
         bool lightPressed = (keyboardAllowed && Input.GetKeyDown(p1LightAttack)) || (pad != null && pad.buttonWest.wasPressedThisFrame);
-        if (lightPressed && fighter.lightAttack != null)
-        {
-            AnimatedMoveDef animMove = fighter.lightAttack as AnimatedMoveDef;
-            if (animMove != null && p1AnimBridge.CanPlayMove()) p1AnimBridge.PlayMove(animMove);
-        }
+        if (lightPressed && p1AttackSystem != null)
+            p1AttackSystem.OnLightAttackInput(true);
 
         bool heavyPressed = (keyboardAllowed && Input.GetKeyDown(p1HeavyAttack)) || (pad != null && pad.buttonNorth.wasPressedThisFrame);
-        if (heavyPressed && fighter.heavyAttack != null)
-        {
-            AnimatedMoveDef animMove = fighter.heavyAttack as AnimatedMoveDef;
-            if (animMove != null && p1AnimBridge.CanPlayMove()) p1AnimBridge.PlayMove(animMove);
-        }
+        if (heavyPressed && p1AttackSystem != null)
+            p1AttackSystem.OnHeavyAttackInput(true);
 
         bool special1Pressed = (keyboardAllowed && Input.GetKeyDown(p1Special1)) || (pad != null && pad.leftShoulder.wasPressedThisFrame);
-        if (special1Pressed && fighter.specialMoves != null && fighter.specialMoves.Length > 0)
-        {
-            AnimatedMoveDef animMove = fighter.specialMoves[0] as AnimatedMoveDef;
-            if (animMove != null && p1AnimBridge.CanPlayMove()) p1AnimBridge.PlayMove(animMove);
-        }
+        if (special1Pressed && p1AttackSystem != null)
+            p1AttackSystem.TrySpecialAttack(0);
 
         bool special2Pressed = (keyboardAllowed && Input.GetKeyDown(p1Special2)) || (pad != null && pad.rightShoulder.wasPressedThisFrame);
-        if (special2Pressed && fighter.specialMoves != null && fighter.specialMoves.Length > 1)
-        {
-            AnimatedMoveDef animMove = fighter.specialMoves[1] as AnimatedMoveDef;
-            if (animMove != null && p1AnimBridge.CanPlayMove()) p1AnimBridge.PlayMove(animMove);
-        }
+        if (special2Pressed && p1AttackSystem != null)
+            p1AttackSystem.TrySpecialAttack(1);
     }
     
     void HandlePlayer2Input()
     {
-        if (player2Controller == null || p2AnimBridge == null) return;
+        if (player2Controller == null) return;
 
         FighterDef fighter = player2Controller.FighterDef;
         if (fighter == null) return;
@@ -245,32 +238,19 @@ public class TwoPlayerInputHandler : MonoBehaviour
 
         // ---- Attack & Special Logic ----
         bool lightPressed = (keyboardAllowed && Input.GetKeyDown(p2LightAttack)) || (pad != null && pad.buttonWest.wasPressedThisFrame);
-        if (lightPressed && fighter.lightAttack != null)
-        {
-            AnimatedMoveDef animMove = fighter.lightAttack as AnimatedMoveDef;
-            if (animMove != null && p2AnimBridge.CanPlayMove()) p2AnimBridge.PlayMove(animMove);
-        }
+        if (lightPressed && p2AttackSystem != null)
+            p2AttackSystem.OnLightAttackInput(true);
 
         bool heavyPressed = (keyboardAllowed && Input.GetKeyDown(p2HeavyAttack)) || (pad != null && pad.buttonNorth.wasPressedThisFrame);
-        if (heavyPressed && fighter.heavyAttack != null)
-        {
-            AnimatedMoveDef animMove = fighter.heavyAttack as AnimatedMoveDef;
-            if (animMove != null && p2AnimBridge.CanPlayMove()) p2AnimBridge.PlayMove(animMove);
-        }
+        if (heavyPressed && p2AttackSystem != null)
+            p2AttackSystem.OnHeavyAttackInput(true);
 
         bool special1Pressed = (keyboardAllowed && Input.GetKeyDown(p2Special1)) || (pad != null && pad.leftShoulder.wasPressedThisFrame);
-        if (special1Pressed && fighter.specialMoves != null && fighter.specialMoves.Length > 0)
-        {
-            AnimatedMoveDef animMove = fighter.specialMoves[0] as AnimatedMoveDef;
-            if (animMove != null && p2AnimBridge.CanPlayMove()) p2AnimBridge.PlayMove(animMove);
-        }
+        if (special1Pressed && p2AttackSystem != null)
+            p2AttackSystem.TrySpecialAttack(0);
 
         bool special2Pressed = (keyboardAllowed && Input.GetKeyDown(p2Special2)) || (pad != null && pad.rightShoulder.wasPressedThisFrame);
-        if (special2Pressed && fighter.specialMoves != null && fighter.specialMoves.Length > 1)
-        {
-            AnimatedMoveDef animMove = fighter.specialMoves[1] as AnimatedMoveDef;
-            if (animMove != null && p2AnimBridge.CanPlayMove()) p2AnimBridge.PlayMove(animMove);
-        }
+        if (special2Pressed && p2AttackSystem != null)
+            p2AttackSystem.TrySpecialAttack(1);
     }
 }
-

@@ -2,6 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem; // Using new input system for gamepads
+using Adaptabrawl.Attack;
+using Adaptabrawl.Defend;
+using Adaptabrawl.Evade;
+using Adaptabrawl.Gameplay;
 
 public class PlayerController_Platform : MonoBehaviour
 {
@@ -53,20 +57,15 @@ public class PlayerController_Platform : MonoBehaviour
     [Header("Combat & Health System")]
     public float maxHealth = 100f;
     public float currentHealth;
-    [Tooltip("The center point of this character's attack hitboxes")]
-    public Transform attackPoint;
-    public float attackRange = 0.5f;
     public float attackDamage = 10f;
     public float skillDamage = 20f;
-    [Tooltip("Put the opposing player's layer here, or default 'Player' if everyone is on the same layer.")]
-    public LayerMask enemyLayers;
     [Tooltip("The exact name of the Death state/animation in the Animator window.")]
     public string deathAnimationState = "Death";
 
-    private float attackBufferTimer = 0f;
-    private float skillBufferTimer  = 0f;
-    private int   pendingSkillIndex = -1;  // -1 = no skill buffered
     private float transitionDelay = 0f;
+    private AttackSystem attackSystem;
+    private DefenseSystem defenseSystem;
+    private EvadeSystem evadeSystem;
 
     public bool isJump;
     private float _animSpeedMultiplier = 1f;
@@ -302,90 +301,23 @@ public class PlayerController_Platform : MonoBehaviour
         currentHealth = maxHealth;
         if (anim != null) anim.speed = _animSpeedMultiplier;
 
-        // Auto-create attack point if not assigned
-        if (attackPoint == null)
-        {
-            GameObject ap = new GameObject("AttackPoint");
-            ap.transform.SetParent(this.transform);
-            // Default offset slightly in front and up
-            ap.transform.localPosition = new Vector3(0, 1f, 1f); 
-            attackPoint = ap.transform;
-        }
-
-        // Automatically map detailed bone-based hitboxes to the character if missing
-        if (GetComponentsInChildren<Collider>().Length == 0)
-        {
-            GenerateBoneColliders();
-        }
-    }
-
-    private void GenerateBoneColliders()
-    {
-        SkinnedMeshRenderer smr = GetComponentInChildren<SkinnedMeshRenderer>();
-        if (smr != null && smr.bones != null && smr.bones.Length > 0)
-        {
-            foreach (Transform bone in smr.bones)
-            {
-                // Skip if this bone already has a collider
-                if (bone.GetComponent<Collider>() != null) continue;
-
-                CapsuleCollider col = bone.gameObject.AddComponent<CapsuleCollider>();
-                col.isTrigger = true; // Trigger prevents them from breaking gravity/physics
-
-                // Calculate size based on distance to child bone
-                if (bone.childCount > 0)
-                {
-                    Transform child = bone.GetChild(0);
-                    Vector3 localChildPos = bone.InverseTransformPoint(child.position);
-                    float localLength = localChildPos.magnitude;
-                    
-                    // Prevent infinitely small or zero-length colliders
-                    if (localLength < 0.01f)
-                    {
-                        col.radius = 0.05f;
-                        col.height = 0.1f;
-                        col.center = Vector3.zero;
-                        continue;
-                    }
-
-                    col.height = localLength;
-                    col.radius = Mathf.Max(0.05f, localLength * 0.25f);
-                    col.center = localChildPos / 2f; // Center the capsule halfway down the bone
-                    
-                    // Determine which way the capsule should face (X=0, Y=1, Z=2)
-                    float absX = Mathf.Abs(localChildPos.x);
-                    float absY = Mathf.Abs(localChildPos.y);
-                    float absZ = Mathf.Abs(localChildPos.z);
-
-                    if (absX >= absY && absX >= absZ) col.direction = 0;
-                    else if (absY >= absX && absY >= absZ) col.direction = 1;
-                    else col.direction = 2;
-                }
-                else
-                {
-                    // Leaf nodes (like fingertips or toes)
-                    col.radius = 0.05f;
-                    col.height = 0.1f;
-                    col.center = Vector3.zero;
-                }
-            }
-            Debug.Log($"Automatically generated a precise skeletal hitbox mapping for: {gameObject.name}");
-        }
-        else
-        {
-            // Fallback to a single blocky body shape if no skeleton exists
-            CapsuleCollider capsule = gameObject.AddComponent<CapsuleCollider>();
-            capsule.height = 2f;
-            capsule.radius = 0.4f;
-            capsule.center = new Vector3(0, 1f, 0);
-            capsule.isTrigger = true;
-            Debug.Log($"Generated fallback default body hitbox for: {gameObject.name}");
-        }
+        attackSystem = GetComponentInParent<AttackSystem>();
+        defenseSystem = GetComponentInParent<DefenseSystem>();
+        evadeSystem = GetComponentInParent<EvadeSystem>();
     }
 
     public void TakeDamage(float damage)
     {
         if (isDead) return;
+
+        FighterController fighterController = GetComponentInParent<FighterController>();
+        if (fighterController != null)
+        {
+            fighterController.TakeDamage(damage);
+            currentHealth = fighterController.CurrentHealth;
+            isDead = fighterController.IsDead;
+            return;
+        }
 
         // Block logic: if currently blocking, negate or reduce damage (e.g., take 0 damage or 10% damage)
         if (anim.GetBool("Block"))
@@ -460,29 +392,17 @@ public class PlayerController_Platform : MonoBehaviour
 
         if (!isJump)
         {
-            // ---- Light-attack input buffer ----
             if (WasAttackPressed())
-                attackBufferTimer = inputBufferWindow;
-            if (attackBufferTimer > 0f)
-                attackBufferTimer -= Time.deltaTime;
+                attackSystem?.OnLightAttackInput(true);
 
-            // ---- Skill input buffer (checked outside !isAttacking so presses
-            //      during an attack animation are captured, not dropped) ----
             for (int i = 0; i < 8; i++)
             {
                 if (WasSkillPressed(i))
                 {
-                    pendingSkillIndex = i;
-                    skillBufferTimer  = inputBufferWindow;
-                    break; // only one skill buffered at a time; latest press wins
+                    attackSystem?.TrySpecialAttack(i);
+                    break;
                 }
             }
-            if (skillBufferTimer > 0f)
-                skillBufferTimer -= Time.deltaTime;
-            else
-                pendingSkillIndex = -1;
-
-            Attack();
 
             if (!isAttacking)
             {
@@ -490,16 +410,6 @@ public class PlayerController_Platform : MonoBehaviour
                 Jump();
                 Block();
                 Crouch();
-
-                // Execute buffered skill when the character is free to act
-                if (skillBufferTimer > 0f && pendingSkillIndex >= 0)
-                {
-                    int idx      = pendingSkillIndex;
-                    skillBufferTimer  = 0f;
-                    pendingSkillIndex = -1;
-                    anim.SetTrigger($"Skill{idx + 1}");
-                    StartCoroutine(DealDamageAfterDelay(0.4f, skillDamage));
-                }
             }
         }
 
@@ -544,125 +454,19 @@ public class PlayerController_Platform : MonoBehaviour
         }
     }
 
-    int clickCount;
-    float timer;
-    bool isTimer;
-    
-    void Attack()
-    {
-        // Only increase combo timer if we are NOT currently attacking
-        if (isTimer && !isAttacking)
-        {
-            timer += Time.deltaTime;
-        }
-
-        // If combo timer expires, reset combo
-        if (isTimer && timer > term)
-        {
-            clickCount = 0;
-            isTimer = false;
-            timer = 0f;
-        }
-        
-        // Execute attack if there's a buffered input and we are free to chain our attacks
-        if (attackBufferTimer > 0f && canChainAttack)
-        {
-            // Consume buffer
-            attackBufferTimer = 0f;
-            transitionDelay = 0.15f; // Prevent 1-frame transition skips
-            
-            // Adjust damage based on combo hit (e.g., hit 3 does more damage)
-            float currentDmg = attackDamage;
-            
-            switch (clickCount)
-            {
-                case 0:
-                    anim.SetTrigger("Attack1");
-                    isTimer = true;
-                    clickCount = 1;
-                    StartCoroutine(DealDamageAfterDelay(0.2f, currentDmg));
-                    break;
-                case 1:
-                    anim.SetTrigger("Attack2");
-                    clickCount = 2;
-                    StartCoroutine(DealDamageAfterDelay(0.2f, currentDmg * 1.2f));
-                    break;
-                case 2:
-                    anim.SetTrigger("Attack3");
-                    clickCount = 0;
-                    isTimer = false;
-                    StartCoroutine(DealDamageAfterDelay(0.3f, currentDmg * 1.5f));
-                    break;
-            }
-            
-            // Reset combo timer upon executing a new attack
-            timer = 0f;
-        }
-    }
-
-    private IEnumerator DealDamageAfterDelay(float delay, float damage)
-    {
-        yield return new WaitForSeconds(delay);
-
-        if (isDead) yield break;
-
-        // Perform checks against actual character Colliders to perfectly match their shape
-        if (attackPoint != null)
-        {
-            // Find all players in the scene directly
-            PlayerController_Platform[] allPlayers = FindObjectsOfType<PlayerController_Platform>();
-
-            foreach (PlayerController_Platform enemy in allPlayers)
-            {
-                // Ensure we don't hit ourselves and they aren't already dead
-                if (enemy == this || enemy.isDead) continue;
-
-                bool hit = false;
-                Collider[] enemyColliders = enemy.GetComponentsInChildren<Collider>();
-
-                if (enemyColliders.Length > 0)
-                {
-                    // Check if our attack sphere overlaps with ANY of their physical shaped hitboxes (limbs, body, etc)
-                    foreach (Collider col in enemyColliders)
-                    {
-                        // ClosestPoint returns the exact point on the surface of their collider closest to our attack.
-                        Vector3 closestPoint = col.ClosestPoint(attackPoint.position);
-                        
-                        if (Vector3.Distance(attackPoint.position, closestPoint) <= attackRange)
-                        {
-                            hit = true;
-                            break; 
-                        }
-                    }
-                }
-                else
-                {
-                    // Fallback to center distance if they somehow have zero colliders
-                    Vector3 enemyCenter = enemy.transform.position + Vector3.up * 1f;
-                    if (Vector3.Distance(attackPoint.position, enemyCenter) <= attackRange)
-                    {
-                        hit = true;
-                    }
-                }
-
-                if (hit)
-                {
-                    enemy.TakeDamage(damage);
-                }
-            }
-        }
-    }
-    
     void Dodge()
     {
         if (WasDodgePressed())
-        {            
+        {
+            evadeSystem?.TryDodge(GetMoveDirection());
             anim.SetTrigger("Dodge");
         }
     }
 
     void Block()
     {
+        defenseSystem?.OnBlockInput(IsBlockPressed());
+
         if (WasBlockPressed())
         {
             anim.SetBool("Block", true);
@@ -689,6 +493,22 @@ public class PlayerController_Platform : MonoBehaviour
             isJump = true;
         }
     }
+
+    Vector2 GetMoveDirection()
+    {
+        Vector2 moveDirection = Vector2.zero;
+
+        if (IsLeftPressed())
+            moveDirection.x -= 1f;
+
+        if (IsRightPressed())
+            moveDirection.x += 1f;
+
+        if (IsCrouchPressed())
+            moveDirection.y -= 1f;
+
+        return moveDirection.sqrMagnitude > 0f ? moveDirection.normalized : Vector2.zero;
+    }
     
     void JumpEnd()
     {
@@ -696,12 +516,4 @@ public class PlayerController_Platform : MonoBehaviour
     }
 
 
-    private void OnDrawGizmosSelected()
-    {
-        // Visualize the hitbox in the Unity Editor
-        if (attackPoint == null) return;
-
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(attackPoint.position, attackRange);
-    }
 }

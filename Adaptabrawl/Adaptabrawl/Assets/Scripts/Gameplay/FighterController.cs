@@ -492,10 +492,16 @@ namespace Adaptabrawl.Gameplay
 
                 var standerAnim = pcp.GetComponent<Animator>();
                 if (standerAnim != null) standerAnim.speed = 1f;
+
+                var hurtbox = pcp.GetComponentInChildren<FighterHurtbox>(true);
+                if (hurtbox != null)
+                    hurtbox.SetPartsEnabled(hurtbox.enabled);
+
+                foreach (var hitVolume in pcp.GetComponentsInChildren<WeaponHitVolume>(true))
+                    hitVolume.SyncRuntimeState();
             }
 
             Debug.Log($"[FighterController] '{(fighterDef != null ? fighterDef.fighterName : gameObject.name)}' reset for new round.");
         }
     }
 }
-

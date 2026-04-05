@@ -1,65 +1,99 @@
+using System.Collections.Generic;
+
 using UnityEngine;
+
 using Adaptabrawl.Gameplay;
 
 namespace Adaptabrawl.Combat
 {
     /// <summary>
-    /// Placed on the Stander child by StanderCombatSetup.
-    /// Represents the fighter's vulnerable area and routes incoming hits
-    /// up to the root FighterController.
-    ///
-    /// Adjust Size and Offset in the Inspector to fit your character.
+    /// Adaptabrawl-owned hurtbox rig manager.
+    /// Runtime body-part colliders are derived from the character skeleton and
+    /// registered here so combat can resolve a struck fighter from any part.
     /// </summary>
+    [DisallowMultipleComponent]
     public class FighterHurtbox : MonoBehaviour
     {
-        [Header("Hurtbox Shape — adjust to fit character")]
-        [Tooltip("Width and height of the hurtbox in world units.")]
-        public Vector2 size   = new Vector2(1f, 2f);
-        [Tooltip("Offset from the Stander pivot.")]
-        public Vector2 offset = new Vector2(0f, 1f);
-
-        [Header("Runtime")]
         [SerializeField] private FighterController owner;
+        [SerializeField] private List<HurtboxPart> parts = new List<HurtboxPart>();
 
-        private BoxCollider2D col;
+        private readonly Dictionary<Collider, HurtboxPart> partsByCollider = new Dictionary<Collider, HurtboxPart>();
 
         private void Awake()
         {
-            // Find the root FighterController (walking up the hierarchy)
-            owner = GetComponentInParent<FighterController>();
+            if (owner == null)
+                owner = GetComponentInParent<FighterController>();
 
-            col = gameObject.AddComponent<BoxCollider2D>();
-            col.size   = size;
-            col.offset = offset;
-            col.isTrigger = true;
+            RebuildLookup();
         }
 
-        /// <summary>Called by ActiveHitbox when it overlaps this hurtbox.</summary>
-        public void ReceiveHit(float damage, Vector2 knockbackDir, float knockbackForce)
+        private void OnEnable()
         {
-            if (owner == null || owner.IsDead) return;
-            owner.TakeDamage(damage);
+            SetPartsEnabled(true);
         }
 
-        public FighterController Owner => owner;
-        public bool IsActive => col != null && col.enabled;
-
-        // Sync collider shape if values are tweaked at runtime
-        private void OnValidate()
+        private void OnDisable()
         {
-            if (col != null)
+            SetPartsEnabled(false);
+        }
+
+        public void ResetParts(IEnumerable<HurtboxPart> hurtboxParts)
+        {
+            parts.Clear();
+
+            if (hurtboxParts != null)
             {
-                col.size   = size;
-                col.offset = offset;
+                foreach (HurtboxPart part in hurtboxParts)
+                {
+                    if (part != null)
+                        parts.Add(part);
+                }
+            }
+
+            RebuildLookup();
+            SetPartsEnabled(enabled);
+        }
+
+        public void SetPartsEnabled(bool isEnabled)
+        {
+            foreach (HurtboxPart part in parts)
+            {
+                if (part == null)
+                    continue;
+
+                part.SetEnabled(isEnabled);
             }
         }
 
-        private void OnDrawGizmosSelected()
+        public HurtboxPart ResolvePart(Collider other)
         {
-            Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.4f);
-            Gizmos.DrawCube(transform.position + (Vector3)offset, new Vector3(size.x, size.y, 0.1f));
-            Gizmos.color = new Color(1f, 0.2f, 0.2f, 1f);
-            Gizmos.DrawWireCube(transform.position + (Vector3)offset, new Vector3(size.x, size.y, 0.1f));
+            if (other == null)
+                return null;
+
+            if (partsByCollider.TryGetValue(other, out HurtboxPart part))
+                return part;
+
+            part = other.GetComponent<HurtboxPart>() ?? other.GetComponentInParent<HurtboxPart>();
+            if (part != null && part.HurtboxCollider != null)
+                partsByCollider[part.HurtboxCollider] = part;
+
+            return part;
+        }
+
+        public FighterController Owner => owner;
+        public IReadOnlyList<HurtboxPart> Parts => parts;
+
+        private void RebuildLookup()
+        {
+            partsByCollider.Clear();
+
+            foreach (HurtboxPart part in parts)
+            {
+                if (part?.HurtboxCollider == null)
+                    continue;
+
+                partsByCollider[part.HurtboxCollider] = part;
+            }
         }
     }
 }

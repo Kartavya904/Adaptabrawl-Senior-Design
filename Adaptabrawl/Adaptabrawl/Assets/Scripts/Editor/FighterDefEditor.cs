@@ -143,7 +143,7 @@ namespace Adaptabrawl.Editor
             // Hurtbox Configuration
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             EditorGUILayout.LabelField("Hurtbox Configuration", EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox("Hurtboxes define where the fighter can be hit. These are automatically created when the fighter spawns.", MessageType.Info);
+            EditorGUILayout.HelpBox("Gameplay now derives hurtboxes from the live fighter rig at runtime. The serialized hurtbox list is deprecated reference data and is ignored by the unified 3D combat pipeline.", MessageType.Warning);
             
             SerializedProperty hurtboxArray = serializedObject.FindProperty("hurtboxes");
             
@@ -320,4 +320,3 @@ namespace Adaptabrawl.Editor
         }
     }
 }
-

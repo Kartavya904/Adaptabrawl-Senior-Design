@@ -62,21 +62,7 @@ namespace Adaptabrawl.Combat
 
         private void Start()
         {
-            // Owner is the root FighterController
-            owner = GetComponentInParent<FighterController>();
-
-            // CombatFSM lives on the root
-            fsm = GetComponentInParent<CombatFSM>();
-            if (fsm != null)
-            {
-                fsm.OnHitboxActive   += OnHitboxActive;
-                fsm.OnHitboxInactive += OnHitboxInactive;
-                Debug.Log($"[HitboxEmitter] Ready on '{gameObject.name}' — owner={owner?.gameObject.name}, CombatFSM found.");
-            }
-            else
-            {
-                Debug.LogWarning($"[HitboxEmitter] No CombatFSM found in parents of '{gameObject.name}'.");
-            }
+            enabled = false;
         }
 
         private void OnDestroy()

@@ -29,7 +29,9 @@ namespace Adaptabrawl.Combat
             
             // Calculate damage
             float baseDamage = move.damage;
-            float damageMultiplier = fighterController.FighterDef.baseDamageMultiplier;
+            float damageMultiplier = fighterController != null && fighterController.FighterDef != null
+                ? fighterController.FighterDef.baseDamageMultiplier
+                : 1f;
             
             // Apply hurtbox multiplier (e.g., headshot bonus)
             damageMultiplier *= hurtboxMultiplier;
@@ -55,7 +57,9 @@ namespace Adaptabrawl.Combat
             // Apply hitstop
             if (move.hitstopFrames > 0)
             {
-                StartCoroutine(HitstopCoroutine(move.hitstopFrames));
+                var gameManager = Object.FindFirstObjectByType<GameManager>();
+                if (gameManager != null)
+                    gameManager.TriggerHitStop(move.hitstopFrames / 60f);
             }
             
             // Apply hitstun
@@ -118,13 +122,5 @@ namespace Adaptabrawl.Combat
                 }
             }
         }
-        
-        private System.Collections.IEnumerator HitstopCoroutine(int frames)
-        {
-            Time.timeScale = 0f;
-            yield return new WaitForSecondsRealtime(frames / 60f);
-            Time.timeScale = 1f;
-        }
     }
 }
-

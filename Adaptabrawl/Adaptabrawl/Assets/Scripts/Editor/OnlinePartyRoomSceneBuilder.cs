@@ -63,6 +63,7 @@ namespace Adaptabrawl.Editor
             EditorSceneManager.MoveGameObjectToScene(driverGo, target);
             var lobbyMgr = driverGo.AddComponent<LobbyManager>();
             var partyUi = driverGo.AddComponent<OnlinePartyRoomUI>();
+            var quickLan = driverGo.AddComponent<LanVideoStyleQuickConnect>();
 
             using (var so = new SerializedObject(lobbyMgr))
             {
@@ -72,7 +73,7 @@ namespace Adaptabrawl.Editor
                 so.ApplyModifiedPropertiesWithoutUndo();
             }
 
-            var canvas = BuildPartyCanvas(lobbyMgr, partyUi);
+            var canvas = BuildPartyCanvas(lobbyMgr, partyUi, quickLan);
             EditorSceneManager.MoveGameObjectToScene(canvas, target);
 
             RegisterInBuildSettings(ScenePath);
@@ -83,7 +84,8 @@ namespace Adaptabrawl.Editor
                 "Adaptabrawl — Online Party Room",
                 "Scene saved to:\n" + ScenePath + "\n\n" +
                 "Registered in Build Settings.\n" +
-                "Play → Online now loads this flow (auto-host + join modal).",
+                "Includes Host / Join-as-client strip (Unity Netcode LAN tutorial pattern) plus auto-host, room code, and join modal.\n" +
+                "Re-run this menu after pulling changes.",
                 "OK");
         }
 
@@ -155,7 +157,8 @@ namespace Adaptabrawl.Editor
             EditorSceneManager.CloseScene(lobby, false);
         }
 
-        private static GameObject BuildPartyCanvas(LobbyManager lobbyMgr, OnlinePartyRoomUI partyUi)
+        private static GameObject BuildPartyCanvas(LobbyManager lobbyMgr, OnlinePartyRoomUI partyUi,
+            LanVideoStyleQuickConnect quickLan)
         {
             var canvasGo = new GameObject("PartyOnlineCanvas");
             var canvas = canvasGo.AddComponent<Canvas>();
@@ -220,11 +223,108 @@ namespace Adaptabrawl.Editor
             var banner = CreateTmp("StatusBanner", mainPanel.transform, "", 26, FontStyles.Bold, TextAlignmentOptions.Center, Gold);
             AnchorBanner(banner.gameObject, 0.14f, 0.24f);
 
+            var quickBlock = CreateUiRect("VideoStyleQuickLan", mainPanel.transform, false);
+            {
+                var qbImg = quickBlock.GetComponent<Image>();
+                qbImg.color = new Color(0f, 0f, 0f, 0f);
+                qbImg.raycastTarget = false;
+                AnchorBottomBar(quickBlock.GetComponent<RectTransform>(), 156f, 128f, 40f);
+                var vlg = quickBlock.AddComponent<VerticalLayoutGroup>();
+                vlg.spacing = 6f;
+                vlg.childAlignment = TextAnchor.UpperCenter;
+                vlg.childControlHeight = true;
+                vlg.childControlWidth = true;
+                vlg.childForceExpandWidth = true;
+
+                var hintGo = CreateTmp("QuickHint", quickBlock.transform,
+                    "Netcode LAN tutorial pattern: Start Host · peer joins with IPv4:port (two builds on this PC: 127.0.0.1:7777) or 6-digit code.",
+                    15, FontStyles.Normal, TextAlignmentOptions.Center, TextDim);
+                hintGo.enableWordWrapping = true;
+                var hintLe = hintGo.gameObject.AddComponent<LayoutElement>();
+                hintLe.preferredHeight = 44f;
+                hintLe.flexibleWidth = 1f;
+
+                var quickRow = CreateUiRect("QuickRow", quickBlock.transform, false);
+                {
+                    var rowImg = quickRow.GetComponent<Image>();
+                    rowImg.color = new Color(0f, 0f, 0f, 0f);
+                    rowImg.raycastTarget = false;
+                    var rowLe = quickRow.AddComponent<LayoutElement>();
+                    rowLe.preferredHeight = 52f;
+                    rowLe.flexibleWidth = 1f;
+                    var hQuick = quickRow.AddComponent<HorizontalLayoutGroup>();
+                    hQuick.spacing = 12f;
+                    hQuick.childAlignment = TextAnchor.MiddleCenter;
+                    hQuick.childControlWidth = true;
+                    hQuick.childControlHeight = true;
+                    hQuick.childForceExpandHeight = true;
+                    hQuick.padding = new RectOffset(0, 0, 0, 0);
+
+                    var hostBtnGo = CreateButtonChild(quickRow.transform, "QuickHost", "START HOST",
+                        new Color(0.22f, 0.48f, 0.3f, 1f));
+                    var hostLe = hostBtnGo.GetComponent<LayoutElement>();
+                    hostLe.preferredWidth = 200f;
+                    hostLe.flexibleWidth = 0f;
+                    hostLe.preferredHeight = 52f;
+
+                    var inputWrap = CreateUiRect("QuickClientInputWrap", quickRow.transform, false);
+                    var inputWrapLe = inputWrap.AddComponent<LayoutElement>();
+                    inputWrapLe.flexibleWidth = 1f;
+                    inputWrapLe.minWidth = 220f;
+                    inputWrapLe.preferredHeight = 52f;
+                    SetImageColor(inputWrap, new Color(0.08f, 0.09f, 0.12f, 1f));
+
+                    var quickInput = inputWrap.AddComponent<TMP_InputField>();
+                    var quickInputText = CreateTmp("QuickInputText", inputWrap.transform, "", 22, FontStyles.Normal,
+                        TextAlignmentOptions.Left, TextHi);
+                    var quickInputTextRt = quickInputText.GetComponent<RectTransform>();
+                    quickInputTextRt.anchorMin = Vector2.zero;
+                    quickInputTextRt.anchorMax = Vector2.one;
+                    quickInputTextRt.offsetMin = new Vector2(12, 8);
+                    quickInputTextRt.offsetMax = new Vector2(-12, -8);
+                    quickInput.textComponent = quickInputText;
+                    quickInput.textViewport = inputWrap.GetComponent<RectTransform>();
+                    quickInput.lineType = TMP_InputField.LineType.SingleLine;
+
+                    var quickPh = CreateTmp("QuickPlaceholder", inputWrap.transform,
+                        "127.0.0.1:7777 or 192.168.x.x:7777 or room code", 20, FontStyles.Italic,
+                        TextAlignmentOptions.Left, new Color(0.5f, 0.52f, 0.58f, 1f));
+                    var quickPhRt = quickPh.GetComponent<RectTransform>();
+                    quickPhRt.anchorMin = Vector2.zero;
+                    quickPhRt.anchorMax = Vector2.one;
+                    quickPhRt.offsetMin = new Vector2(12, 8);
+                    quickPhRt.offsetMax = new Vector2(-12, -8);
+                    quickInput.placeholder = quickPh;
+
+                    var joinClientGo = CreateButtonChild(quickRow.transform, "QuickJoinClient", "JOIN AS CLIENT",
+                        new Color(0.18f, 0.35f, 0.55f, 1f));
+                    var joinClientLe = joinClientGo.GetComponent<LayoutElement>();
+                    joinClientLe.preferredWidth = 210f;
+                    joinClientLe.flexibleWidth = 0f;
+                    joinClientLe.preferredHeight = 52f;
+
+                    var statusTmp = CreateTmp("QuickConnectStatus", quickBlock.transform, "", 15, FontStyles.Normal,
+                        TextAlignmentOptions.Center, new Color(0.95f, 0.35f, 0.35f, 1f));
+                    var stLe = statusTmp.gameObject.AddComponent<LayoutElement>();
+                    stLe.preferredHeight = 22f;
+                    stLe.flexibleWidth = 1f;
+
+                    var quickSo = new SerializedObject(quickLan);
+                    quickSo.FindProperty("lobbyManager").objectReferenceValue = lobbyMgr;
+                    quickSo.FindProperty("clientAddressInput").objectReferenceValue = quickInput;
+                    quickSo.FindProperty("statusText").objectReferenceValue = statusTmp;
+                    quickSo.ApplyModifiedPropertiesWithoutUndo();
+
+                    hostBtnGo.GetComponent<Button>().onClick.AddListener(quickLan.OnClickStartHost);
+                    joinClientGo.GetComponent<Button>().onClick.AddListener(quickLan.OnClickJoinAsClient);
+                }
+            }
+
             var joinBtn = CreateButton(mainPanel.transform, "JoinRoomButton", "JOIN A ROOM", new Color(0.18f, 0.35f, 0.55f, 1f));
-            AnchorBottomBar(joinBtn.GetComponent<RectTransform>(), 108f, 52f, 220f);
+            AnchorBottomBar(joinBtn.GetComponent<RectTransform>(), 88f, 52f, 220f);
 
             var backBtn = CreateButton(mainPanel.transform, "BackButton", "BACK TO MENU", new Color(0.22f, 0.22f, 0.3f, 1f));
-            AnchorBottomBar(backBtn.GetComponent<RectTransform>(), 44f, 48f, 220f);
+            AnchorBottomBar(backBtn.GetComponent<RectTransform>(), 28f, 48f, 220f);
 
             var nav = canvasGo.AddComponent<MenuNavigationGroup>();
             var navSo = new SerializedObject(nav);

@@ -279,20 +279,20 @@ public class PlayerController_Platform : MonoBehaviour
     /// Modifies speed, damage, health, and animator speed to reflect character classification.
     /// </summary>
     public void ApplyFighterStats(float moveSpeed, float jumpForce, float attackDmg,
-                                   float skillDmg, float health, float animSpeedMult)
+                                   float skillDmg, float maxHealthVal, float currentHealthVal, float animSpeedMult)
     {
         speed_move = jumpForce * 0.5f;  // Scale air movement with jump force
         attackDamage = attackDmg;
         skillDamage = skillDmg;
-        maxHealth = health;
-        currentHealth = health;
+        maxHealth = maxHealthVal;
+        currentHealth = currentHealthVal;
 
         _animSpeedMultiplier = animSpeedMult;
         if (anim != null) anim.speed = _animSpeedMultiplier;
 
         Debug.Log($"[PlayerController_Platform] Stats applied — speed_move={speed_move:F1}, " +
                   $"attackDmg={attackDamage:F1}, skillDmg={skillDamage:F1}, " +
-                  $"health={maxHealth}, animSpeed={_animSpeedMultiplier:F2}");
+                  $"health={currentHealth}/{maxHealth}, animSpeed={_animSpeedMultiplier:F2}");
     }
     // ----------------------------
 

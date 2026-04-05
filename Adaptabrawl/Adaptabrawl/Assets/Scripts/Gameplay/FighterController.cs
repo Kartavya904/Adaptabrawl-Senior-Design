@@ -90,7 +90,7 @@ namespace Adaptabrawl.Gameplay
                 float attackDmg = 10f * fighterDef.baseDamageMultiplier;
                 float skillDmg = 20f * fighterDef.baseDamageMultiplier;
                 pcp.ApplyFighterStats(fighterDef.moveSpeed, fighterDef.jumpForce,
-                                      attackDmg, skillDmg, fighterDef.maxHealth, animSpeedMult);
+                                      attackDmg, skillDmg, fighterDef.maxHealth, currentHealth, animSpeedMult);
             }
             
             // Initialize status system
@@ -395,7 +395,7 @@ namespace Adaptabrawl.Gameplay
                 float attackDmg = 10f * newDef.baseDamageMultiplier;
                 float skillDmg = 20f * newDef.baseDamageMultiplier;
                 newPcp.ApplyFighterStats(newDef.moveSpeed, newDef.jumpForce,
-                                         attackDmg, skillDmg, currentHealth, animSpeedMult);
+                                         attackDmg, skillDmg, maxHealth, currentHealth, animSpeedMult);
 
                 // Re-apply CameraBoundsConstraint to the active Stander so it cannot exit the screen
                 if (newPcp.GetComponent<CameraBoundsConstraint>() == null)

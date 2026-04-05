@@ -95,6 +95,27 @@ namespace Adaptabrawl.Combat
             TryApplyHit(other);
         }
 
+        private void FixedUpdate()
+        {
+            if (!isActive || currentMove == null || triggerCollider == null || owner == null)
+                return;
+
+            HurtboxPart[] hurtboxParts = Object.FindObjectsByType<HurtboxPart>(FindObjectsSortMode.None);
+            foreach (HurtboxPart hurtboxPart in hurtboxParts)
+            {
+                if (hurtboxPart == null || !hurtboxPart.IsActive || hurtboxPart.HurtboxCollider == null)
+                    continue;
+
+                if (hurtboxPart.Owner == null || hurtboxPart.Owner == owner)
+                    continue;
+
+                if (!IsOverlapping(hurtboxPart.HurtboxCollider))
+                    continue;
+
+                TryApplyHit(hurtboxPart.HurtboxCollider);
+            }
+        }
+
         private void HandleHitboxActive(MoveDef move)
         {
             if (!CanDealDamage(move))
@@ -138,6 +159,11 @@ namespace Adaptabrawl.Combat
                 return;
 
             hitTargets.Add(targetId);
+            Debug.Log(
+                $"[CombatHit] {(owner != null && owner.FighterDef != null ? owner.FighterDef.fighterName : gameObject.name)} " +
+                $"used '{currentMove.moveName}' and hit P{target.PlayerNumber} " +
+                $"({(target.FighterDef != null ? target.FighterDef.fighterName : target.gameObject.name)}) " +
+                $"on {hurtboxPart.BodyPart} via '{transform.parent?.name ?? gameObject.name}'.");
             damageSystem.DealDamage(target, currentMove, hurtboxPart.DamageMultiplier);
         }
 
@@ -148,6 +174,25 @@ namespace Adaptabrawl.Combat
                 && (move.moveType == MoveType.LightAttack
                     || move.moveType == MoveType.HeavyAttack
                     || move.moveType == MoveType.Special);
+        }
+
+        private bool IsOverlapping(Collider other)
+        {
+            if (triggerCollider == null || other == null || !triggerCollider.enabled || !other.enabled)
+                return false;
+
+            if (!triggerCollider.bounds.Intersects(other.bounds))
+                return false;
+
+            return Physics.ComputePenetration(
+                triggerCollider,
+                triggerCollider.transform.position,
+                triggerCollider.transform.rotation,
+                other,
+                other.transform.position,
+                other.transform.rotation,
+                out _,
+                out _);
         }
 
         private void Subscribe()

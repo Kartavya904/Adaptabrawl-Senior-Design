@@ -3229,6 +3229,7 @@ MonoBehaviour:
   characterToArenaCountdownText: {fileID: 0}
   startButton: {fileID: 0}
   backButton: {fileID: 0}
+  characterSelectFocusOrder: []
 --- !u!4 &878023397
 Transform:
   m_ObjectHideFlags: 0
@@ -4685,6 +4686,7 @@ MonoBehaviour:
   characterToArenaCountdownText: {fileID: 0}
   startButton: {fileID: 0}
   backButton: {fileID: 1015939025}
+  characterSelectFocusOrder: []
 --- !u!114 &1195686053
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7031,6 +7033,7 @@ MonoBehaviour:
   continueButton: {fileID: 371373904}
   backButton: {fileID: 0}
   controllerPhaseCountdownText: {fileID: 0}
+  controllerConfigFocusOrder: []
 --- !u!114 &1628573029
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8256,9 +8259,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.UI.ArenaSelectUI
   setupManager: {fileID: 1224466611}
   availableArenas:
-  - TrainingStage
-  - IndustrialRooftops
-  - MistyForest
+  - Dojo
+  - Rooftop
+  - Abandoned Warehouse
   arenaNameText: {fileID: 1408481066}
   leftArrowButton: {fileID: 1218528677}
   rightArrowButton: {fileID: 333175211}
@@ -8269,12 +8272,13 @@ MonoBehaviour:
   p2StatusText: {fileID: 873157074}
   arenaBackgroundImage: {fileID: 1963145581}
   arenaBackgrounds:
-  - {fileID: -4560231916102578127, guid: 2e9648f5687549045b857da6c921d908, type: 3}
-  - {fileID: -6095995740317120528, guid: aaec009f7494cdc40b0c6409ee1afd1a, type: 3}
-  - {fileID: -7703014012163856700, guid: 75cc932b63cb40544a081df4edbe129b, type: 3}
+  - {fileID: 1711358196535119687, guid: 0bfcca36dd9f4dd4a966b4c05db0feae, type: 3}
+  - {fileID: -4884241887262502598, guid: f52a32b68b566a64180228f6e144d50c, type: 3}
+  - {fileID: -4969124771222456063, guid: 59045f388b2a3ae498e4440db0683bef, type: 3}
   p1ReadyButtonText: {fileID: 0}
   p2ReadyButtonText: {fileID: 0}
   countdownText: {fileID: 41624902}
+  arenaFocusOrder: []
 --- !u!114 &2094922020
 MonoBehaviour:
   m_ObjectHideFlags: 0

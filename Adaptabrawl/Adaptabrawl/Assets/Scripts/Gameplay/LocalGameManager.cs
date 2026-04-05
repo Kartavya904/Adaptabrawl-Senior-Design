@@ -24,8 +24,8 @@ namespace Adaptabrawl.Gameplay
         [SerializeField] private Transform player1SpawnPoint;
         [SerializeField] private Transform player2SpawnPoint;
         [SerializeField] private GameObject fighterPrefab;
-        [Tooltip("Scale applied to spawned fighters. Use 0.5 for smaller characters to match typical 2D arena size. 1 = prefab scale.")]
-        [SerializeField] private float spawnScale = 0.5f;
+        [Tooltip("Scale applied to spawned fighters. 1 = prefab scale.")]
+        [SerializeField] private float spawnScale = 0.7f;
 
         [Header("Test Override (optional)")]
         [Tooltip("Fallback fighter for P1 used ONLY when no character was selected (e.g. opening Game Scene directly). CharacterSelectData always takes priority when set.")]

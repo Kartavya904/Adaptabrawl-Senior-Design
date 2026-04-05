@@ -531,8 +531,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -66.89}
-  m_SizeDelta: {x: 1920, y: 1249.5}
+  m_AnchoredPosition: {x: 0, y: -0.010042}
+  m_SizeDelta: {x: 1920, y: 1080}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &205462637
 MonoBehaviour:
@@ -4501,7 +4501,7 @@ MonoBehaviour:
   player1SpawnPoint: {fileID: 1694893021}
   player2SpawnPoint: {fileID: 1281872378}
   fighterPrefab: {fileID: 0}
-  spawnScale: 0.5
+  spawnScale: 0.7
   testFighterP1: {fileID: 11400000, guid: ff5136d8da471bf439280832583ca049, type: 2}
   testFighterP2: {fileID: 11400000, guid: 06ec801d8493b1443995ae6a2644343b, type: 2}
   gameManager: {fileID: 0}

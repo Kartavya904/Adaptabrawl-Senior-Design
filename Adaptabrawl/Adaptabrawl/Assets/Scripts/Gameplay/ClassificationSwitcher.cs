@@ -1,27 +1,32 @@
 using UnityEngine;
 using Adaptabrawl.Data;
+using System.Collections.Generic;
 
 namespace Adaptabrawl.Gameplay
 {
     /// <summary>
     /// Manages mid-match classification switching. Every <see cref="switchInterval"/>
-    /// seconds each player's character is randomly swapped to a different FighterDef
-    /// from the roster (full visual prefab swap). Attach to the same GameObject as
-    /// GameManager or LocalGameManager, or any scene-level coordinator.
+    /// seconds each player's character is swapped to another FighterDef from the
+    /// roster (full visual prefab swap). The queue is rebuilt every round so players
+    /// start on their selected fighter, then rotate through other fighters.
     /// </summary>
     public class ClassificationSwitcher : MonoBehaviour
     {
         [Header("Roster")]
-        [Tooltip("All fighters available for random switching. Loaded from Resources/Fighters/ if empty.")]
+        [Tooltip("All fighters available for switching. Loaded from Resources/Fighters/ if empty.")]
         [SerializeField] private FighterDef[] fighterRoster;
 
         [Header("Timing")]
         [Tooltip("Seconds between classification switches.")]
-        [SerializeField] private float switchInterval = 45f;
+        [SerializeField] private float switchInterval = 30f;
+        [Tooltip("Maximum swaps per player per round. 3 means a 2-minute round at 30s interval gives 4 total fighters including the selected starter.")]
+        [SerializeField] private int maxSwitchesPerRound = 3;
 
         private float[] playerTimers;
         private FighterController[] players;
         private FighterDef[] initialDefs; // What players selected in character select
+        private int[] switchesThisRound;
+        private Queue<FighterDef>[] plannedSwitchQueues;
         private bool paused = true;       // Starts paused until explicitly resumed
 
         /// <summary>
@@ -39,11 +44,10 @@ namespace Adaptabrawl.Gameplay
             players = fighters;
             playerTimers = new float[fighters.Length];
             initialDefs = new FighterDef[fighters.Length];
+            switchesThisRound = new int[fighters.Length];
+            plannedSwitchQueues = new Queue<FighterDef>[fighters.Length];
             for (int i = 0; i < fighters.Length; i++)
-            {
-                playerTimers[i] = switchInterval;
                 initialDefs[i] = fighters[i].FighterDef;
-            }
 
             // Load roster from Resources if not assigned
             if (fighterRoster == null || fighterRoster.Length == 0)
@@ -61,6 +65,8 @@ namespace Adaptabrawl.Gameplay
                     Debug.Log($"[ClassificationSwitcher] Loaded {fighterRoster.Length} fighters from Resources/Fighters/.");
                 }
             }
+
+            ResetTimers();
 
             Debug.Log($"[ClassificationSwitcher] Initialized with {players.Length} players, " +
                       $"{fighterRoster.Length} roster entries, interval={switchInterval}s.");
@@ -90,9 +96,19 @@ namespace Adaptabrawl.Gameplay
         /// </summary>
         public void ResetTimers()
         {
-            if (playerTimers == null) return;
+            if (playerTimers == null || players == null) return;
+
             for (int i = 0; i < playerTimers.Length; i++)
+            {
                 playerTimers[i] = switchInterval;
+                switchesThisRound[i] = 0;
+
+                FighterDef roundStartDef = initialDefs != null && i < initialDefs.Length ? initialDefs[i] : null;
+                if (players[i] != null && players[i].FighterDef != null)
+                    roundStartDef = players[i].FighterDef;
+
+                plannedSwitchQueues[i] = BuildRoundSwitchQueue(roundStartDef);
+            }
         }
 
         /// <summary>
@@ -122,11 +138,11 @@ namespace Adaptabrawl.Gameplay
 
         private void Update()
         {
-            if (paused || players == null) return;
+            if (paused || players == null || playerTimers == null) return;
 
             for (int i = 0; i < players.Length; i++)
             {
-                if (players[i] == null || players[i].IsDead) continue;
+                if (players[i] == null || players[i].IsDead || !HasPendingSwitches(i)) continue;
 
                 playerTimers[i] -= Time.deltaTime;
                 if (playerTimers[i] <= 0f)
@@ -137,30 +153,62 @@ namespace Adaptabrawl.Gameplay
             }
         }
 
+        private bool HasPendingSwitches(int playerIndex)
+        {
+            if (plannedSwitchQueues == null || playerIndex < 0 || playerIndex >= plannedSwitchQueues.Length)
+                return false;
+
+            if (maxSwitchesPerRound > 0 && switchesThisRound[playerIndex] >= maxSwitchesPerRound)
+                return false;
+
+            return plannedSwitchQueues[playerIndex] != null && plannedSwitchQueues[playerIndex].Count > 0;
+        }
+
+        private Queue<FighterDef> BuildRoundSwitchQueue(FighterDef roundStartDef)
+        {
+            var queue = new Queue<FighterDef>();
+            if (fighterRoster == null || fighterRoster.Length == 0)
+                return queue;
+
+            var candidates = new List<FighterDef>();
+            foreach (var fighter in fighterRoster)
+            {
+                if (fighter == null || fighter == roundStartDef || candidates.Contains(fighter))
+                    continue;
+                candidates.Add(fighter);
+            }
+
+            // Randomize order once per round so players see all available alternates without repeats.
+            for (int i = candidates.Count - 1; i > 0; i--)
+            {
+                int j = Random.Range(0, i + 1);
+                FighterDef temp = candidates[i];
+                candidates[i] = candidates[j];
+                candidates[j] = temp;
+            }
+
+            int maxQueueLength = candidates.Count;
+            if (maxSwitchesPerRound > 0)
+                maxQueueLength = Mathf.Min(maxQueueLength, maxSwitchesPerRound);
+
+            for (int i = 0; i < maxQueueLength; i++)
+                queue.Enqueue(candidates[i]);
+
+            return queue;
+        }
+
         private void SwitchClassification(int playerIndex)
         {
-            if (fighterRoster == null || fighterRoster.Length == 0) return;
+            if (!HasPendingSwitches(playerIndex)) return;
 
             var oldDef = players[playerIndex].FighterDef;
-            FighterDef newDef = null;
+            var queue = plannedSwitchQueues[playerIndex];
+            FighterDef newDef = queue.Dequeue();
 
-            // Pick a different character if possible
-            if (fighterRoster.Length > 1)
-            {
-                int attempts = 0;
-                do
-                {
-                    newDef = fighterRoster[Random.Range(0, fighterRoster.Length)];
-                    attempts++;
-                } 
-                while (newDef == oldDef && attempts < 100);
-            }
-            else
-            {
-                newDef = fighterRoster[0];
-            }
+            if (newDef == null || newDef == oldDef) return;
 
             players[playerIndex].SwapClassification(newDef);
+            switchesThisRound[playerIndex]++;
             OnClassificationChanged?.Invoke(players[playerIndex], oldDef, newDef);
 
             Debug.Log($"[ClassificationSwitcher] P{playerIndex + 1}: " +

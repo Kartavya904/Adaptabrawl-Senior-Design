@@ -9,7 +9,7 @@ namespace Adaptabrawl.Gameplay
     {
         [Header("Match Settings")]
         [SerializeField] private int roundsToWin = 2;
-        [SerializeField] private float roundDuration = 180f; // Seconds (5 classification switches at 30s each)
+        [SerializeField] private float roundDuration = 120f; // Seconds (2 minutes of active round time)
         [SerializeField] private float roundEndDelay = 3f;
         [SerializeField] private float preRoundBuffer = 3f; // Seconds fighters are frozen before round starts
 
@@ -118,6 +118,13 @@ namespace Adaptabrawl.Gameplay
             roundWinner = null;
             _inPreRoundBuffer = true; // block win detection before anything else
 
+            // Every round starts from each player's original character selection with fresh switch timers.
+            if (_classificationSwitcher != null)
+            {
+                _classificationSwitcher.RestoreInitialClassifications();
+                _classificationSwitcher.ResetTimers();
+            }
+
             // Reset fighters (restores health, colliders)
             foreach (var player in players)
                 if (player != null) player.ResetForNewRound();
@@ -167,6 +174,13 @@ namespace Adaptabrawl.Gameplay
 
         private void UpdateRoundTimer()
         {
+            // Pre-round countdown should not consume playable round time.
+            if (_inPreRoundBuffer)
+            {
+                OnRoundTimerUpdate?.Invoke(roundTimer);
+                return;
+            }
+
             roundTimer -= Time.deltaTime;
             OnRoundTimerUpdate?.Invoke(roundTimer);
 
@@ -291,13 +305,6 @@ namespace Adaptabrawl.Gameplay
             if (playerCount > 0)
                 yield return new WaitUntil(() => doneCount >= playerCount);
 
-            // Restore original classifications and reset timers for the new round
-            if (_classificationSwitcher != null)
-            {
-                _classificationSwitcher.RestoreInitialClassifications();
-                _classificationSwitcher.ResetTimers();
-            }
-
             currentRound++;
             StartRound();
         }
@@ -368,5 +375,4 @@ namespace Adaptabrawl.Gameplay
         public Dictionary<FighterController, int> RoundWins => new Dictionary<FighterController, int>(roundWins);
     }
 }
-
 

@@ -4495,7 +4495,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.Gameplay.LocalGameManager
   roundsToWin: 2
-  roundDuration: 180
+  roundDuration: 120
   roundEndDelay: 3
   preRoundBuffer: 3
   player1SpawnPoint: {fileID: 1694893021}

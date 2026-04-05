@@ -14,7 +14,7 @@ namespace Adaptabrawl.Gameplay
         [Tooltip("Rounds a player must win to win the match. Forwarded to GameManager.")]
         [SerializeField] private int roundsToWin = 2;
         [Tooltip("Duration of each round in seconds. Forwarded to GameManager.")]
-        [SerializeField] private float roundDuration = 180f;
+        [SerializeField] private float roundDuration = 120f;
         [Tooltip("Seconds between round end and the next round starting.")]
         [SerializeField] private float roundEndDelay = 3f;
         [Tooltip("Seconds fighters are frozen at the start of each round before they can move or fight.")]
@@ -251,4 +251,3 @@ namespace Adaptabrawl.Gameplay
         }
     }
 }
-

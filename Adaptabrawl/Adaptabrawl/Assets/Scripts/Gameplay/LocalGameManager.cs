@@ -78,6 +78,9 @@ namespace Adaptabrawl.Gameplay
                     $"(source: {(CharacterSelectData.selectedFighter1 != null ? "CharacterSelectData" : "Test Override")})");
             }
 
+            // Ensure fighters on Layer 3 actually physically push each other!
+            Physics2D.IgnoreLayerCollision(3, 3, false);
+
             // Spawn fighters first so GameManager.InitializeMatch() can find them.
             SpawnFighters(fighter1Def, fighter2Def);
 

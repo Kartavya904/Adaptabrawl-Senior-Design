@@ -16,14 +16,14 @@ MonoBehaviour:
   fighterName: Echo
   description: Twin weapons with distinct timing. Mix of quick hits and heavier follow-ups.
   portrait: {fileID: 0}
-  maxHealth: 100
-  moveSpeed: 5
-  jumpForce: 10
-  dashSpeed: 12
-  dashDuration: 0.3
-  weight: 1
-  baseDamageMultiplier: 1
-  baseDefenseMultiplier: 1
+  maxHealth: 95
+  moveSpeed: 7.0
+  jumpForce: 13
+  dashSpeed: 17
+  dashDuration: 0.22
+  weight: 0.85
+  baseDamageMultiplier: 0.95
+  baseDefenseMultiplier: 0.9
   armorBreakThreshold: 3
   hurtboxes:
   - name: Body

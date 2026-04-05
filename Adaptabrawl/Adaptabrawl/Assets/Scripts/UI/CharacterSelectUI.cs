@@ -332,15 +332,11 @@ namespace Adaptabrawl.UI
 
         private void LoadAvailableFighters()
         {
-            // If fighters were already assigned in the Inspector, use those.
-            if (availableFighters.Count > 0) return;
-
-            // Try loading FighterDef ScriptableObjects from Resources/Fighters/.
-            // To use this: create a 'Resources/Fighters' folder under Assets and move your
-            // FighterDef .asset files there. They will be loaded automatically.
+            // Always dynamically load from Resources to sync perfectly with the mid-match randomizer pool.
             var loaded = Resources.LoadAll<FighterDef>("Fighters");
             if (loaded != null && loaded.Length > 0)
             {
+                availableFighters.Clear();
                 availableFighters.AddRange(loaded);
                 Debug.Log($"[CharacterSelectUI] Loaded {loaded.Length} FighterDef(s) from Resources/Fighters/.");
                 return;

@@ -111,11 +111,27 @@ namespace Adaptabrawl.Combat
             currentHitbox = hitboxObj.AddComponent<ActiveHitbox>();
             // Pass zero offset to ActiveHitbox, because we moved its transform.position already!
             currentHitbox.Init(cfg.damage, cfg.knockbackForce, cfg.size, Vector2.zero, cfg.duration, owner);
+
+            // Phase 1: Toggle Weapon Trail!
+            var tr = GetComponentInParent<TrailRenderer>();
+            if (tr == null)
+            {
+                tr = transform.parent.gameObject.AddComponent<TrailRenderer>();
+                tr.time = 0.15f;
+                tr.startWidth = 0.4f;
+                tr.endWidth = 0f;
+                tr.material = new Material(Shader.Find("Sprites/Default"));
+                tr.material.color = new Color(1f, 0.5f, 0f, 0.8f); // Bright orange slash
+                tr.emitting = false;
+            }
+            tr.emitting = true;
         }
 
         private void OnHitboxInactive()
         {
             ClearCurrentHitbox();
+            var tr = GetComponentInParent<TrailRenderer>();
+            if (tr != null) tr.emitting = false;
         }
 
         private void ClearCurrentHitbox()

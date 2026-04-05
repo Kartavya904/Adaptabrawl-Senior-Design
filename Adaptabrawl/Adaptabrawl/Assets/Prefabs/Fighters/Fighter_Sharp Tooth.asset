@@ -16,14 +16,14 @@ MonoBehaviour:
   fighterName: Sharp Tooth
   description: Ranged pressure and chip damage. Keeps distance and controls the stage.
   portrait: {fileID: 0}
-  maxHealth: 90
-  moveSpeed: 7.5
-  jumpForce: 14
-  dashSpeed: 18
-  dashDuration: 0.2
-  weight: 0.8
-  baseDamageMultiplier: 0.9
-  baseDefenseMultiplier: 0.9
+  maxHealth: 80
+  moveSpeed: 8.5
+  jumpForce: 16
+  dashSpeed: 22
+  dashDuration: 0.15
+  weight: 0.7
+  baseDamageMultiplier: 1.1
+  baseDefenseMultiplier: 0.75
   armorBreakThreshold: 3
   hurtboxes:
   - name: Body

@@ -16,14 +16,14 @@ MonoBehaviour:
   fighterName: Vanguard
   description: All-round brawler. Solid normals and specials with no major weakness.
   portrait: {fileID: 0}
-  maxHealth: 100
-  moveSpeed: 5
-  jumpForce: 10
-  dashSpeed: 12
-  dashDuration: 0.3
-  weight: 1
-  baseDamageMultiplier: 1
-  baseDefenseMultiplier: 1
+  maxHealth: 105
+  moveSpeed: 5.5
+  jumpForce: 11
+  dashSpeed: 13
+  dashDuration: 0.28
+  weight: 1.0
+  baseDamageMultiplier: 1.05
+  baseDefenseMultiplier: 1.05
   armorBreakThreshold: 3
   hurtboxes:
   - name: Body

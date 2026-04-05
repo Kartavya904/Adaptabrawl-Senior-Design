@@ -21,6 +21,7 @@ namespace Adaptabrawl.Gameplay
         [SerializeField] private float maxHealth;
 
         private bool _initialized;
+        private int _playerNumber = 1; // 1 or 2, set by LocalGameManager
         
         [Header("Spawn / Return")]
         private Vector3 _spawnPosition;
@@ -39,6 +40,10 @@ namespace Adaptabrawl.Gameplay
         public float MaxHealth => maxHealth;
         public bool FacingRight => facingRight;
         public bool IsDead => currentHealth <= 0f;
+        public int PlayerNumber => _playerNumber;
+
+        /// <summary>Set by LocalGameManager after spawning so SwapClassification knows which input config to use.</summary>
+        public void SetPlayerNumber(int num) { _playerNumber = num; }
         
         private void Awake()
         {
@@ -74,6 +79,18 @@ namespace Adaptabrawl.Gameplay
             if (movementController != null)
             {
                 movementController.Initialize(fighterDef);
+            }
+
+            // Push FighterDef stats to the Shinabro PlayerController_Platform
+            var pcp = GetComponentInChildren<PlayerController_Platform>();
+            if (pcp != null)
+            {
+                float baseSpeed = 5f;
+                float animSpeedMult = fighterDef.moveSpeed / baseSpeed;
+                float attackDmg = 10f * fighterDef.baseDamageMultiplier;
+                float skillDmg = 20f * fighterDef.baseDamageMultiplier;
+                pcp.ApplyFighterStats(fighterDef.moveSpeed, fighterDef.jumpForce,
+                                      attackDmg, skillDmg, fighterDef.maxHealth, animSpeedMult);
             }
             
             // Initialize status system
@@ -328,6 +345,125 @@ namespace Adaptabrawl.Gameplay
             fighterDef = def;
             _initialized = false;
             InitializeFighter();
+        }
+
+        /// <summary>
+        /// Swaps classification mid-match: destroys old Shinabro child prefab,
+        /// instantiates new one from newDef.fighterPrefab, re-wires input/combat,
+        /// and scales health proportionally.
+        /// </summary>
+        public void SwapClassification(FighterDef newDef)
+        {
+            if (newDef == null || newDef.fighterPrefab == null) return;
+
+            // 1. Capture state from old prefab
+            float healthPercent = maxHealth > 0 ? currentHealth / maxHealth : 1f;
+            var oldPcp = GetComponentInChildren<PlayerController_Platform>();
+            Vector3 oldPos = oldPcp != null ? oldPcp.transform.position : transform.position;
+            Quaternion oldRot = oldPcp != null ? oldPcp.transform.rotation : transform.rotation;
+            int oldGamepadIndex = oldPcp != null ? oldPcp.gamepadIndex : -1;
+
+            // 2. Destroy old Shinabro child IMMEDIATELY to prevent two PCPs
+            //    reading input on the same frame (Destroy is deferred!)
+            if (oldPcp != null)
+                DestroyImmediate(oldPcp.gameObject);
+
+            // 3. Instantiate new prefab as child of this FighterController root
+            GameObject newChild = Instantiate(newDef.fighterPrefab, oldPos, oldRot, transform);
+
+            // 4. Apply layer to match the rest of the fighter
+            newChild.transform.localScale = Vector3.one;
+            newChild.layer = gameObject.layer;
+            foreach (Transform t in newChild.GetComponentsInChildren<Transform>(true))
+                t.gameObject.layer = gameObject.layer;
+
+            // 5. Update FighterDef and health (preserve health percentage)
+            fighterDef = newDef;
+            maxHealth = newDef.maxHealth;
+            currentHealth = maxHealth * healthPercent;
+
+            // 6. Re-wire input on new PCP using ConfigureForPlayer
+            //    This properly sets ALL keys (WASD for P1, Arrows for P2, skill keys, etc.)
+            var newPcp = newChild.GetComponentInChildren<PlayerController_Platform>();
+            if (newPcp != null)
+            {
+                newPcp.ConfigureForPlayer(_playerNumber, oldGamepadIndex);
+
+                // Push FighterDef stats to new PCP
+                float baseSpeed = 5f;
+                float animSpeedMult = newDef.moveSpeed / baseSpeed;
+                float attackDmg = 10f * newDef.baseDamageMultiplier;
+                float skillDmg = 20f * newDef.baseDamageMultiplier;
+                newPcp.ApplyFighterStats(newDef.moveSpeed, newDef.jumpForce,
+                                         attackDmg, skillDmg, currentHealth, animSpeedMult);
+
+                // Re-apply CameraBoundsConstraint to the active Stander so it cannot exit the screen
+                if (newPcp.GetComponent<CameraBoundsConstraint>() == null)
+                    newPcp.gameObject.AddComponent<CameraBoundsConstraint>();
+            }
+
+            // 7. Re-run combat setup (hitboxes, hurtboxes on new child)
+            var combatSetup = GetComponent<StanderCombatSetup>();
+            if (combatSetup != null) combatSetup.RunSetup();
+
+            // 8. Notify systems
+            OnHealthChanged?.Invoke(currentHealth, maxHealth);
+            Debug.Log($"[FighterController] P{_playerNumber} SWAPPED to '{newDef.fighterName}' (full visual swap)");
+
+            // Phase 1: Swap Invincibility & VFX
+            StartCoroutine(SwapJuiceRoutine(newChild));
+        }
+
+        private System.Collections.IEnumerator SwapJuiceRoutine(GameObject newPcpObject)
+        {
+            var hurtbox = newPcpObject.GetComponentInChildren<FighterHurtbox>();
+            var renderers = newPcpObject.GetComponentsInChildren<Renderer>(true);
+
+            // Create a cool "teleport" ring visual using Unity primitives
+            var ring = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            Destroy(ring.GetComponent<Collider>());
+            ring.transform.position = newPcpObject.transform.position + Vector3.up * 1f;
+            ring.transform.localScale = new Vector3(2f, 4f, 2f);
+            var ringMaterial = ring.GetComponent<Renderer>().material;
+            ringMaterial.color = new Color(0.2f, 0.8f, 1f, 0.5f); // Bright blue sci-fi burst
+            // We use rendering modes strictly via standard shader if possible, but basic color is fine for now
+
+            // Grant 1.5 seconds of Invincibility and blink
+            if (hurtbox != null) hurtbox.enabled = false;
+
+            float duration = 1.5f;
+            float blinkTimer = 0f;
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                blinkTimer += Time.deltaTime;
+
+                // Shrink the ring really fast
+                if (ring != null)
+                {
+                    ring.transform.localScale = Vector3.Lerp(new Vector3(2f, 4f, 2f), new Vector3(0f, 4f, 0f), elapsed / 0.3f);
+                    if (elapsed > 0.3f) Destroy(ring);
+                }
+
+                // Blink character meshes rapidly during I-Frames
+                if (blinkTimer > 0.1f)
+                {
+                    blinkTimer = 0f;
+                    foreach (var r in renderers)
+                        if (r != null) r.enabled = !r.enabled;
+                }
+
+                yield return null;
+            }
+
+            // Clean up VFX and restore hurtbox/materials
+            if (ring != null) Destroy(ring);
+            foreach (var r in renderers) 
+                if (r != null) r.enabled = true;
+
+            if (hurtbox != null) hurtbox.enabled = true;
         }
 
         /// <summary>

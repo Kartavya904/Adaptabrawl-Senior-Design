@@ -61,6 +61,10 @@ namespace Adaptabrawl.Combat
                 if (dir == Vector2.zero) dir = owner != null && owner.FacingRight ? Vector2.right : Vector2.left;
 
                 hurtbox.ReceiveHit(damage, dir, knockbackForce);
+
+                // Phase 1: Hit-stop juice! If multiple hits connect, they slightly extend the hitstop!
+                var gm = Object.FindFirstObjectByType<GameManager>();
+                if (gm != null) gm.TriggerHitStop(0.12f);
             }
         }
 

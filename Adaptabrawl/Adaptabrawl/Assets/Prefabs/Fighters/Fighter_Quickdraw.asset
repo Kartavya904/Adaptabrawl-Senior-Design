@@ -17,14 +17,14 @@ MonoBehaviour:
   description: Quick ranged shots and mobility. Pokes from mid range and punishes
     recovery.
   portrait: {fileID: 0}
-  maxHealth: 90
-  moveSpeed: 7.5
+  maxHealth: 88
+  moveSpeed: 7.8
   jumpForce: 14
-  dashSpeed: 18
+  dashSpeed: 19
   dashDuration: 0.2
-  weight: 0.8
-  baseDamageMultiplier: 0.9
-  baseDefenseMultiplier: 0.9
+  weight: 0.78
+  baseDamageMultiplier: 0.88
+  baseDefenseMultiplier: 0.88
   armorBreakThreshold: 3
   hurtboxes:
   - name: Body

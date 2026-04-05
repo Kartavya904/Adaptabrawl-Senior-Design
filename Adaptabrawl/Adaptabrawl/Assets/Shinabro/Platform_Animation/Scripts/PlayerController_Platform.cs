@@ -69,6 +69,7 @@ public class PlayerController_Platform : MonoBehaviour
     private float transitionDelay = 0f;
 
     public bool isJump;
+    private float _animSpeedMultiplier = 1f;
     
     // Status lock trackers
     private bool isAttacking;
@@ -272,12 +273,34 @@ public class PlayerController_Platform : MonoBehaviour
                   $"gamepadIndex={padIndex}, " +
                   $"device={(padIndex >= 0 ? $"Gamepad {padIndex}" : "Keyboard")}");
     }
+
+    /// <summary>
+    /// Called by FighterController to apply FighterDef stats at runtime.
+    /// Modifies speed, damage, health, and animator speed to reflect character classification.
+    /// </summary>
+    public void ApplyFighterStats(float moveSpeed, float jumpForce, float attackDmg,
+                                   float skillDmg, float health, float animSpeedMult)
+    {
+        speed_move = jumpForce * 0.5f;  // Scale air movement with jump force
+        attackDamage = attackDmg;
+        skillDamage = skillDmg;
+        maxHealth = health;
+        currentHealth = health;
+
+        _animSpeedMultiplier = animSpeedMult;
+        if (anim != null) anim.speed = _animSpeedMultiplier;
+
+        Debug.Log($"[PlayerController_Platform] Stats applied — speed_move={speed_move:F1}, " +
+                  $"attackDmg={attackDamage:F1}, skillDmg={skillDamage:F1}, " +
+                  $"health={maxHealth}, animSpeed={_animSpeedMultiplier:F2}");
+    }
     // ----------------------------
 
     private void Start()
     {
         anim = GetComponent<Animator>();
         currentHealth = maxHealth;
+        if (anim != null) anim.speed = _animSpeedMultiplier;
 
         // Auto-create attack point if not assigned
         if (attackPoint == null)

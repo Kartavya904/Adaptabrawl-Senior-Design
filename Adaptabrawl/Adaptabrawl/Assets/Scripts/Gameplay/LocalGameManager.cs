@@ -14,7 +14,7 @@ namespace Adaptabrawl.Gameplay
         [Tooltip("Rounds a player must win to win the match. Forwarded to GameManager.")]
         [SerializeField] private int roundsToWin = 2;
         [Tooltip("Duration of each round in seconds. Forwarded to GameManager.")]
-        [SerializeField] private float roundDuration = 99f;
+        [SerializeField] private float roundDuration = 180f;
         [Tooltip("Seconds between round end and the next round starting.")]
         [SerializeField] private float roundEndDelay = 3f;
         [Tooltip("Seconds fighters are frozen at the start of each round before they can move or fight.")]
@@ -38,6 +38,7 @@ namespace Adaptabrawl.Gameplay
 
         private FighterController player1;
         private FighterController player2;
+        private ClassificationSwitcher classificationSwitcher;
         private Adaptabrawl.UI.MatchResults matchResults;
 
         /// <summary>Fired once both fighters are spawned. Subscribe in Start() or later.</summary>
@@ -105,6 +106,13 @@ namespace Adaptabrawl.Gameplay
             gameManager.OnRoundEnd += OnRoundEnd;
             gameManager.InitializeMatch();
 
+            // Setup classification switcher for adaptive mid-match swapping
+            classificationSwitcher = GetComponent<ClassificationSwitcher>();
+            if (classificationSwitcher == null)
+                classificationSwitcher = gameObject.AddComponent<ClassificationSwitcher>();
+            classificationSwitcher.Initialize(new FighterController[] { player1, player2 });
+            // Switcher starts paused — GameManager will resume it after the pre-round buffer
+
             // Notify HUD that fighters are ready
             OnFightersSpawned?.Invoke(player1, player2);
 
@@ -126,6 +134,7 @@ namespace Adaptabrawl.Gameplay
             {
                 GameObject p1Obj = CreateFighter(fighter1Def, player1SpawnPoint.position);
                 player1 = p1Obj.GetComponent<FighterController>();
+                player1?.SetPlayerNumber(1);
                 ApplySpawnSetup(p1Obj);
                 SetupPlayerInput(p1Obj, 1);
                 player1?.SetSpawnPosition(player1SpawnPoint.position);
@@ -135,6 +144,7 @@ namespace Adaptabrawl.Gameplay
             {
                 GameObject p2Obj = CreateFighter(fighter2Def, player2SpawnPoint.position);
                 player2 = p2Obj.GetComponent<FighterController>();
+                player2?.SetPlayerNumber(2);
                 ApplySpawnSetup(p2Obj);
                 SetupPlayerInput(p2Obj, 2);
                 player2?.SetSpawnPosition(player2SpawnPoint.position);

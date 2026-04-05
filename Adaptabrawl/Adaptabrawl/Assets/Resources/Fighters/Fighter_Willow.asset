@@ -17,13 +17,13 @@ MonoBehaviour:
   description: Versatile reach and sweeps. Good for zoning and catching approaches.
   portrait: {fileID: 0}
   maxHealth: 100
-  moveSpeed: 5
+  moveSpeed: 6.0
   jumpForce: 10
-  dashSpeed: 12
-  dashDuration: 0.3
-  weight: 1
-  baseDamageMultiplier: 1
-  baseDefenseMultiplier: 1
+  dashSpeed: 13
+  dashDuration: 0.28
+  weight: 1.0
+  baseDamageMultiplier: 1.05
+  baseDefenseMultiplier: 1.05
   armorBreakThreshold: 3
   hurtboxes:
   - name: Body

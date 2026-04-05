@@ -16,15 +16,15 @@ MonoBehaviour:
   fighterName: Sunder
   description: Slow, wide arcs and heavy knockback. Rewards reads and punishes whiffs.
   portrait: {fileID: 0}
-  maxHealth: 120
-  moveSpeed: 4
+  maxHealth: 105
+  moveSpeed: 4.0
   jumpForce: 8
   dashSpeed: 10
   dashDuration: 0.4
-  weight: 1.5
-  baseDamageMultiplier: 1.2
-  baseDefenseMultiplier: 1.1
-  armorBreakThreshold: 3
+  weight: 1.6
+  baseDamageMultiplier: 1.45
+  baseDefenseMultiplier: 0.9
+  armorBreakThreshold: 2
   hurtboxes:
   - name: Body
     offset: {x: 0, y: 0}

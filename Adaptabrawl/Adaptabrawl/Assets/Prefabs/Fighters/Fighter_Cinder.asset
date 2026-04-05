@@ -17,14 +17,14 @@ MonoBehaviour:
   description: Spell-based attacks and projectiles. Unpredictable angles and area
     control.
   portrait: {fileID: 0}
-  maxHealth: 100
-  moveSpeed: 5
-  jumpForce: 10
-  dashSpeed: 12
-  dashDuration: 0.3
-  weight: 1
-  baseDamageMultiplier: 1
-  baseDefenseMultiplier: 1
+  maxHealth: 95
+  moveSpeed: 5.8
+  jumpForce: 12
+  dashSpeed: 15
+  dashDuration: 0.25
+  weight: 0.9
+  baseDamageMultiplier: 1.15
+  baseDefenseMultiplier: 0.85
   armorBreakThreshold: 3
   hurtboxes:
   - name: Body

@@ -17,13 +17,13 @@ MonoBehaviour:
   description: Long reach and quick pokes. Keeps opponents at bay and controls space.
   portrait: {fileID: 0}
   maxHealth: 100
-  moveSpeed: 5
-  jumpForce: 10
-  dashSpeed: 12
-  dashDuration: 0.3
-  weight: 1
-  baseDamageMultiplier: 1
-  baseDefenseMultiplier: 1
+  moveSpeed: 6.0
+  jumpForce: 11
+  dashSpeed: 14
+  dashDuration: 0.25
+  weight: 0.95
+  baseDamageMultiplier: 1.0
+  baseDefenseMultiplier: 0.95
   armorBreakThreshold: 3
   hurtboxes:
   - name: Body

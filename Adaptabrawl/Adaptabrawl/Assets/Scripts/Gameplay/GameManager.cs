@@ -9,7 +9,7 @@ namespace Adaptabrawl.Gameplay
     {
         [Header("Match Settings")]
         [SerializeField] private int roundsToWin = 2;
-        [SerializeField] private float roundDuration = 99f; // Seconds
+        [SerializeField] private float roundDuration = 180f; // Seconds (5 classification switches at 30s each)
         [SerializeField] private float roundEndDelay = 3f;
         [SerializeField] private float preRoundBuffer = 3f; // Seconds fighters are frozen before round starts
 
@@ -33,6 +33,7 @@ namespace Adaptabrawl.Gameplay
 
         private bool _initialized;
         private bool _inPreRoundBuffer; // true while the countdown is running; blocks win detection
+        private ClassificationSwitcher _classificationSwitcher;
 
         private void Start()
         {
@@ -55,6 +56,18 @@ namespace Adaptabrawl.Gameplay
             }
         }
 
+        public void TriggerHitStop(float duration = 0.1f)
+        {
+            StartCoroutine(HitStopRoutine(duration));
+        }
+
+        private System.Collections.IEnumerator HitStopRoutine(float duration)
+        {
+            Time.timeScale = 0.05f; // Slow down to simulate hitstop
+            yield return new WaitForSecondsRealtime(duration);
+            Time.timeScale = 1f;
+        }
+
         public void InitializeMatch()
         {
             if (_initialized) return;
@@ -73,8 +86,31 @@ namespace Adaptabrawl.Gameplay
                 player.OnDeath += () => OnPlayerDeath(player);
             }
 
+            // Find classification switcher in scene. May be null on first call;
+            // ClassificationSwitcher.Initialize() calls RegisterClassificationSwitcher() to ensure the ref is set.
+            _classificationSwitcher = FindFirstObjectByType<ClassificationSwitcher>();
+
             StartRound();
         }
+
+        /// <summary>
+        /// Called by ClassificationSwitcher.Initialize() to register itself.
+        /// Guarantees the reference is valid even if the switcher is created after InitializeMatch().
+        /// </summary>
+        public void RegisterClassificationSwitcher(ClassificationSwitcher switcher)
+        {
+            _classificationSwitcher = switcher;
+            Debug.Log("[GameManager] ClassificationSwitcher registered.");
+
+            // If we are already past the pre-round buffer (round is live),
+            // resume the switcher immediately since Resume() was already called on null.
+            if (roundActive && !_inPreRoundBuffer)
+            {
+                _classificationSwitcher.Resume();
+                Debug.Log("[GameManager] Round already live - auto-resumed switcher.");
+            }
+        }
+
 
         private void StartRound()
         {
@@ -93,6 +129,10 @@ namespace Adaptabrawl.Gameplay
             // Timer starts ticking immediately
             roundActive = true;
             OnRoundStart?.Invoke(currentRound);
+
+            // Pause classification switcher during pre-round buffer
+            if (_classificationSwitcher != null)
+                _classificationSwitcher.Pause();
 
             StartCoroutine(PreRoundBufferRoutine());
         }
@@ -119,6 +159,10 @@ namespace Adaptabrawl.Gameplay
             // Release fighters — round is live
             foreach (var player in players)
                 if (player != null) player.UnlockInput();
+
+            // Resume classification switcher now that the round is live
+            if (_classificationSwitcher != null)
+                _classificationSwitcher.Resume();
         }
 
         private void UpdateRoundTimer()
@@ -201,6 +245,10 @@ namespace Adaptabrawl.Gameplay
             roundActive = false;
             roundWinner = winner;
 
+            // Pause switching during round-end
+            if (_classificationSwitcher != null)
+                _classificationSwitcher.Pause();
+
             if (winner != null)
             {
                 roundWins[winner]++;
@@ -242,6 +290,13 @@ namespace Adaptabrawl.Gameplay
 
             if (playerCount > 0)
                 yield return new WaitUntil(() => doneCount >= playerCount);
+
+            // Restore original classifications and reset timers for the new round
+            if (_classificationSwitcher != null)
+            {
+                _classificationSwitcher.RestoreInitialClassifications();
+                _classificationSwitcher.ResetTimers();
+            }
 
             currentRound++;
             StartRound();

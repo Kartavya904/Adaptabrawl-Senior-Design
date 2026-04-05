@@ -16,14 +16,14 @@ MonoBehaviour:
   fighterName: Flicker
   description: Fast, precise thrusts. Low damage per hit but high combo potential.
   portrait: {fileID: 0}
-  maxHealth: 90
-  moveSpeed: 7.5
-  jumpForce: 14
-  dashSpeed: 18
-  dashDuration: 0.2
-  weight: 0.8
-  baseDamageMultiplier: 0.9
-  baseDefenseMultiplier: 0.9
+  maxHealth: 80
+  moveSpeed: 6.5
+  jumpForce: 15
+  dashSpeed: 20
+  dashDuration: 0.18
+  weight: 0.75
+  baseDamageMultiplier: 0.95
+  baseDefenseMultiplier: 0.85
   armorBreakThreshold: 3
   hurtboxes:
   - name: Body

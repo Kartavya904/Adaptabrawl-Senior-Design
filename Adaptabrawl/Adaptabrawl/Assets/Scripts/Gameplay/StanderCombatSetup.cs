@@ -17,7 +17,24 @@ namespace Adaptabrawl.Gameplay
     {
         private void Start()
         {
+            RunSetup();
+        }
+
+        /// <summary>
+        /// Public entry point so ClassificationSwitcher / FighterController can
+        /// re-run setup after a mid-match prefab swap. Safe to call multiple times.
+        /// </summary>
+        public void RunSetup()
+        {
             Transform stander = transform.Find("Stander");
+
+            // If there is no direct "Stander" child, search recursively for
+            // any child that has a PlayerController_Platform (the Shinabro root).
+            if (stander == null)
+            {
+                var pcp = GetComponentInChildren<PlayerController_Platform>();
+                if (pcp != null) stander = pcp.transform;
+            }
 
             if (stander == null)
             {
@@ -25,7 +42,6 @@ namespace Adaptabrawl.Gameplay
                 foreach (Transform c in transform) children += $"'{c.name}' ";
                 Debug.LogWarning($"[StanderCombatSetup] No 'Stander' child on '{gameObject.name}'. " +
                                  $"Children found: {children}. Combat volumes NOT attached.");
-                Destroy(this);
                 return;
             }
 
@@ -35,6 +51,39 @@ namespace Adaptabrawl.Gameplay
 
             if (stander.GetComponent<ShinabroDamageBridge>() == null)
                 stander.gameObject.AddComponent<ShinabroDamageBridge>();
+
+            // 1. Lock Z-axis and Rotations so physics prevents passing through
+            var rb = stander.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.constraints = RigidbodyConstraints.FreezeRotationX | 
+                                 RigidbodyConstraints.FreezeRotationY | 
+                                 RigidbodyConstraints.FreezeRotationZ | 
+                                 RigidbodyConstraints.FreezePositionZ;
+            }
+
+            // 2. Add an explicit CapsuleCollider Pushbox to prevent players overlapping
+            var pushbox = stander.GetComponent<CapsuleCollider>();
+            if (pushbox == null)
+            {
+                pushbox = stander.gameObject.AddComponent<CapsuleCollider>();
+            }
+            // Ensure the collider is solid, not a trigger, and scaled reasonably
+            pushbox.isTrigger = false;
+            pushbox.direction = 1; // Y-axis
+            pushbox.radius = 0.4f;
+            pushbox.height = 1.8f;
+            pushbox.center = new Vector3(0f, 0.9f, 0f);
+
+            // Turn off bone colliders blocking characters from each other if they existed,
+            // we ONLY want the main Pushbox handling physics body blocks
+            foreach (var col in stander.GetComponentsInChildren<Collider>())
+            {
+                if (col != pushbox && !col.isTrigger)
+                {
+                    Physics.IgnoreCollision(col, pushbox);
+                }
+            }
 
             // Bake a HitboxEmitter onto every Weapon_* mesh (shields excluded).
             bool weaponFound = false;
@@ -58,7 +107,6 @@ namespace Adaptabrawl.Gameplay
 
             Debug.Log($"[StanderCombatSetup] Setup complete on '{gameObject.name}' " +
                       $"({(weaponFound ? "weapon hitboxes baked" : "fallback emitter")}).");
-            Destroy(this);
         }
 
         // -------------------------------------------------------------------

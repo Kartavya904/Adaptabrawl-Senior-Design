@@ -43,6 +43,12 @@ namespace Adaptabrawl.Combat
             
             float finalDamage = baseDamage * damageMultiplier;
             
+            // Apply target's defense multiplier (higher = takes less damage)
+            if (target.FighterDef != null)
+            {
+                finalDamage /= target.FighterDef.baseDefenseMultiplier;
+            }
+            
             // Apply damage to target
             target.TakeDamage(finalDamage);
             

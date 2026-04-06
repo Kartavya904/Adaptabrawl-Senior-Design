@@ -16,6 +16,13 @@ namespace Adaptabrawl.UI
     /// </summary>
     public class OnlinePartyRoomUI : MonoBehaviour
     {
+        private const string HostConnectedMarkup =
+            "<size=30><b>PLAYER 1</b></size>\n<size=22>You · this device · Host</size>\n<size=18><color=#4A4A4A>Connected</color></size>";
+        private const string GuestConnectedMarkup =
+            "<size=30><b>PLAYER 2</b></size>\n<size=22>Friend · remote device</size>\n<size=18><color=#4A4A4A>Connected</color></size>";
+        private const string GuestWaitingMarkup =
+            "<size=30><b>PLAYER 2</b></size>\n<size=22>Waiting for friend…</size>\n<size=18><color=#5E5E5E>Share the code or use Join on their PC</color></size>";
+
         [Header("References")]
         [SerializeField] private LobbyManager lobbyManager;
 
@@ -148,7 +155,7 @@ namespace Adaptabrawl.UI
             if (statusBannerText != null)
             {
                 statusBannerText.text = message;
-                statusBannerText.color = new Color(1f, 0.55f, 0.45f);
+                statusBannerText.color = new Color(0.16f, 0.16f, 0.16f, 1f);
             }
 
             if (roomCodeBigText != null)
@@ -164,8 +171,8 @@ namespace Adaptabrawl.UI
                 titleText.text = "ONLINE PARTY";
             if (subtitleText != null)
                 subtitleText.text =
-                    "You are hosting on this device. Share the code with a friend on the same Wi‑Fi or LAN (Ethernet counts). " +
-                    "They can enter it here with Join a room. Two windows on one PC: first uses port 7777; if this one uses 7778, join the other session with Join a room and its code.";
+                    "Host on this device, share the room code, and let a friend join from the same Wi-Fi or LAN. " +
+                    "If automatic discovery is blocked, they can still connect with the direct IPv4 address shown below.";
             if (statusBannerText != null)
                 statusBannerText.text = "Creating your room…";
         }
@@ -173,23 +180,14 @@ namespace Adaptabrawl.UI
         private void ApplyPlayerSlots(bool waitingForGuest, bool guestJoined = false)
         {
             if (player1SlotText != null)
-            {
-                player1SlotText.text =
-                    "<size=32><color=#66FF99>PLAYER 1</color></size>\n<size=26>You · this device · Host</size>\n<size=22><color=#AAAAAA>Connected</color></size>";
-            }
+                player1SlotText.text = HostConnectedMarkup;
 
             if (player2SlotText != null)
             {
                 if (guestJoined)
-                {
-                    player2SlotText.text =
-                        "<size=32><color=#66CCFF>PLAYER 2</color></size>\n<size=26>Friend · remote device</size>\n<size=22><color=#66FF99>Connected</color></size>";
-                }
+                    player2SlotText.text = GuestConnectedMarkup;
                 else if (waitingForGuest)
-                {
-                    player2SlotText.text =
-                        "<size=32><color=#888888>PLAYER 2</color></size>\n<size=26>Waiting for friend…</size>\n<size=22><color=#FFCC66>Share the code or use Join on their PC</color></size>";
-                }
+                    player2SlotText.text = GuestWaitingMarkup;
             }
         }
 
@@ -200,7 +198,7 @@ namespace Adaptabrawl.UI
             if (statusBannerText != null)
             {
                 statusBannerText.text = "Room ready — waiting for player 2";
-                statusBannerText.color = new Color(1f, 0.84f, 0.35f);
+                statusBannerText.color = new Color(0.12f, 0.12f, 0.12f, 1f);
             }
         }
 
@@ -213,7 +211,7 @@ namespace Adaptabrawl.UI
                 if (string.IsNullOrEmpty(ip))
                     ip = "your IPv4 (ipconfig)";
                 directConnectText.text =
-                    $"<size=24>Direct join (if code search fails)</size>\n<size=30><color=#FFD080>{ip}:{port}</color></size>\n<size=22><color=#AAAAAA>Same private network · allow UDP in Windows Firewall if needed</color></size>";
+                    $"<size=18>Direct join fallback</size>\n<size=26><b>{ip}:{port}</b></size>\n<size=16><color=#5E5E5E>Same private network · allow UDP in Windows Firewall if needed</color></size>";
             }
         }
 
@@ -232,7 +230,7 @@ namespace Adaptabrawl.UI
             if (joinModalErrorText != null)
             {
                 joinModalErrorText.text = message;
-                joinModalErrorText.color = new Color(1f, 0.45f, 0.45f);
+                joinModalErrorText.color = new Color(0.18f, 0.18f, 0.18f, 1f);
             }
         }
 
@@ -336,7 +334,7 @@ namespace Adaptabrawl.UI
                     {
                         joinModalErrorText.text =
                             "Use a 6-digit code, or IPv4 like 192.168.1.5 (add :7777 only if the host changed the default port).";
-                        joinModalErrorText.color = Color.red;
+                        joinModalErrorText.color = new Color(0.18f, 0.18f, 0.18f, 1f);
                     }
                     yield break;
                 }

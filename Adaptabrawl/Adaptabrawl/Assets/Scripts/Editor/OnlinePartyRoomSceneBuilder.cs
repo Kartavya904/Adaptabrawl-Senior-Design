@@ -21,15 +21,19 @@ namespace Adaptabrawl.Editor
         private const string ScenePath = "Assets/Scenes/OnlinePartyRoomScene.unity";
         private const string StartScenePath = "Assets/Scenes/StartScene.unity";
         private const string LobbyScenePath = "Assets/Scenes/LobbyScene.unity";
+        private const string ThemeFontAssetPath = "Assets/UniNeue-Trial-Heavy SDF.asset";
 
-        private static readonly Color BgDark = new Color(0.06f, 0.07f, 0.11f, 1f);
-        private static readonly Color Panel = new Color(0.11f, 0.12f, 0.18f, 0.96f);
-        private static readonly Color Accent = new Color(0.85f, 0.22f, 0.22f, 1f);
-        private static readonly Color Gold = new Color(1f, 0.84f, 0.35f, 1f);
-        private static readonly Color TextDim = new Color(0.7f, 0.72f, 0.78f, 1f);
-        private static readonly Color TextHi = new Color(0.95f, 0.96f, 0.98f, 1f);
-        private static readonly Color SlotP1 = new Color(0.12f, 0.22f, 0.18f, 0.95f);
-        private static readonly Color SlotP2 = new Color(0.14f, 0.16f, 0.24f, 0.95f);
+        private static readonly Color BgDark = new Color(0.97f, 0.97f, 0.97f, 1f);
+        private static readonly Color Panel = new Color(1f, 1f, 1f, 0.98f);
+        private static readonly Color Accent = new Color(0f, 0f, 0f, 1f);
+        private static readonly Color SoftLine = new Color(0f, 0f, 0f, 0.14f);
+        private static readonly Color TextDim = new Color(0.33f, 0.33f, 0.33f, 1f);
+        private static readonly Color TextMuted = new Color(0.46f, 0.46f, 0.46f, 1f);
+        private static readonly Color TextHi = new Color(0.04f, 0.04f, 0.04f, 1f);
+        private static readonly Color SlotSurface = new Color(0.985f, 0.985f, 0.985f, 1f);
+        private static readonly Color ButtonSurface = new Color(1f, 1f, 1f, 1f);
+        private static readonly Color InputSurface = new Color(0.965f, 0.965f, 0.965f, 1f);
+        private static readonly Color ModalBackdrop = new Color(0f, 0f, 0f, 0.18f);
 
         [MenuItem("Tools/Adaptabrawl/Setup Online Party Room Scene")]
         public static void BuildOrUpdatePartyRoomScene()
@@ -175,37 +179,38 @@ namespace Adaptabrawl.Editor
 
             var safe = CreateUiRect("SafeArea", root.transform, true);
             var safeRt = safe.GetComponent<RectTransform>();
-            safeRt.offsetMin = new Vector2(48, 40);
-            safeRt.offsetMax = new Vector2(-48, -40);
+            safeRt.offsetMin = new Vector2(72, 64);
+            safeRt.offsetMax = new Vector2(-72, -64);
 
             var mainPanel = CreateUiRect("MainPanel", safe.transform, true);
             var mainCg = mainPanel.AddComponent<CanvasGroup>();
             mainCg.blocksRaycasts = true;
             mainCg.interactable = true;
             SetImageColor(mainPanel, Panel);
-            AddOutline(mainPanel, Accent, 2f);
+            AddOutline(mainPanel, Accent, 1f);
 
-            var title = CreateTmp("Title", mainPanel.transform, "ONLINE PARTY", 44, FontStyles.Bold, TextAlignmentOptions.Center, TextHi);
-            StretchTop(title.gameObject, -20f, 72f);
+            var title = CreateTmp("Title", mainPanel.transform, "ONLINE PARTY", 42, FontStyles.Bold, TextAlignmentOptions.Center, TextHi);
+            StretchTop(title.gameObject, -34f, 62f);
 
-            var subtitle = CreateTmp("Subtitle", mainPanel.transform, "", 22, FontStyles.Normal, TextAlignmentOptions.Center, TextDim);
-            StretchTop(subtitle.gameObject, -100f, 100f);
+            var subtitle = CreateTmp("Subtitle", mainPanel.transform, "", 18, FontStyles.Normal, TextAlignmentOptions.Center, TextMuted);
+            StretchTop(subtitle.gameObject, -104f, 88f);
+            subtitle.enableWordWrapping = true;
 
-            var codeLabel = CreateTmp("CodeLabel", mainPanel.transform, "ROOM CODE", 20, FontStyles.Bold, TextAlignmentOptions.Center, TextDim);
-            StretchTop(codeLabel.gameObject, -210f, 28f);
+            var codeLabel = CreateTmp("CodeLabel", mainPanel.transform, "ROOM CODE", 16, FontStyles.Bold, TextAlignmentOptions.Center, TextDim);
+            StretchTop(codeLabel.gameObject, -206f, 24f);
 
-            var codeBig = CreateTmp("RoomCodeBig", mainPanel.transform, "······", 96, FontStyles.Bold, TextAlignmentOptions.Center, Gold);
-            StretchTop(codeBig.gameObject, -248f, 100f);
+            var codeBig = CreateTmp("RoomCodeBig", mainPanel.transform, "······", 86, FontStyles.Bold, TextAlignmentOptions.Center, TextHi);
+            StretchTop(codeBig.gameObject, -242f, 88f);
 
-            var direct = CreateTmp("DirectConnect", mainPanel.transform, "", 22, FontStyles.Normal, TextAlignmentOptions.Center, TextDim);
-            StretchTop(direct.gameObject, -356f, 88f);
+            var direct = CreateTmp("DirectConnect", mainPanel.transform, "", 18, FontStyles.Normal, TextAlignmentOptions.Center, TextMuted);
+            StretchTop(direct.gameObject, -338f, 72f);
 
             var slotsRow = CreateUiRect("SlotsRow", mainPanel.transform, false);
             var rowRt = slotsRow.GetComponent<RectTransform>();
-            rowRt.anchorMin = new Vector2(0f, 0.32f);
-            rowRt.anchorMax = new Vector2(1f, 0.62f);
-            rowRt.offsetMin = new Vector2(40f, 0f);
-            rowRt.offsetMax = new Vector2(-40f, 0f);
+            rowRt.anchorMin = new Vector2(0f, 0.29f);
+            rowRt.anchorMax = new Vector2(1f, 0.56f);
+            rowRt.offsetMin = new Vector2(56f, 0f);
+            rowRt.offsetMax = new Vector2(-56f, 0f);
 
             var h = slotsRow.AddComponent<HorizontalLayoutGroup>();
             h.spacing = 24f;
@@ -215,20 +220,20 @@ namespace Adaptabrawl.Editor
             h.childForceExpandWidth = true;
             h.childForceExpandHeight = true;
 
-            var p1Slot = CreatePlayerSlot(slotsRow.transform, "Player1Slot", "PLAYER 1", SlotP1);
-            var p2Slot = CreatePlayerSlot(slotsRow.transform, "Player2Slot", "PLAYER 2", SlotP2);
+            var p1Slot = CreatePlayerSlot(slotsRow.transform, "Player1Slot", "PLAYER 1");
+            var p2Slot = CreatePlayerSlot(slotsRow.transform, "Player2Slot", "PLAYER 2");
             var p1Tmp = p1Slot.GetComponentInChildren<TextMeshProUGUI>();
             var p2Tmp = p2Slot.GetComponentInChildren<TextMeshProUGUI>();
 
-            var banner = CreateTmp("StatusBanner", mainPanel.transform, "", 26, FontStyles.Bold, TextAlignmentOptions.Center, Gold);
-            AnchorBanner(banner.gameObject, 0.14f, 0.24f);
+            var banner = CreateTmp("StatusBanner", mainPanel.transform, "", 20, FontStyles.Bold, TextAlignmentOptions.Center, TextDim);
+            AnchorBanner(banner.gameObject, 0.13f, 0.2f);
 
             var quickBlock = CreateUiRect("VideoStyleQuickLan", mainPanel.transform, false);
             {
                 var qbImg = quickBlock.GetComponent<Image>();
                 qbImg.color = new Color(0f, 0f, 0f, 0f);
                 qbImg.raycastTarget = false;
-                AnchorBottomBar(quickBlock.GetComponent<RectTransform>(), 156f, 128f, 40f);
+                AnchorBottomBar(quickBlock.GetComponent<RectTransform>(), 150f, 120f, 56f);
                 var vlg = quickBlock.AddComponent<VerticalLayoutGroup>();
                 vlg.spacing = 6f;
                 vlg.childAlignment = TextAnchor.UpperCenter;
@@ -238,7 +243,7 @@ namespace Adaptabrawl.Editor
 
                 var hintGo = CreateTmp("QuickHint", quickBlock.transform,
                     "Netcode LAN tutorial pattern: Start Host · peer joins with IPv4:port (two builds on this PC: 127.0.0.1:7777) or 6-digit code.",
-                    15, FontStyles.Normal, TextAlignmentOptions.Center, TextDim);
+                    14, FontStyles.Normal, TextAlignmentOptions.Center, TextMuted);
                 hintGo.enableWordWrapping = true;
                 var hintLe = hintGo.gameObject.AddComponent<LayoutElement>();
                 hintLe.preferredHeight = 44f;
@@ -272,10 +277,11 @@ namespace Adaptabrawl.Editor
                     inputWrapLe.flexibleWidth = 1f;
                     inputWrapLe.minWidth = 220f;
                     inputWrapLe.preferredHeight = 52f;
-                    SetImageColor(inputWrap, new Color(0.08f, 0.09f, 0.12f, 1f));
+                    SetImageColor(inputWrap, InputSurface);
+                    AddOutline(inputWrap, SoftLine, 1f);
 
                     var quickInput = inputWrap.AddComponent<TMP_InputField>();
-                    var quickInputText = CreateTmp("QuickInputText", inputWrap.transform, "", 22, FontStyles.Normal,
+                    var quickInputText = CreateTmp("QuickInputText", inputWrap.transform, "", 20, FontStyles.Normal,
                         TextAlignmentOptions.Left, TextHi);
                     var quickInputTextRt = quickInputText.GetComponent<RectTransform>();
                     quickInputTextRt.anchorMin = Vector2.zero;
@@ -288,7 +294,7 @@ namespace Adaptabrawl.Editor
 
                     var quickPh = CreateTmp("QuickPlaceholder", inputWrap.transform,
                         "127.0.0.1:7777 or 192.168.x.x:7777 or room code", 20, FontStyles.Italic,
-                        TextAlignmentOptions.Left, new Color(0.5f, 0.52f, 0.58f, 1f));
+                        TextAlignmentOptions.Left, TextMuted);
                     var quickPhRt = quickPh.GetComponent<RectTransform>();
                     quickPhRt.anchorMin = Vector2.zero;
                     quickPhRt.anchorMax = Vector2.one;
@@ -297,14 +303,14 @@ namespace Adaptabrawl.Editor
                     quickInput.placeholder = quickPh;
 
                     var joinClientGo = CreateButtonChild(quickRow.transform, "QuickJoinClient", "JOIN AS CLIENT",
-                        new Color(0.18f, 0.35f, 0.55f, 1f));
+                        ButtonSurface);
                     var joinClientLe = joinClientGo.GetComponent<LayoutElement>();
                     joinClientLe.preferredWidth = 210f;
                     joinClientLe.flexibleWidth = 0f;
                     joinClientLe.preferredHeight = 52f;
 
                     var statusTmp = CreateTmp("QuickConnectStatus", quickBlock.transform, "", 15, FontStyles.Normal,
-                        TextAlignmentOptions.Center, new Color(0.95f, 0.35f, 0.35f, 1f));
+                        TextAlignmentOptions.Center, TextDim);
                     var stLe = statusTmp.gameObject.AddComponent<LayoutElement>();
                     stLe.preferredHeight = 22f;
                     stLe.flexibleWidth = 1f;
@@ -320,10 +326,10 @@ namespace Adaptabrawl.Editor
                 }
             }
 
-            var joinBtn = CreateButton(mainPanel.transform, "JoinRoomButton", "JOIN A ROOM", new Color(0.18f, 0.35f, 0.55f, 1f));
+            var joinBtn = CreateButton(mainPanel.transform, "JoinRoomButton", "JOIN A ROOM", ButtonSurface);
             AnchorBottomBar(joinBtn.GetComponent<RectTransform>(), 88f, 52f, 220f);
 
-            var backBtn = CreateButton(mainPanel.transform, "BackButton", "BACK TO MENU", new Color(0.22f, 0.22f, 0.3f, 1f));
+            var backBtn = CreateButton(mainPanel.transform, "BackButton", "BACK TO MENU", ButtonSurface);
             AnchorBottomBar(backBtn.GetComponent<RectTransform>(), 28f, 48f, 220f);
 
             var nav = canvasGo.AddComponent<MenuNavigationGroup>();
@@ -339,7 +345,7 @@ namespace Adaptabrawl.Editor
             navSo.ApplyModifiedPropertiesWithoutUndo();
 
             var modalBackdrop = CreateUiRect("JoinModalBackdrop", canvasGo.transform, true);
-            SetImageColor(modalBackdrop, new Color(0, 0, 0, 0.72f));
+            SetImageColor(modalBackdrop, ModalBackdrop);
             modalBackdrop.SetActive(false);
             var backdropBtn = modalBackdrop.AddComponent<Button>();
             backdropBtn.targetGraphic = modalBackdrop.GetComponent<Image>();
@@ -349,15 +355,15 @@ namespace Adaptabrawl.Editor
             mpRt.anchorMin = new Vector2(0.5f, 0.5f);
             mpRt.anchorMax = new Vector2(0.5f, 0.5f);
             mpRt.sizeDelta = new Vector2(720f, 520f);
-            SetImageColor(modalPanel, new Color(0.14f, 0.15f, 0.22f, 1f));
-            AddOutline(modalPanel, Accent, 2f);
+            SetImageColor(modalPanel, Panel);
+            AddOutline(modalPanel, Accent, 1f);
 
-            var modalTitle = CreateTmp("ModalTitle", modalPanel.transform, "JOIN ANOTHER ROOM", 32, FontStyles.Bold, TextAlignmentOptions.Center, TextHi);
+            var modalTitle = CreateTmp("ModalTitle", modalPanel.transform, "JOIN ANOTHER ROOM", 30, FontStyles.Bold, TextAlignmentOptions.Center, TextHi);
             StretchTop(modalTitle.gameObject, -28f, -72f);
 
             var modalHint = CreateTmp("ModalHint", modalPanel.transform,
                 "Enter the host’s 6-digit code, or IPv4:port if discovery is blocked.", 20, FontStyles.Normal,
-                TextAlignmentOptions.Center, TextDim);
+                TextAlignmentOptions.Center, TextMuted);
             StretchTop(modalHint.gameObject, -88f, -56f);
 
             var inputGo = CreateUiRect("InputWrapper", modalPanel.transform, false);
@@ -367,10 +373,11 @@ namespace Adaptabrawl.Editor
             inputRt.sizeDelta = new Vector2(620f, 56f);
             inputRt.anchoredPosition = new Vector2(0, 40f);
             var inputBg = inputGo.GetComponent<Image>();
-            inputBg.color = new Color(0.08f, 0.09f, 0.12f, 1f);
+            inputBg.color = InputSurface;
+            AddOutline(inputGo, SoftLine, 1f);
 
             var inputField = inputGo.AddComponent<TMP_InputField>();
-            var inputText = CreateTmp("InputText", inputGo.transform, "", 26, FontStyles.Normal, TextAlignmentOptions.Left, TextHi);
+            var inputText = CreateTmp("InputText", inputGo.transform, "", 24, FontStyles.Normal, TextAlignmentOptions.Left, TextHi);
             var textRt = inputText.GetComponent<RectTransform>();
             textRt.anchorMin = Vector2.zero;
             textRt.anchorMax = Vector2.one;
@@ -381,7 +388,7 @@ namespace Adaptabrawl.Editor
             inputField.lineType = TMP_InputField.LineType.SingleLine;
 
             var placeholder = CreateTmp("Placeholder", inputGo.transform, "6-digit code or 192.168.x.x:port", 24, FontStyles.Italic,
-                TextAlignmentOptions.Left, new Color(0.5f, 0.52f, 0.58f, 1f));
+                TextAlignmentOptions.Left, TextMuted);
             var phRt = placeholder.GetComponent<RectTransform>();
             phRt.anchorMin = Vector2.zero;
             phRt.anchorMax = Vector2.one;
@@ -389,14 +396,14 @@ namespace Adaptabrawl.Editor
             phRt.offsetMax = new Vector2(-16, -8);
             inputField.placeholder = placeholder;
 
-            var lanList = CreateTmp("LanList", modalPanel.transform, "", 18, FontStyles.Normal, TextAlignmentOptions.TopLeft, TextDim);
+            var lanList = CreateTmp("LanList", modalPanel.transform, "", 16, FontStyles.Normal, TextAlignmentOptions.TopLeft, TextMuted);
             var lanRt = lanList.GetComponent<RectTransform>();
             lanRt.anchorMin = new Vector2(0.5f, 0.5f);
             lanRt.anchorMax = new Vector2(0.5f, 0.5f);
             lanRt.sizeDelta = new Vector2(620f, 120f);
             lanRt.anchoredPosition = new Vector2(0, -72f);
 
-            var errTmp = CreateTmp("JoinError", modalPanel.transform, "", 20, FontStyles.Normal, TextAlignmentOptions.Center, Color.red);
+            var errTmp = CreateTmp("JoinError", modalPanel.transform, "", 18, FontStyles.Normal, TextAlignmentOptions.Center, TextDim);
             var errRt = errTmp.GetComponent<RectTransform>();
             errRt.anchorMin = new Vector2(0.5f, 0.5f);
             errRt.anchorMax = new Vector2(0.5f, 0.5f);
@@ -418,8 +425,8 @@ namespace Adaptabrawl.Editor
             hBtns.childForceExpandWidth = true;
             hBtns.padding = new RectOffset(0, 0, 0, 0);
 
-            var cancelModal = CreateButtonChild(rowBtns.transform, "CancelModal", "CANCEL", new Color(0.28f, 0.28f, 0.36f, 1f));
-            var confirmModal = CreateButtonChild(rowBtns.transform, "ConfirmJoin", "CONNECT", new Color(0.2f, 0.55f, 0.32f, 1f));
+            var cancelModal = CreateButtonChild(rowBtns.transform, "CancelModal", "CANCEL", ButtonSurface);
+            var confirmModal = CreateButtonChild(rowBtns.transform, "ConfirmJoin", "CONNECT", Accent);
 
             var partySo = new SerializedObject(partyUi);
             partySo.FindProperty("lobbyManager").objectReferenceValue = lobbyMgr;
@@ -452,15 +459,15 @@ namespace Adaptabrawl.Editor
             return canvasGo;
         }
 
-        private static GameObject CreatePlayerSlot(Transform parent, string name, string header, Color bg)
+        private static GameObject CreatePlayerSlot(Transform parent, string name, string header)
         {
             var go = CreateUiRect(name, parent, false);
             var le = go.AddComponent<LayoutElement>();
             le.preferredHeight = 220f;
             le.flexibleWidth = 1f;
-            SetImageColor(go, bg);
-            AddOutline(go, new Color(1f, 1f, 1f, 0.12f), 1f);
-            var tmp = CreateTmp("Body", go.transform, header, 26, FontStyles.Bold, TextAlignmentOptions.Center, TextHi);
+            SetImageColor(go, SlotSurface);
+            AddOutline(go, SoftLine, 1f);
+            var tmp = CreateTmp("Body", go.transform, header, 24, FontStyles.Bold, TextAlignmentOptions.Center, TextHi);
             var rt = tmp.GetComponent<RectTransform>();
             rt.anchorMin = Vector2.zero;
             rt.anchorMax = Vector2.one;
@@ -476,9 +483,11 @@ namespace Adaptabrawl.Editor
             le.preferredHeight = 52f;
             le.flexibleWidth = 1f;
             SetImageColor(go, c);
+            AddOutline(go, Accent, 1f);
             var btn = go.AddComponent<Button>();
             btn.targetGraphic = go.GetComponent<Image>();
-            var t = CreateTmp("Text", go.transform, label, 22, FontStyles.Bold, TextAlignmentOptions.Center, TextHi);
+            var t = CreateTmp("Text", go.transform, label, 20, FontStyles.Bold, TextAlignmentOptions.Center,
+                IsDarkColor(c) ? Panel : TextHi);
             StretchFull(t.gameObject);
             return go;
         }
@@ -487,9 +496,11 @@ namespace Adaptabrawl.Editor
         {
             var go = CreateUiRect(name, parent, false);
             SetImageColor(go, c);
+            AddOutline(go, Accent, 1f);
             var btn = go.AddComponent<Button>();
             btn.targetGraphic = go.GetComponent<Image>();
-            var t = CreateTmp("Text", go.transform, label, 24, FontStyles.Bold, TextAlignmentOptions.Center, TextHi);
+            var t = CreateTmp("Text", go.transform, label, 22, FontStyles.Bold, TextAlignmentOptions.Center,
+                IsDarkColor(c) ? Panel : TextHi);
             StretchFull(t.gameObject);
             return go;
         }
@@ -575,10 +586,22 @@ namespace Adaptabrawl.Editor
             tmp.alignment = align;
             tmp.color = color;
             tmp.raycastTarget = false;
-            var font = TMP_Settings.defaultFontAsset;
+            var font = LoadThemeFont();
             if (font != null)
                 tmp.font = font;
             return tmp;
+        }
+
+        private static TMP_FontAsset LoadThemeFont()
+        {
+            var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(ThemeFontAssetPath);
+            return font != null ? font : TMP_Settings.defaultFontAsset;
+        }
+
+        private static bool IsDarkColor(Color color)
+        {
+            var luminance = (color.r * 0.299f) + (color.g * 0.587f) + (color.b * 0.114f);
+            return luminance < 0.45f;
         }
 
         private static void RegisterInBuildSettings(string path)

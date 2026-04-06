@@ -20,6 +20,15 @@ namespace Adaptabrawl.Editor
     public static class MatchPauseUISetup
     {
         private const string MenuPath = "Adaptabrawl/Add Match Pause UI to Open Scene";
+        private const string ThemeFontAssetPath = "Assets/UniNeue-Trial-Heavy SDF.asset";
+
+        private static readonly Color OverlayColor = new Color(0f, 0f, 0f, 0.16f);
+        private static readonly Color SurfaceColor = new Color(1f, 1f, 1f, 0.985f);
+        private static readonly Color SecondarySurfaceColor = new Color(0.975f, 0.975f, 0.975f, 1f);
+        private static readonly Color OutlineColor = new Color(0f, 0f, 0f, 1f);
+        private static readonly Color SoftOutlineColor = new Color(0f, 0f, 0f, 0.12f);
+        private static readonly Color PrimaryTextColor = new Color(0.05f, 0.05f, 0.05f, 1f);
+        private static readonly Color SecondaryTextColor = new Color(0.35f, 0.35f, 0.35f, 1f);
 
         [MenuItem(MenuPath, true)]
         private static bool Validate() => !Application.isPlaying;
@@ -79,66 +88,106 @@ namespace Adaptabrawl.Editor
             var overlayRt = overlay.GetComponent<RectTransform>();
             StretchFull(overlayRt);
             var dim = overlay.AddComponent<Image>();
-            dim.color = new Color(0f, 0f, 0f, 0.65f);
+            dim.color = OverlayColor;
             dim.raycastTarget = true;
             overlay.SetActive(false);
 
             GameObject requestPanel = CreateChild(overlay, "PauseRequestPanel");
-            StretchFull(requestPanel.GetComponent<RectTransform>());
+            var requestPanelRt = requestPanel.GetComponent<RectTransform>();
+            requestPanelRt.anchorMin = new Vector2(0.5f, 0.5f);
+            requestPanelRt.anchorMax = new Vector2(0.5f, 0.5f);
+            requestPanelRt.pivot = new Vector2(0.5f, 0.5f);
+            requestPanelRt.sizeDelta = new Vector2(920f, 240f);
+            var requestBg = requestPanel.AddComponent<Image>();
+            requestBg.color = SurfaceColor;
+            requestBg.raycastTarget = true;
+            AddOutline(requestPanel, OutlineColor, 1f);
             var reqVert = requestPanel.AddComponent<VerticalLayoutGroup>();
             reqVert.childAlignment = TextAnchor.MiddleCenter;
-            reqVert.spacing = 16f;
-            reqVert.padding = new RectOffset(48, 48, 48, 48);
+            reqVert.spacing = 10f;
+            reqVert.padding = new RectOffset(56, 56, 44, 44);
             var reqFit = requestPanel.AddComponent<ContentSizeFitter>();
             reqFit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            var reqLabelGo = CreateChild(requestPanel, "RequestLabel");
+            var reqLabel = reqLabelGo.AddComponent<TextMeshProUGUI>();
+            ApplyDefaultTmp(reqLabel);
+            reqLabel.text = "PAUSE REQUEST";
+            reqLabel.fontSize = 24;
+            reqLabel.fontStyle = FontStyles.Bold;
+            reqLabel.alignment = TextAlignmentOptions.Center;
+            reqLabel.color = PrimaryTextColor;
+            reqLabel.raycastTarget = false;
+            var reqLabelLe = reqLabelGo.AddComponent<LayoutElement>();
+            reqLabelLe.minHeight = 36f;
 
             var reqTmpGo = CreateChild(requestPanel, "RequestMessage");
             var reqTmp = reqTmpGo.AddComponent<TextMeshProUGUI>();
             ApplyDefaultTmp(reqTmp);
             reqTmp.text = "Pause request…";
-            reqTmp.fontSize = 32;
+            reqTmp.fontSize = 24;
             reqTmp.alignment = TextAlignmentOptions.Center;
-            reqTmp.color = Color.white;
+            reqTmp.color = SecondaryTextColor;
             var reqTmpRt = reqTmpGo.GetComponent<RectTransform>();
-            reqTmpRt.sizeDelta = new Vector2(1600, 200);
+            reqTmpRt.sizeDelta = new Vector2(780, 140);
 
             GameObject menuPanel = CreateChild(overlay, "PauseMenuPanel");
             var menuRt = menuPanel.GetComponent<RectTransform>();
             menuRt.anchorMin = new Vector2(0.5f, 0.5f);
             menuRt.anchorMax = new Vector2(0.5f, 0.5f);
             menuRt.pivot = new Vector2(0.5f, 0.5f);
-            menuRt.sizeDelta = new Vector2(520, 420);
+            menuRt.sizeDelta = new Vector2(560, 452);
 
             var menuImg = menuPanel.AddComponent<Image>();
-            menuImg.color = new Color(0.07f, 0.09f, 0.14f, 0.98f);
+            menuImg.color = SurfaceColor;
             menuImg.raycastTarget = true;
-            var uiSprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
-            if (uiSprite != null)
-            {
-                menuImg.sprite = uiSprite;
-                menuImg.type = Image.Type.Sliced;
-            }
+            AddOutline(menuPanel, OutlineColor, 1f);
 
             var menuVert = menuPanel.AddComponent<VerticalLayoutGroup>();
-            menuVert.padding = new RectOffset(32, 32, 28, 28);
-            menuVert.spacing = 14f;
+            menuVert.padding = new RectOffset(40, 40, 36, 36);
+            menuVert.spacing = 16f;
             menuVert.childAlignment = TextAnchor.MiddleCenter;
             menuVert.childControlHeight = true;
             menuVert.childControlWidth = true;
             menuVert.childForceExpandHeight = false;
             menuVert.childForceExpandWidth = true;
 
+            var topRule = CreateChild(menuPanel, "TopRule");
+            var topRuleImage = topRule.AddComponent<Image>();
+            topRuleImage.color = SoftOutlineColor;
+            var topRuleLe = topRule.AddComponent<LayoutElement>();
+            topRuleLe.minHeight = 1f;
+            topRuleLe.preferredHeight = 1f;
+
             var titleGo = CreateChild(menuPanel, "Title");
             var titleTmp = titleGo.AddComponent<TextMeshProUGUI>();
             ApplyDefaultTmp(titleTmp);
-            titleTmp.text = "Paused";
-            titleTmp.fontSize = 40;
+            titleTmp.text = "PAUSED";
+            titleTmp.fontSize = 34;
             titleTmp.fontStyle = FontStyles.Bold;
             titleTmp.alignment = TextAlignmentOptions.Center;
-            titleTmp.color = new Color(0.78f, 0.93f, 1f, 1f);
+            titleTmp.color = PrimaryTextColor;
             titleTmp.raycastTarget = false;
             var titleLe = titleGo.AddComponent<LayoutElement>();
-            titleLe.minHeight = 56f;
+            titleLe.minHeight = 48f;
+
+            var subtitleGo = CreateChild(menuPanel, "Subtitle");
+            var subtitleTmp = subtitleGo.AddComponent<TextMeshProUGUI>();
+            ApplyDefaultTmp(subtitleTmp);
+            subtitleTmp.text = "Match paused on this screen.";
+            subtitleTmp.fontSize = 18;
+            subtitleTmp.alignment = TextAlignmentOptions.Center;
+            subtitleTmp.color = SecondaryTextColor;
+            subtitleTmp.raycastTarget = false;
+            var subtitleLe = subtitleGo.AddComponent<LayoutElement>();
+            subtitleLe.minHeight = 28f;
+
+            var midRule = CreateChild(menuPanel, "MidRule");
+            var midRuleImage = midRule.AddComponent<Image>();
+            midRuleImage.color = SoftOutlineColor;
+            var midRuleLe = midRule.AddComponent<LayoutElement>();
+            midRuleLe.minHeight = 1f;
+            midRuleLe.preferredHeight = 1f;
 
             Button resume = CreateMenuButton(menuPanel, "ResumeButton", "Resume", destructive: false);
             Button settings = CreateMenuButton(menuPanel, "SettingsButton", "Settings", destructive: false);
@@ -217,40 +266,34 @@ namespace Adaptabrawl.Editor
 
         private static void ApplyDefaultTmp(TextMeshProUGUI tmp)
         {
-            if (TMP_Settings.defaultFontAsset != null)
+            var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(ThemeFontAssetPath);
+            if (font != null)
+                tmp.font = font;
+            else if (TMP_Settings.defaultFontAsset != null)
                 tmp.font = TMP_Settings.defaultFontAsset;
+        }
+
+        private static void AddOutline(GameObject go, Color c, float thickness)
+        {
+            var outline = go.AddComponent<Outline>();
+            outline.effectColor = c;
+            outline.effectDistance = new Vector2(thickness, -thickness);
         }
 
         private static Button CreateMenuButton(GameObject menuPanel, string name, string label, bool destructive)
         {
             var go = CreateChild(menuPanel, name);
             var img = go.AddComponent<Image>();
-            img.color = destructive
-                ? new Color(0.42f, 0.18f, 0.2f, 1f)
-                : new Color(0.14f, 0.26f, 0.42f, 1f);
-            var uiSprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
-            if (uiSprite != null)
-            {
-                img.sprite = uiSprite;
-                img.type = Image.Type.Sliced;
-            }
+            img.color = destructive ? OutlineColor : SecondarySurfaceColor;
+            AddOutline(go, OutlineColor, 1f);
 
             var btn = go.AddComponent<Button>();
             btn.targetGraphic = img;
             var cb = btn.colors;
             cb.normalColor = Color.white;
-            if (destructive)
-            {
-                cb.highlightedColor = new Color(1f, 0.65f, 0.55f, 1f);
-                cb.selectedColor = new Color(0.98f, 0.55f, 0.5f, 1f);
-                cb.pressedColor = new Color(0.75f, 0.35f, 0.32f, 1f);
-            }
-            else
-            {
-                cb.highlightedColor = new Color(0.55f, 0.92f, 1f, 1f);
-                cb.selectedColor = new Color(0.5f, 0.88f, 1f, 1f);
-                cb.pressedColor = new Color(0.4f, 0.65f, 0.85f, 1f);
-            }
+            cb.highlightedColor = new Color(0.92f, 0.92f, 0.92f, 1f);
+            cb.selectedColor = new Color(0.9f, 0.9f, 0.9f, 1f);
+            cb.pressedColor = new Color(0.84f, 0.84f, 0.84f, 1f);
             btn.colors = cb;
 
             var le = go.AddComponent<LayoutElement>();
@@ -262,9 +305,10 @@ namespace Adaptabrawl.Editor
             var tmp = textGo.AddComponent<TextMeshProUGUI>();
             ApplyDefaultTmp(tmp);
             tmp.text = label;
-            tmp.fontSize = 26;
+            tmp.fontSize = 24;
+            tmp.fontStyle = FontStyles.Bold;
             tmp.alignment = TextAlignmentOptions.Center;
-            tmp.color = Color.white;
+            tmp.color = destructive ? SurfaceColor : PrimaryTextColor;
 
             return btn;
         }

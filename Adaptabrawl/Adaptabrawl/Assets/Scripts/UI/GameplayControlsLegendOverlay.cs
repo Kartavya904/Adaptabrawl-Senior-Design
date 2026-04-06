@@ -140,13 +140,16 @@ namespace Adaptabrawl.UI
             ControlActionId.SpecialHeavy
         };
 
-        private static readonly Color PanelColor = new Color(0.07f, 0.08f, 0.11f, 0.94f);
-        private static readonly Color OutlineColor = new Color(0.78f, 0.22f, 0.22f, 0.55f);
-        private static readonly Color Player1TabColor = new Color(0.86f, 0.22f, 0.22f, 1f);
-        private static readonly Color Player2TabColor = new Color(0.28f, 0.58f, 0.96f, 1f);
+        private const float PanelWidth = 316f;
+        private const float PanelHeight = 214f;
+        private const float SideMargin = 28f;
+        private const float TopMargin = 74f;
+
+        private static readonly Color PanelColor = new Color(0.44f, 0.44f, 0.47f, 0.88f);
+        private static readonly Color ShadowColor = new Color(0f, 0f, 0f, 0.22f);
         private static readonly Color HeaderColor = new Color(0.97f, 0.97f, 0.98f, 1f);
-        private static readonly Color ActionColor = new Color(0.76f, 0.79f, 0.84f, 1f);
-        private static readonly Color BindingColor = Color.white;
+        private static readonly Color BodyTextColor = new Color(0.97f, 0.97f, 0.98f, 1f);
+        private static readonly Color DeviceTextColor = new Color(0.94f, 0.94f, 0.96f, 0.8f);
 
         private Canvas hostCanvas;
         private RectTransform rootRect;
@@ -194,99 +197,81 @@ namespace Adaptabrawl.UI
 
         private void BuildLayout()
         {
-            RectTransform stackRect = CreateRect("LegendStack", rootRect);
-            stackRect.anchorMin = new Vector2(0f, 0.5f);
-            stackRect.anchorMax = new Vector2(0f, 0.5f);
-            stackRect.pivot = new Vector2(0f, 0.5f);
-            stackRect.anchoredPosition = new Vector2(24f, 0f);
-            stackRect.sizeDelta = new Vector2(344f, 660f);
-
-            VerticalLayoutGroup stackLayout = stackRect.gameObject.AddComponent<VerticalLayoutGroup>();
-            stackLayout.spacing = 18f;
-            stackLayout.childAlignment = TextAnchor.MiddleLeft;
-            stackLayout.childControlHeight = false;
-            stackLayout.childControlWidth = true;
-            stackLayout.childForceExpandHeight = false;
-            stackLayout.childForceExpandWidth = false;
-
             panelViews = new[]
             {
-                BuildPanel(stackRect, "P1", "PLAYER 1", Player1TabColor),
-                BuildPanel(stackRect, "P2", "PLAYER 2", Player2TabColor)
+                BuildPanel(rootRect, "Player 1", isRightAligned: false),
+                BuildPanel(rootRect, "Player 2", isRightAligned: true)
             };
         }
 
-        private LegendPanelView BuildPanel(Transform parent, string tabLabel, string headerPrefix, Color tabColor)
+        private LegendPanelView BuildPanel(Transform parent, string headerLabel, bool isRightAligned)
         {
-            RectTransform cardRect = CreateRect($"{headerPrefix}Legend", parent);
-            cardRect.sizeDelta = new Vector2(332f, 280f);
-
-            LayoutElement layoutElement = cardRect.gameObject.AddComponent<LayoutElement>();
-            layoutElement.preferredWidth = 332f;
-            layoutElement.preferredHeight = 280f;
+            RectTransform cardRect = CreateRect($"{headerLabel.Replace(" ", string.Empty)}Legend", parent);
+            cardRect.anchorMin = isRightAligned ? new Vector2(1f, 1f) : new Vector2(0f, 1f);
+            cardRect.anchorMax = isRightAligned ? new Vector2(1f, 1f) : new Vector2(0f, 1f);
+            cardRect.pivot = isRightAligned ? new Vector2(1f, 1f) : new Vector2(0f, 1f);
+            cardRect.anchoredPosition = isRightAligned
+                ? new Vector2(-SideMargin, -TopMargin)
+                : new Vector2(SideMargin, -TopMargin);
+            cardRect.sizeDelta = new Vector2(PanelWidth, PanelHeight);
 
             Image panelImage = cardRect.gameObject.AddComponent<Image>();
             panelImage.color = PanelColor;
 
-            Outline outline = cardRect.gameObject.AddComponent<Outline>();
-            outline.effectColor = OutlineColor;
-            outline.effectDistance = new Vector2(2f, -2f);
-
-            RectTransform tabRect = CreateRect("Tab", cardRect);
-            tabRect.anchorMin = new Vector2(0f, 0f);
-            tabRect.anchorMax = new Vector2(0f, 1f);
-            tabRect.pivot = new Vector2(0f, 0.5f);
-            tabRect.offsetMin = Vector2.zero;
-            tabRect.offsetMax = new Vector2(34f, 0f);
-            Image tabImage = tabRect.gameObject.AddComponent<Image>();
-            tabImage.color = tabColor;
-
-            TextMeshProUGUI tabText = CreateText("TabText", tabRect, tabLabel, 18f, FontStyles.Bold, TextAlignmentOptions.Center, HeaderColor);
-            RectTransform tabTextRect = tabText.rectTransform;
-            tabTextRect.anchorMin = new Vector2(0.5f, 0.5f);
-            tabTextRect.anchorMax = new Vector2(0.5f, 0.5f);
-            tabTextRect.sizeDelta = new Vector2(92f, 28f);
-            tabTextRect.anchoredPosition = Vector2.zero;
-            tabTextRect.localEulerAngles = new Vector3(0f, 0f, 90f);
+            Shadow shadow = cardRect.gameObject.AddComponent<Shadow>();
+            shadow.effectColor = ShadowColor;
+            shadow.effectDistance = new Vector2(0f, -4f);
 
             RectTransform contentRect = CreateRect("Content", cardRect);
             contentRect.anchorMin = Vector2.zero;
             contentRect.anchorMax = Vector2.one;
-            contentRect.offsetMin = new Vector2(50f, 16f);
-            contentRect.offsetMax = new Vector2(-14f, -16f);
+            contentRect.offsetMin = new Vector2(18f, 14f);
+            contentRect.offsetMax = new Vector2(-18f, -14f);
 
             VerticalLayoutGroup contentLayout = contentRect.gameObject.AddComponent<VerticalLayoutGroup>();
-            contentLayout.spacing = 10f;
-            contentLayout.childAlignment = TextAnchor.UpperLeft;
+            contentLayout.spacing = 6f;
+            contentLayout.childAlignment = TextAnchor.UpperCenter;
             contentLayout.childControlHeight = false;
             contentLayout.childControlWidth = true;
             contentLayout.childForceExpandHeight = false;
             contentLayout.childForceExpandWidth = true;
 
-            TextMeshProUGUI headerText = CreateText("Header", contentRect, headerPrefix, 19f, FontStyles.Bold, TextAlignmentOptions.Left, HeaderColor);
+            TextMeshProUGUI headerText = CreateText("Header", contentRect, headerLabel, 17f, FontStyles.Bold, TextAlignmentOptions.Center, HeaderColor);
             headerText.textWrappingMode = TextWrappingModes.NoWrap;
-            headerText.gameObject.AddComponent<LayoutElement>().preferredHeight = 28f;
+            headerText.gameObject.AddComponent<LayoutElement>().preferredHeight = 24f;
+
+            TextMeshProUGUI deviceText = CreateText("Device", contentRect, "Keyboard", 11f, FontStyles.Normal, TextAlignmentOptions.Center, DeviceTextColor);
+            deviceText.textWrappingMode = TextWrappingModes.NoWrap;
+            deviceText.gameObject.AddComponent<LayoutElement>().preferredHeight = 16f;
+
+            RectTransform dividerRect = CreateRect("Divider", contentRect);
+            dividerRect.sizeDelta = new Vector2(0f, 1f);
+            LayoutElement dividerLayout = dividerRect.gameObject.AddComponent<LayoutElement>();
+            dividerLayout.preferredHeight = 1f;
+            Image dividerImage = dividerRect.gameObject.AddComponent<Image>();
+            dividerImage.color = new Color(1f, 1f, 1f, 0.2f);
 
             Dictionary<ControlActionId, TextMeshProUGUI> bindingLabels = new Dictionary<ControlActionId, TextMeshProUGUI>();
             foreach (ControlActionId action in LegendActions)
             {
                 RectTransform rowRect = CreateRect($"Row_{action}", contentRect);
-                rowRect.sizeDelta = new Vector2(0f, 28f);
-                rowRect.gameObject.AddComponent<LayoutElement>().preferredHeight = 28f;
+                rowRect.sizeDelta = new Vector2(0f, 20f);
+                rowRect.gameObject.AddComponent<LayoutElement>().preferredHeight = 20f;
 
                 HorizontalLayoutGroup rowLayout = rowRect.gameObject.AddComponent<HorizontalLayoutGroup>();
-                rowLayout.spacing = 8f;
+                rowLayout.spacing = 10f;
                 rowLayout.childAlignment = TextAnchor.MiddleLeft;
                 rowLayout.childControlHeight = true;
                 rowLayout.childControlWidth = true;
                 rowLayout.childForceExpandHeight = true;
                 rowLayout.childForceExpandWidth = false;
+                rowLayout.padding = new RectOffset(0, 0, 0, 0);
 
-                TextMeshProUGUI actionText = CreateText("Action", rowRect, GetLegendActionLabel(action), 15f, FontStyles.Bold, TextAlignmentOptions.Left, ActionColor);
+                TextMeshProUGUI actionText = CreateText("Action", rowRect, GetLegendActionLabel(action), 12f, FontStyles.Bold, TextAlignmentOptions.Left, BodyTextColor);
                 LayoutElement actionLayout = actionText.gameObject.AddComponent<LayoutElement>();
-                actionLayout.preferredWidth = 118f;
+                actionLayout.preferredWidth = 104f;
 
-                TextMeshProUGUI bindingText = CreateText("Binding", rowRect, "Unbound", 15f, FontStyles.Normal, TextAlignmentOptions.Right, BindingColor);
+                TextMeshProUGUI bindingText = CreateText("Binding", rowRect, "Unbound", 12f, FontStyles.Normal, TextAlignmentOptions.Right, BodyTextColor);
                 LayoutElement bindingLayout = bindingText.gameObject.AddComponent<LayoutElement>();
                 bindingLayout.flexibleWidth = 1f;
 
@@ -295,8 +280,8 @@ namespace Adaptabrawl.UI
 
             return new LegendPanelView
             {
-                headerPrefix = headerPrefix,
                 headerText = headerText,
+                deviceText = deviceText,
                 bindingLabels = bindingLabels
             };
         }
@@ -309,7 +294,7 @@ namespace Adaptabrawl.UI
             ControlBindingsContext bindings = ControlBindingsContext.EnsureExists();
             ResolvePlayerProfile(playerNumber, out ControlProfileId profile, out string deviceLabel);
 
-            panelView.headerText.text = $"{panelView.headerPrefix}  |  {deviceLabel}";
+            panelView.deviceText.text = deviceLabel;
             foreach (ControlActionId action in LegendActions)
             {
                 if (!panelView.bindingLabels.TryGetValue(action, out TextMeshProUGUI bindingText) || bindingText == null)
@@ -388,8 +373,8 @@ namespace Adaptabrawl.UI
 
         private sealed class LegendPanelView
         {
-            public string headerPrefix;
             public TextMeshProUGUI headerText;
+            public TextMeshProUGUI deviceText;
             public Dictionary<ControlActionId, TextMeshProUGUI> bindingLabels;
         }
     }

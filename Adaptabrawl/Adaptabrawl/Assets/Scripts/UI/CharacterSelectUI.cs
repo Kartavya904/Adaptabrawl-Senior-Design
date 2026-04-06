@@ -82,6 +82,11 @@ namespace Adaptabrawl.UI
         [SerializeField] private string defaultPreviewTrigger = "Idle";
         [Tooltip("When the fighter has no prefab (runtime Striker/Elusive), this sprite is shown so something is visible. Assign a simple sprite (e.g. silhouette).")]
         [SerializeField] private Sprite previewPlaceholderSprite;
+        [Header("Preview Shadow Styling")]
+        [Tooltip("Flatten preview fighters into a single shadow silhouette so they read like a ghost/shadow ninja instead of segmented pieces.")]
+        [SerializeField] private bool useShadowSilhouettePreview = true;
+        [Tooltip("Slight blue-black tint keeps previews readable while still looking like a clean shadow.")]
+        [SerializeField] private Color previewSilhouetteColor = new Color(0.02f, 0.03f, 0.05f, 1f);
 
         [Header("Input Hints (assign TMP text inside each confirm button)")]
         [SerializeField] private TextMeshProUGUI player1ConfirmButtonText;
@@ -635,6 +640,18 @@ namespace Adaptabrawl.UI
             light.shadows = LightShadows.None;
         }
 
+        private void ApplyPreviewShadowSilhouette(GameObject previewObject)
+        {
+            if (!useShadowSilhouettePreview || previewObject == null)
+                return;
+
+            var shadowVisual = previewObject.GetComponent<ShadowSilhouetteVisual>();
+            if (shadowVisual == null)
+                shadowVisual = previewObject.AddComponent<ShadowSilhouetteVisual>();
+
+            shadowVisual.Configure(previewSilhouetteColor, disableParticleSystems: true, disableTrails: true);
+        }
+
         private static Transform GetPreviewContainer(Transform container, Image image)
         {
             if (container != null) return container;
@@ -761,6 +778,8 @@ namespace Adaptabrawl.UI
                 sr.sprite = previewPlaceholderSprite;
                 sr.sortingOrder = 100;
             }
+
+            ApplyPreviewShadowSilhouette(obj);
 
             if (imageToHide != null) imageToHide.enabled = !useRawImage;
 

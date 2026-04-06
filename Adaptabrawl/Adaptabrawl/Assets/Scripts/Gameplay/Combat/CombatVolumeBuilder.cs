@@ -9,6 +9,7 @@ namespace Adaptabrawl.Combat
     public static class CombatVolumeBuilder
     {
         private const string RuntimeWeaponVolumeName = "CombatWeaponVolume";
+        private const string RuntimeCoreHurtboxPrefix = "RuntimeCoreHurtbox_";
         private static readonly string[] WeaponStrikeKeywords = { "blade", "head", "tip", "spike", "sword", "hammer", "spear", "axe", "dualblade", "rapier", "staff", "bow" };
         private static readonly string[] WeaponIgnoreKeywords = { "shield", "handle", "hilt", "grip", "pommel", "guard" };
 
@@ -33,7 +34,9 @@ namespace Adaptabrawl.Combat
         {
             foreach (Transform t in stander.GetComponentsInChildren<Transform>(true))
             {
-                if (t.name == "WeaponHitbox" || t.name == RuntimeWeaponVolumeName)
+                if (t.name == "WeaponHitbox"
+                    || t.name == RuntimeWeaponVolumeName
+                    || t.name.StartsWith(RuntimeCoreHurtboxPrefix))
                     Object.Destroy(t.gameObject);
             }
 
@@ -55,6 +58,7 @@ namespace Adaptabrawl.Combat
                 bodyColliders = GenerateBodyColliders(stander);
 
             Bounds bodyBounds = GetBodyBounds(stander);
+            AddSupplementalCoreColliders(stander, bodyBounds, bodyColliders);
             List<HurtboxPart> parts = new List<HurtboxPart>(bodyColliders.Count);
 
             foreach (Collider collider in bodyColliders)
@@ -208,6 +212,64 @@ namespace Adaptabrawl.Combat
             return generated;
         }
 
+        private static void AddSupplementalCoreColliders(Transform stander, Bounds bodyBounds, List<Collider> colliders)
+        {
+            if (stander == null || colliders == null)
+                return;
+
+            float bodyWidth = Mathf.Max(bodyBounds.size.x, 0.55f);
+            float bodyHeight = Mathf.Max(bodyBounds.size.y, 1.6f);
+            float bodyDepth = Mathf.Max(bodyBounds.size.z, bodyWidth * 0.6f);
+
+            Transform pelvisAnchor = FindBestBodyTransform(stander, "pelvis", "hips", "hip");
+            Transform spineAnchor = FindBestBodyTransform(stander, "spine", "spine1", "spine2", "chest");
+            Transform chestAnchor = FindBestBodyTransform(stander, "chest", "upperchest", "spine2", "spine1");
+            Transform neckAnchor = FindBestBodyTransform(stander, "neck", "head");
+            Transform headAnchor = FindBestBodyTransform(stander, "head");
+
+            colliders.Add(CreateRuntimeBoxCollider(
+                pelvisAnchor != null ? pelvisAnchor : stander,
+                $"{RuntimeCoreHurtboxPrefix}Pelvis",
+                pelvisAnchor != null
+                    ? Vector3.zero
+                    : new Vector3(0f, Mathf.Lerp(bodyBounds.min.y, bodyBounds.max.y, 0.34f), 0f),
+                new Vector3(bodyWidth * 0.34f, bodyHeight * 0.16f, bodyDepth * 0.34f)));
+
+            colliders.Add(CreateRuntimeBoxCollider(
+                spineAnchor != null ? spineAnchor : stander,
+                $"{RuntimeCoreHurtboxPrefix}LowerTorso",
+                spineAnchor != null
+                    ? Vector3.zero
+                    : new Vector3(0f, Mathf.Lerp(bodyBounds.min.y, bodyBounds.max.y, 0.5f), 0f),
+                new Vector3(bodyWidth * 0.32f, bodyHeight * 0.24f, bodyDepth * 0.26f)));
+
+            colliders.Add(CreateRuntimeBoxCollider(
+                chestAnchor != null ? chestAnchor : stander,
+                $"{RuntimeCoreHurtboxPrefix}UpperTorso",
+                chestAnchor != null
+                    ? Vector3.zero
+                    : new Vector3(0f, Mathf.Lerp(bodyBounds.min.y, bodyBounds.max.y, 0.68f), 0f),
+                new Vector3(bodyWidth * 0.38f, bodyHeight * 0.22f, bodyDepth * 0.3f)));
+
+            colliders.Add(CreateRuntimeCapsuleCollider(
+                neckAnchor != null ? neckAnchor : stander,
+                $"{RuntimeCoreHurtboxPrefix}Neck",
+                neckAnchor != null
+                    ? Vector3.zero
+                    : new Vector3(0f, Mathf.Lerp(bodyBounds.min.y, bodyBounds.max.y, 0.82f), 0f),
+                bodyHeight * 0.1f,
+                bodyWidth * 0.08f,
+                1));
+
+            colliders.Add(CreateRuntimeBoxCollider(
+                headAnchor != null ? headAnchor : stander,
+                $"{RuntimeCoreHurtboxPrefix}Head",
+                headAnchor != null
+                    ? Vector3.zero
+                    : new Vector3(0f, Mathf.Lerp(bodyBounds.min.y, bodyBounds.max.y, 0.93f), 0f),
+                new Vector3(bodyWidth * 0.32f, bodyHeight * 0.18f, bodyDepth * 0.28f)));
+        }
+
         private static Bounds GetBodyBounds(Transform stander)
         {
             SkinnedMeshRenderer smr = stander.GetComponentInChildren<SkinnedMeshRenderer>();
@@ -218,6 +280,66 @@ namespace Adaptabrawl.Combat
             bounds.center = stander.InverseTransformPoint(smr.transform.TransformPoint(bounds.center));
             bounds.size = AbsVector(stander.InverseTransformVector(smr.transform.TransformVector(bounds.size)));
             return bounds;
+        }
+
+        private static Transform FindBestBodyTransform(Transform stander, params string[] keywords)
+        {
+            foreach (Transform child in stander.GetComponentsInChildren<Transform>(true))
+            {
+                if (child == null || IsWeaponTransform(child))
+                    continue;
+
+                string name = child.name.ToLowerInvariant();
+                for (int i = 0; i < keywords.Length; i++)
+                {
+                    if (name.Contains(keywords[i]))
+                        return child;
+                }
+            }
+
+            return null;
+        }
+
+        private static BoxCollider CreateRuntimeBoxCollider(Transform parent, string name, Vector3 localPosition, Vector3 size)
+        {
+            GameObject colliderObject = new GameObject(name);
+            colliderObject.transform.SetParent(parent, false);
+            colliderObject.transform.localPosition = localPosition;
+            colliderObject.transform.localRotation = Quaternion.identity;
+            colliderObject.transform.localScale = Vector3.one;
+
+            BoxCollider collider = colliderObject.AddComponent<BoxCollider>();
+            collider.isTrigger = true;
+            collider.center = Vector3.zero;
+            collider.size = new Vector3(
+                Mathf.Max(size.x, 0.08f),
+                Mathf.Max(size.y, 0.08f),
+                Mathf.Max(size.z, 0.08f));
+
+            return collider;
+        }
+
+        private static CapsuleCollider CreateRuntimeCapsuleCollider(
+            Transform parent,
+            string name,
+            Vector3 localPosition,
+            float height,
+            float radius,
+            int direction)
+        {
+            GameObject colliderObject = new GameObject(name);
+            colliderObject.transform.SetParent(parent, false);
+            colliderObject.transform.localPosition = localPosition;
+            colliderObject.transform.localRotation = Quaternion.identity;
+            colliderObject.transform.localScale = Vector3.one;
+
+            CapsuleCollider collider = colliderObject.AddComponent<CapsuleCollider>();
+            collider.isTrigger = true;
+            collider.center = Vector3.zero;
+            collider.direction = direction;
+            collider.height = Mathf.Max(height, radius * 2f + 0.04f);
+            collider.radius = Mathf.Max(radius, 0.04f);
+            return collider;
         }
 
         private static BodyPartType ClassifyBodyPart(Transform stander, Bounds bodyBounds, Collider collider)

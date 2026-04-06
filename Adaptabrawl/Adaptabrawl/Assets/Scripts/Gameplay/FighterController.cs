@@ -1,6 +1,7 @@
 using UnityEngine;
 using Adaptabrawl.Data;
 using Adaptabrawl.Combat;
+using Adaptabrawl.Fighters;
 
 namespace Adaptabrawl.Gameplay
 {
@@ -466,6 +467,8 @@ namespace Adaptabrawl.Gameplay
             // 7. Re-run combat setup (hitboxes, hurtboxes on new child)
             var combatSetup = GetComponent<StanderCombatSetup>();
             if (combatSetup != null) combatSetup.RunSetup();
+            var shadowVisual = GetComponent<ShadowSilhouetteVisual>();
+            if (shadowVisual != null) shadowVisual.ApplyToHierarchy();
 
             // 8. Notify systems
             OnHealthChanged?.Invoke(currentHealth, maxHealth);

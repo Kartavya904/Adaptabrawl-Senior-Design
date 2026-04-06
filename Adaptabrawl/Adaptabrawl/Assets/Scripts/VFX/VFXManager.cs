@@ -2,6 +2,8 @@ using UnityEngine;
 using Adaptabrawl.Combat;
 using Adaptabrawl.Data;
 using Adaptabrawl.Gameplay;
+using Adaptabrawl.UI;
+using UnityEngine.UI;
 
 namespace Adaptabrawl.VFX
 {
@@ -27,6 +29,14 @@ namespace Adaptabrawl.VFX
 
     public class VFXManager : MonoBehaviour
     {
+        private static readonly Color BloodMaterialColor = new Color(0.86f, 0.05f, 0.05f, 0.95f);
+        private static readonly Color BloodSprayBrightColor = new Color(0.96f, 0.08f, 0.08f, 1f);
+        private static readonly Color BloodSprayMidColor = new Color(0.78f, 0.02f, 0.02f, 1f);
+        private static readonly Color BloodSprayDarkColor = new Color(0.52f, 0.01f, 0.01f, 1f);
+        private static readonly Color BloodSplashBrightColor = new Color(0.84f, 0.05f, 0.05f, 1f);
+        private static readonly Color BloodSplashMidColor = new Color(0.64f, 0.02f, 0.02f, 1f);
+        private static readonly Color BloodSplashDarkColor = new Color(0.4f, 0.01f, 0.01f, 1f);
+
         public static VFXManager Instance { get; private set; }
 
         public static VFXManager EnsureExists()
@@ -47,6 +57,7 @@ namespace Adaptabrawl.VFX
         [SerializeField] private GameObject blockEffectPrefab;
         [SerializeField] private GameObject parryEffectPrefab;
         [SerializeField] private bool useProceduralImpactVFX = true;
+        [SerializeField] private bool useScreenSpaceBloodBypass = true;
         [SerializeField] private Gradient damageSprayGradient;
         
         [Header("Status Effects")]
@@ -58,16 +69,35 @@ namespace Adaptabrawl.VFX
         [SerializeField] private GameObject conditionBannerPrefab;
 
         private Material runtimeParticleMaterial;
+        private Canvas runtimeDamageOverlayCanvas;
+        private RectTransform runtimeDamageOverlayRoot;
+        private Texture2D runtimeDamageOverlayTexture;
+        private Sprite runtimeDamageOverlaySprite;
         private readonly System.Collections.Generic.HashSet<DamageSystem> subscribedDamageSystems = new System.Collections.Generic.HashSet<DamageSystem>();
 
         private void Awake()
         {
             Instance = this;
             EnsureDamageGradient();
+
+            if (useScreenSpaceBloodBypass)
+            {
+                EnsureDamageOverlayRoot();
+                GetRuntimeDamageOverlaySprite();
+            }
         }
 
         private void OnDestroy()
         {
+            if (runtimeParticleMaterial != null)
+                Destroy(runtimeParticleMaterial);
+
+            if (runtimeDamageOverlaySprite != null)
+                Destroy(runtimeDamageOverlaySprite);
+
+            if (runtimeDamageOverlayTexture != null)
+                Destroy(runtimeDamageOverlayTexture);
+
             if (Instance == this)
                 Instance = null;
         }
@@ -121,6 +151,9 @@ namespace Adaptabrawl.VFX
                 SpawnEffect(hitEffectPrefab, position);
 
             if (!useProceduralImpactVFX)
+                return;
+
+            if (useScreenSpaceBloodBypass && SpawnOverlayDamageImpact(position, hitDirection, settings))
                 return;
 
             SpawnDamageSpray(position, hitDirection, settings);
@@ -235,9 +268,9 @@ namespace Adaptabrawl.VFX
             gradient.SetKeys(
                 new[]
                 {
-                    new GradientColorKey(new Color(0.55f, 0.04f, 0.04f), 0f),
-                    new GradientColorKey(new Color(0.35f, 0.02f, 0.02f), 0.5f),
-                    new GradientColorKey(new Color(0.16f, 0.01f, 0.01f), 1f)
+                    new GradientColorKey(BloodSprayBrightColor, 0f),
+                    new GradientColorKey(BloodSprayMidColor, 0.5f),
+                    new GradientColorKey(BloodSprayDarkColor, 1f)
                 },
                 new[]
                 {
@@ -285,7 +318,7 @@ namespace Adaptabrawl.VFX
             main.startSize = new ParticleSystem.MinMaxCurve(
                 0.03f * settings.ParticleSizeMultiplier,
                 0.08f * settings.ParticleSizeMultiplier);
-            main.startColor = new Color(0.28f, 0.015f, 0.015f, 0.9f);
+            main.startColor = BloodSplashBrightColor;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.gravityModifier = 1.1f;
             main.maxParticles = 80;
@@ -304,9 +337,9 @@ namespace Adaptabrawl.VFX
             gradient.SetKeys(
                 new[]
                 {
-                    new GradientColorKey(new Color(0.42f, 0.03f, 0.03f), 0f),
-                    new GradientColorKey(new Color(0.2f, 0.015f, 0.015f), 0.65f),
-                    new GradientColorKey(new Color(0.1f, 0.01f, 0.01f), 1f)
+                    new GradientColorKey(BloodSplashBrightColor, 0f),
+                    new GradientColorKey(BloodSplashMidColor, 0.65f),
+                    new GradientColorKey(BloodSplashDarkColor, 1f)
                 },
                 new[]
                 {
@@ -324,6 +357,281 @@ namespace Adaptabrawl.VFX
             Destroy(splashObject, main.duration + main.startLifetime.constantMax + 0.3f);
         }
 
+        private bool SpawnOverlayDamageImpact(Vector3 position, Vector3 hitDirection, DamageImpactSettings settings)
+        {
+            RectTransform overlayRoot = EnsureDamageOverlayRoot();
+            UnityEngine.Camera worldCamera = UnityEngine.Camera.main;
+            if (overlayRoot == null || worldCamera == null)
+                return false;
+
+            Vector3 screenPoint = worldCamera.WorldToScreenPoint(position);
+            if (screenPoint.z <= 0f)
+                return false;
+
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(overlayRoot, screenPoint, null, out Vector2 localPoint))
+                return false;
+
+            GameObject impactObject = new GameObject("DamageBloodOverlay");
+            impactObject.transform.SetParent(overlayRoot, false);
+
+            RectTransform impactRect = impactObject.AddComponent<RectTransform>();
+            impactRect.anchorMin = new Vector2(0.5f, 0.5f);
+            impactRect.anchorMax = new Vector2(0.5f, 0.5f);
+            impactRect.pivot = new Vector2(0.5f, 0.5f);
+            impactRect.anchoredPosition = localPoint;
+            impactRect.sizeDelta = Vector2.zero;
+            impactRect.SetAsLastSibling();
+
+            Vector2 sprayDirection = ResolveOverlaySprayDirection(worldCamera, position, hitDirection);
+            float intensity = Mathf.Clamp01(settings.Intensity);
+            float sizeScale = Mathf.Lerp(0.9f, 1.35f, intensity) * Mathf.Max(0.85f, settings.ParticleSizeMultiplier);
+            float travelScale = Mathf.Lerp(0.85f, 1.3f, intensity) * Mathf.Max(0.85f, settings.SplashRangeMultiplier);
+
+            var droplets = new System.Collections.Generic.List<OverlayBloodDroplet>();
+            int dropletCount = Mathf.Clamp(
+                Mathf.RoundToInt(Mathf.Lerp(10f, 24f, intensity) * settings.ParticleMultiplier),
+                10,
+                28);
+
+            CreateOverlayDroplet(
+                impactRect,
+                droplets,
+                BloodSplashBrightColor,
+                sprayDirection * Random.Range(4f, 12f),
+                new Vector2(Random.Range(28f, 44f), Random.Range(20f, 34f)) * sizeScale,
+                sprayDirection * Random.Range(22f, 54f) * travelScale,
+                Random.Range(-80f, 80f),
+                Random.Range(120f, 210f),
+                Random.Range(0.22f, 0.32f),
+                Random.Range(0.1f, 0.22f));
+
+            for (int i = 0; i < dropletCount; i++)
+            {
+                Vector2 spread = Random.insideUnitCircle * Mathf.Lerp(0.9f, 1.7f, intensity);
+                Vector2 dropletDirection = (sprayDirection * Random.Range(0.75f, 1.35f)
+                    + spread
+                    + Vector2.up * Random.Range(0.18f, 0.65f)).normalized;
+
+                if (dropletDirection.sqrMagnitude < 0.0001f)
+                    dropletDirection = sprayDirection;
+
+                float dropletSize = Random.Range(8f, 18f) * sizeScale;
+                Color dropletColor = Color.Lerp(BloodSprayMidColor, BloodSprayBrightColor, Random.value);
+                dropletColor.a = Random.Range(0.86f, 0.98f);
+
+                CreateOverlayDroplet(
+                    impactRect,
+                    droplets,
+                    dropletColor,
+                    Random.insideUnitCircle * Random.Range(2f, 10f),
+                    new Vector2(
+                        dropletSize * Random.Range(0.7f, 1.35f),
+                        dropletSize * Random.Range(0.7f, 1.35f)),
+                    dropletDirection * Random.Range(135f, 335f) * travelScale,
+                    Random.Range(-260f, 260f),
+                    Random.Range(360f, 760f),
+                    Random.Range(0.18f, 0.42f),
+                    Random.Range(0.06f, 0.24f));
+            }
+
+            Canvas.ForceUpdateCanvases();
+            StartCoroutine(AnimateOverlayDroplets(impactObject, droplets));
+            return true;
+        }
+
+        private RectTransform EnsureDamageOverlayRoot()
+        {
+            if (runtimeDamageOverlayRoot != null)
+                return runtimeDamageOverlayRoot;
+
+            Canvas referenceCanvas = ResolveReferenceOverlayCanvas();
+
+            GameObject canvasObject = new GameObject("DamageOverlayCanvas");
+            canvasObject.transform.SetParent(transform, false);
+
+            runtimeDamageOverlayCanvas = canvasObject.AddComponent<Canvas>();
+            runtimeDamageOverlayCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            runtimeDamageOverlayCanvas.pixelPerfect = false;
+            runtimeDamageOverlayCanvas.targetDisplay = referenceCanvas != null ? referenceCanvas.targetDisplay : 0;
+            runtimeDamageOverlayCanvas.sortingOrder = referenceCanvas != null ? referenceCanvas.sortingOrder - 1 : 0;
+
+            CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+            scaler.scaleFactor = 1f;
+
+            GameObject rootObject = new GameObject("DamageOverlayRoot");
+            rootObject.transform.SetParent(canvasObject.transform, false);
+            runtimeDamageOverlayRoot = rootObject.AddComponent<RectTransform>();
+            runtimeDamageOverlayRoot.anchorMin = Vector2.zero;
+            runtimeDamageOverlayRoot.anchorMax = Vector2.one;
+            runtimeDamageOverlayRoot.offsetMin = Vector2.zero;
+            runtimeDamageOverlayRoot.offsetMax = Vector2.zero;
+            runtimeDamageOverlayRoot.pivot = new Vector2(0.5f, 0.5f);
+
+            return runtimeDamageOverlayRoot;
+        }
+
+        private Canvas ResolveReferenceOverlayCanvas()
+        {
+            GameHUD gameHud = FindFirstObjectByType<GameHUD>(FindObjectsInactive.Include);
+            if (gameHud != null)
+            {
+                Canvas hudCanvas = gameHud.GetComponentInParent<Canvas>();
+                if (hudCanvas != null && hudCanvas.renderMode != RenderMode.WorldSpace)
+                    return hudCanvas;
+            }
+
+            Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            Canvas bestCanvas = null;
+            for (int i = 0; i < canvases.Length; i++)
+            {
+                Canvas canvas = canvases[i];
+                if (canvas == null || !canvas.isActiveAndEnabled || canvas.renderMode == RenderMode.WorldSpace)
+                    continue;
+
+                if (bestCanvas == null || canvas.sortingOrder > bestCanvas.sortingOrder)
+                    bestCanvas = canvas;
+            }
+
+            return bestCanvas;
+        }
+
+        private void CreateOverlayDroplet(
+            RectTransform parent,
+            System.Collections.Generic.List<OverlayBloodDroplet> droplets,
+            Color color,
+            Vector2 initialOffset,
+            Vector2 size,
+            Vector2 velocity,
+            float angularVelocity,
+            float gravity,
+            float lifetime,
+            float growth)
+        {
+            GameObject dropletObject = new GameObject("BloodDroplet");
+            dropletObject.transform.SetParent(parent, false);
+
+            RectTransform dropletRect = dropletObject.AddComponent<RectTransform>();
+            dropletRect.anchorMin = new Vector2(0.5f, 0.5f);
+            dropletRect.anchorMax = new Vector2(0.5f, 0.5f);
+            dropletRect.pivot = new Vector2(0.5f, 0.5f);
+            dropletRect.anchoredPosition = initialOffset;
+            dropletRect.sizeDelta = size;
+
+            Image dropletImage = dropletObject.AddComponent<Image>();
+            dropletImage.sprite = GetRuntimeDamageOverlaySprite();
+            dropletImage.color = color;
+            dropletImage.raycastTarget = false;
+
+            droplets.Add(new OverlayBloodDroplet(
+                dropletRect,
+                dropletImage,
+                size,
+                velocity,
+                angularVelocity,
+                gravity,
+                lifetime,
+                growth,
+                color,
+                Random.Range(0f, 360f)));
+        }
+
+        private Vector2 ResolveOverlaySprayDirection(UnityEngine.Camera worldCamera, Vector3 position, Vector3 hitDirection)
+        {
+            Vector3 normalizedHitDirection = hitDirection.sqrMagnitude > 0.0001f
+                ? hitDirection.normalized
+                : Vector3.right;
+
+            Vector3 origin = worldCamera.WorldToScreenPoint(position);
+            Vector3 screenTarget = worldCamera.WorldToScreenPoint(position + normalizedHitDirection);
+            Vector2 screenDirection = new Vector2(screenTarget.x - origin.x, screenTarget.y - origin.y);
+
+            if (screenDirection.sqrMagnitude > 0.0001f)
+                return screenDirection.normalized;
+
+            return normalizedHitDirection.x >= 0f
+                ? new Vector2(1f, 0.25f).normalized
+                : new Vector2(-1f, 0.25f).normalized;
+        }
+
+        private System.Collections.IEnumerator AnimateOverlayDroplets(
+            GameObject impactObject,
+            System.Collections.Generic.List<OverlayBloodDroplet> droplets)
+        {
+            float longestLifetime = 0f;
+            for (int i = 0; i < droplets.Count; i++)
+                longestLifetime = Mathf.Max(longestLifetime, droplets[i].Lifetime);
+
+            float elapsed = 0f;
+            while (impactObject != null && elapsed < longestLifetime)
+            {
+                float deltaTime = Time.deltaTime;
+                elapsed += deltaTime;
+
+                for (int i = 0; i < droplets.Count; i++)
+                {
+                    OverlayBloodDroplet droplet = droplets[i];
+                    if (droplet.Rect == null || droplet.Image == null)
+                        continue;
+
+                    droplet.Elapsed += deltaTime;
+                    float t = Mathf.Clamp01(droplet.Elapsed / droplet.Lifetime);
+                    droplet.Velocity += Vector2.down * droplet.Gravity * deltaTime;
+                    droplet.Rotation += droplet.AngularVelocity * deltaTime;
+
+                    droplet.Rect.anchoredPosition += droplet.Velocity * deltaTime;
+                    droplet.Rect.localRotation = Quaternion.Euler(0f, 0f, droplet.Rotation);
+                    droplet.Rect.sizeDelta = droplet.StartSize * (1f + droplet.Growth * t);
+
+                    Color color = Color.Lerp(droplet.StartColor, BloodSplashDarkColor, t * 0.85f);
+                    color.a = Mathf.Lerp(droplet.StartColor.a, 0f, t * t);
+                    droplet.Image.color = color;
+                }
+
+                yield return null;
+            }
+
+            if (impactObject != null)
+                Destroy(impactObject);
+        }
+
+        private Sprite GetRuntimeDamageOverlaySprite()
+        {
+            if (runtimeDamageOverlaySprite != null)
+                return runtimeDamageOverlaySprite;
+
+            const int textureSize = 32;
+            runtimeDamageOverlayTexture = new Texture2D(textureSize, textureSize, TextureFormat.RGBA32, false);
+            runtimeDamageOverlayTexture.name = "DamageOverlayBloodTexture";
+            runtimeDamageOverlayTexture.wrapMode = TextureWrapMode.Clamp;
+            runtimeDamageOverlayTexture.filterMode = FilterMode.Bilinear;
+
+            Color[] pixels = new Color[textureSize * textureSize];
+            Vector2 center = new Vector2((textureSize - 1) * 0.5f, (textureSize - 1) * 0.5f);
+            float radius = textureSize * 0.5f - 1f;
+
+            for (int y = 0; y < textureSize; y++)
+            {
+                for (int x = 0; x < textureSize; x++)
+                {
+                    float distance = Vector2.Distance(new Vector2(x, y), center) / radius;
+                    float alpha = Mathf.Clamp01(1f - distance);
+                    alpha *= alpha;
+                    pixels[y * textureSize + x] = new Color(1f, 1f, 1f, alpha);
+                }
+            }
+
+            runtimeDamageOverlayTexture.SetPixels(pixels);
+            runtimeDamageOverlayTexture.Apply();
+            runtimeDamageOverlaySprite = Sprite.Create(
+                runtimeDamageOverlayTexture,
+                new Rect(0f, 0f, textureSize, textureSize),
+                new Vector2(0.5f, 0.5f),
+                textureSize);
+
+            return runtimeDamageOverlaySprite;
+        }
+
         private Material GetRuntimeParticleMaterial()
         {
             if (runtimeParticleMaterial != null)
@@ -334,7 +642,7 @@ namespace Adaptabrawl.VFX
                 ? new Material(shader)
                 : new Material(Shader.Find("Standard"));
 
-            runtimeParticleMaterial.color = new Color(0.55f, 0.04f, 0.04f, 0.9f);
+            runtimeParticleMaterial.color = BloodMaterialColor;
             return runtimeParticleMaterial;
         }
 
@@ -347,15 +655,54 @@ namespace Adaptabrawl.VFX
             damageSprayGradient.SetKeys(
                 new[]
                 {
-                    new GradientColorKey(new Color(0.72f, 0.08f, 0.08f), 0f),
-                    new GradientColorKey(new Color(0.45f, 0.03f, 0.03f), 0.55f),
-                    new GradientColorKey(new Color(0.2f, 0.01f, 0.01f), 1f)
+                    new GradientColorKey(BloodSprayBrightColor, 0f),
+                    new GradientColorKey(BloodSprayMidColor, 0.55f),
+                    new GradientColorKey(BloodSprayDarkColor, 1f)
                 },
                 new[]
                 {
                     new GradientAlphaKey(1f, 0f),
                     new GradientAlphaKey(1f, 1f)
                 });
+        }
+
+        private sealed class OverlayBloodDroplet
+        {
+            public OverlayBloodDroplet(
+                RectTransform rect,
+                Image image,
+                Vector2 startSize,
+                Vector2 velocity,
+                float angularVelocity,
+                float gravity,
+                float lifetime,
+                float growth,
+                Color startColor,
+                float rotation)
+            {
+                Rect = rect;
+                Image = image;
+                StartSize = startSize;
+                Velocity = velocity;
+                AngularVelocity = angularVelocity;
+                Gravity = gravity;
+                Lifetime = lifetime;
+                Growth = growth;
+                StartColor = startColor;
+                Rotation = rotation;
+            }
+
+            public RectTransform Rect { get; }
+            public Image Image { get; }
+            public Vector2 StartSize { get; }
+            public Vector2 Velocity { get; set; }
+            public float AngularVelocity { get; }
+            public float Gravity { get; }
+            public float Lifetime { get; }
+            public float Growth { get; }
+            public Color StartColor { get; }
+            public float Rotation { get; set; }
+            public float Elapsed { get; set; }
         }
     }
 }

@@ -6,6 +6,8 @@ namespace Adaptabrawl.Fighters
 {
     public static class FighterFactory
     {
+        public static readonly Color DefaultShadowSilhouetteColor = new Color(0.02f, 0.03f, 0.05f, 1f);
+
         public static FighterController CreateFighter(FighterDef fighterDef, Vector3 position, bool facingRight = true)
         {
             if (fighterDef == null)
@@ -69,6 +71,10 @@ namespace Adaptabrawl.Fighters
             // Bootstrap: adds FighterHurtbox + HitboxEmitter to the Stander child in Start()
             // so all combat colliders follow root-motion instead of staying on the root.
             EnsureComponent<StanderCombatSetup>(fighterObj);
+
+            // Keep the full character and weapon set reading as one clean shadow shape in-match.
+            var shadowVisual = EnsureComponent<ShadowSilhouetteVisual>(fighterObj);
+            shadowVisual.Configure(DefaultShadowSilhouetteColor, disableParticleSystems: false, disableTrails: false);
             
             // Set facing
             fighterController.SetFacing(facingRight);
@@ -220,6 +226,116 @@ namespace Adaptabrawl.Fighters
             move.cancelWindowStart = 10;
             move.cancelWindowEnd = 20;
             return move;
+        }
+    }
+
+    [DisallowMultipleComponent]
+    public sealed class ShadowSilhouetteVisual : MonoBehaviour
+    {
+        private Color _silhouetteColor = FighterFactory.DefaultShadowSilhouetteColor;
+        private bool _disableParticleSystems;
+        private bool _disableTrails;
+        private Material _silhouetteMaterial;
+
+        public void Configure(Color silhouetteColor, bool disableParticleSystems, bool disableTrails)
+        {
+            _silhouetteColor = silhouetteColor;
+            _disableParticleSystems = disableParticleSystems;
+            _disableTrails = disableTrails;
+            ApplyToHierarchy();
+        }
+
+        public void ApplyToHierarchy()
+        {
+            Material silhouetteMaterial = GetOrCreateSilhouetteMaterial();
+
+            foreach (var particleSystem in GetComponentsInChildren<ParticleSystem>(true))
+            {
+                if (!_disableParticleSystems)
+                    continue;
+
+                particleSystem.Clear(true);
+                particleSystem.gameObject.SetActive(false);
+            }
+
+            foreach (var trail in GetComponentsInChildren<TrailRenderer>(true))
+            {
+                if (_disableTrails)
+                {
+                    trail.emitting = false;
+                    trail.enabled = false;
+                }
+            }
+
+            foreach (var renderer in GetComponentsInChildren<Renderer>(true))
+            {
+                if (renderer == null)
+                    continue;
+
+                if (renderer is ParticleSystemRenderer)
+                {
+                    if (_disableParticleSystems)
+                        renderer.enabled = false;
+                    continue;
+                }
+
+                if (renderer is TrailRenderer)
+                    continue;
+
+                if (renderer is SpriteRenderer spriteRenderer && spriteRenderer.sprite != null)
+                {
+                    spriteRenderer.color = _silhouetteColor;
+                    continue;
+                }
+
+                Material[] currentMaterials = renderer.sharedMaterials;
+                int materialCount = currentMaterials != null && currentMaterials.Length > 0
+                    ? currentMaterials.Length
+                    : 1;
+                Material[] silhouetteMaterials = new Material[materialCount];
+                for (int i = 0; i < materialCount; i++)
+                    silhouetteMaterials[i] = silhouetteMaterial;
+
+                renderer.sharedMaterials = silhouetteMaterials;
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                renderer.receiveShadows = false;
+            }
+        }
+
+        private Material GetOrCreateSilhouetteMaterial()
+        {
+            if (_silhouetteMaterial == null)
+            {
+                Shader shader = Shader.Find("Unlit/Color");
+                if (shader == null)
+                    shader = Shader.Find("Standard");
+
+                _silhouetteMaterial = new Material(shader)
+                {
+                    name = "ShadowSilhouetteRuntime",
+                    hideFlags = HideFlags.HideAndDontSave
+                };
+            }
+
+            if (_silhouetteMaterial.HasProperty("_Color"))
+                _silhouetteMaterial.color = _silhouetteColor;
+            if (_silhouetteMaterial.HasProperty("_Glossiness"))
+                _silhouetteMaterial.SetFloat("_Glossiness", 0f);
+            if (_silhouetteMaterial.HasProperty("_Metallic"))
+                _silhouetteMaterial.SetFloat("_Metallic", 0f);
+            if (_silhouetteMaterial.HasProperty("_EmissionColor"))
+                _silhouetteMaterial.SetColor("_EmissionColor", Color.black);
+
+            return _silhouetteMaterial;
+        }
+
+        private void OnDestroy()
+        {
+            if (_silhouetteMaterial != null)
+            {
+                Destroy(_silhouetteMaterial);
+                _silhouetteMaterial = null;
+            }
         }
     }
 }

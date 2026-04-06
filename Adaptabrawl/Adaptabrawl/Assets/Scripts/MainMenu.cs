@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Adaptabrawl.Fighters;
 using Adaptabrawl.Gameplay;
 
 namespace Adaptabrawl.UI
@@ -45,10 +46,31 @@ namespace Adaptabrawl.UI
             if (localPlayButton != null)
                 localPlayButton.onClick.AddListener(PlayLocal);
 
+            ApplyStartSceneShadowSilhouettes();
             WireMenuNavigation();
 
             // Show main menu by default
             ShowMainMenu();
+        }
+
+        private static void ApplyStartSceneShadowSilhouettes()
+        {
+            var decorativePlayers = FindObjectsByType<PlayerController_Platform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (var playerController in decorativePlayers)
+            {
+                if (playerController == null)
+                    continue;
+
+                GameObject fighterRoot = playerController.transform.root.gameObject;
+                if (fighterRoot == null || !fighterRoot.name.StartsWith("Player_"))
+                    continue;
+
+                var shadowVisual = fighterRoot.GetComponent<ShadowSilhouetteVisual>();
+                if (shadowVisual == null)
+                    shadowVisual = fighterRoot.AddComponent<ShadowSilhouetteVisual>();
+
+                shadowVisual.Configure(FighterFactory.DefaultShadowSilhouetteColor, disableParticleSystems: false, disableTrails: false);
+            }
         }
 
         private void WireMenuNavigation()

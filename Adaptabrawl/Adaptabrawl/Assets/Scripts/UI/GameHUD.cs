@@ -56,7 +56,7 @@ namespace Adaptabrawl.UI
         [SerializeField] private Slider p1GhostSlider;
         [SerializeField] private Slider p2GhostSlider;
         [Tooltip("Seconds to wait before ghost bar starts draining.")]
-        [SerializeField] private float ghostDrainDelay = 0.5f;
+        [SerializeField] private float ghostDrainDelay = 0.1f;
         [Tooltip("Units per second the ghost bar drains.")]
         [SerializeField] private float ghostDrainSpeed = 0.4f;
 

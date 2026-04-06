@@ -31,8 +31,8 @@ namespace Adaptabrawl.Settings
         [SerializeField] private bool colorBlindMode = false;
         [SerializeField] private bool showHitboxes = false;
 
-        private readonly Dictionary<int, Vector2> baseReferenceResolutions = new Dictionary<int, Vector2>();
-        private readonly Dictionary<int, float> baseScaleFactors = new Dictionary<int, float>();
+        private readonly Dictionary<int, Vector2> gameplayCanvasBaseReferenceResolutions = new Dictionary<int, Vector2>();
+        private readonly Dictionary<int, float> gameplayCanvasBaseScaleFactors = new Dictionary<int, float>();
         
         private static SettingsManager instance;
         public static SettingsManager Instance => instance;
@@ -241,7 +241,7 @@ namespace Adaptabrawl.Settings
         private void ApplyUIScaleToCanvases()
         {
             float scale = Mathf.Clamp(uiScale, MinUIScale, MaxUIScale);
-            var scalers = FindObjectsByType<CanvasScaler>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            var scalers = FindGameplayCanvasScalers();
 
             foreach (var scaler in scalers)
             {
@@ -251,10 +251,10 @@ namespace Adaptabrawl.Settings
 
                 if (scaler.uiScaleMode == CanvasScaler.ScaleMode.ScaleWithScreenSize)
                 {
-                    if (!baseReferenceResolutions.ContainsKey(id))
-                        baseReferenceResolutions[id] = scaler.referenceResolution;
+                    if (!gameplayCanvasBaseReferenceResolutions.ContainsKey(id))
+                        gameplayCanvasBaseReferenceResolutions[id] = scaler.referenceResolution;
 
-                    Vector2 baseRef = baseReferenceResolutions[id];
+                    Vector2 baseRef = gameplayCanvasBaseReferenceResolutions[id];
                     if (baseRef.x <= 0f || baseRef.y <= 0f)
                         baseRef = new Vector2(1920f, 1080f);
 
@@ -262,12 +262,58 @@ namespace Adaptabrawl.Settings
                 }
                 else if (scaler.uiScaleMode == CanvasScaler.ScaleMode.ConstantPixelSize)
                 {
-                    if (!baseScaleFactors.ContainsKey(id))
-                        baseScaleFactors[id] = scaler.scaleFactor;
+                    if (!gameplayCanvasBaseScaleFactors.ContainsKey(id))
+                        gameplayCanvasBaseScaleFactors[id] = scaler.scaleFactor;
 
-                    scaler.scaleFactor = baseScaleFactors[id] * scale;
+                    scaler.scaleFactor = gameplayCanvasBaseScaleFactors[id] * scale;
                 }
             }
+        }
+
+        private static IEnumerable<CanvasScaler> FindGameplayCanvasScalers()
+        {
+            var scalers = FindObjectsByType<CanvasScaler>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            var yieldedIds = new HashSet<int>();
+
+            foreach (CanvasScaler scaler in scalers)
+            {
+                if (scaler == null)
+                    continue;
+
+                Canvas canvas = scaler.GetComponent<Canvas>();
+                if (canvas == null)
+                    canvas = scaler.GetComponentInParent<Canvas>();
+
+                if (!IsGameplayUICanvas(canvas))
+                    continue;
+
+                int scalerId = scaler.GetInstanceID();
+                if (yieldedIds.Add(scalerId))
+                    yield return scaler;
+            }
+        }
+
+        private static bool IsGameplayUICanvas(Canvas canvas)
+        {
+            if (canvas == null || canvas.renderMode == RenderMode.WorldSpace)
+                return false;
+
+            Scene scene = canvas.gameObject.scene;
+            if (!scene.IsValid() || !scene.isLoaded || !IsGameplaySceneName(scene.name))
+                return false;
+
+            if (canvas.name == "ArenaBackdropCanvas")
+                return false;
+
+            return canvas.name == "Canvas"
+                || canvas.GetComponentInChildren<GameHUD>(true) != null
+                || canvas.GetComponentInChildren<FighterHeadMarkerOverlay>(true) != null
+                || canvas.GetComponentInChildren<GameplayControlsLegendOverlay>(true) != null;
+        }
+
+        private static bool IsGameplaySceneName(string sceneName)
+        {
+            return sceneName == "GameScene" || sceneName == "OnlineGameScene";
         }
         
         private void SaveSettings()

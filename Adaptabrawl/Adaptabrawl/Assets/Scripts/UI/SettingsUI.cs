@@ -4,6 +4,8 @@ using TMPro;
 using UnityEngine.SceneManagement;
 using Adaptabrawl.Settings;
 using System.Collections.Generic;
+using System.Collections;
+using Adaptabrawl.Networking;
 
 namespace Adaptabrawl.UI
 {
@@ -16,9 +18,20 @@ namespace Adaptabrawl.UI
         private static readonly Color ToggleOffColor = new Color(0.20f, 0.20f, 0.28f, 1f);
         private static readonly Color ToggleOnTextColor = new Color(0.90f, 1f, 0.92f, 1f);
         private static readonly Color ToggleOffTextColor = new Color(0.75f, 0.75f, 0.80f, 1f);
+        private static readonly Color NetworkTestIdleColor = new Color(0.72f, 0.72f, 0.78f, 1f);
+        private static readonly Color NetworkTestSuccessColor = new Color(0.52f, 0.90f, 0.58f, 1f);
+        private static readonly Color NetworkTestWarningColor = new Color(0.96f, 0.79f, 0.36f, 1f);
+        private static readonly Color NetworkTestFailureColor = new Color(0.95f, 0.48f, 0.48f, 1f);
+        private static readonly Color TestButtonColor = new Color(0.16f, 0.38f, 0.58f, 1f);
         private static readonly float[] UIScaleOptions = { 0.9f, 0.95f, 1f, 1.05f, 1.1f };
         private static readonly string[] UIScaleOptionLabels = { "0.90x", "0.95x", "1.00x", "1.05x", "1.10x" };
         private const float RowSpacing = 56f;
+        private const float SectionGap = 16f;
+        private const float BottomButtonSpacing = 220f;
+        private const float StatusLabelBottomOffset = 126f;
+        private const float DropdownTemplateGap = 1f;
+        private const float MinimumDropdownFontSize = 16f;
+        private const float MinimumDropdownArrowFontSize = 15f;
 
         [Header("References")]
         [SerializeField] private SettingsManager settingsManager;
@@ -46,19 +59,23 @@ namespace Adaptabrawl.UI
         [SerializeField] private Toggle showHitboxesToggle;
         
         [Header("Navigation")]
+        [SerializeField] private Button testButton;
         [SerializeField] private Button backButton;
         [SerializeField] private Button applyButton;
         [SerializeField] private Button resetButton;
+        [SerializeField] private TextMeshProUGUI networkTestStatusText;
 
         [Tooltip("Optional top-to-bottom order for D-pad / stick UI navigation. If empty, a default chain is built from common controls.")]
         [SerializeField] private Selectable[] menuFocusOrder;
         
         private Resolution[] resolutions;
         private ControlsConfigurationPanel controlsConfigurationPanel;
+        private bool networkTestInProgress;
 
         private void Awake()
         {
             EnsureControlsPanel();
+            EnsureNetworkTestUi();
         }
         
         private void Start()
@@ -66,10 +83,12 @@ namespace Adaptabrawl.UI
             settingsManager = SettingsManager.EnsureExists();
             
             InitializeUI();
+            EnsureNetworkTestUi();
             SetupButtonListeners();
             LoadCurrentSettings();
             WireMenuControllerNavigation();
             EnsureControlsPanel();
+            RefreshNetworkTestStatusFromCache();
         }
 
         private void OnDestroy()
@@ -117,12 +136,13 @@ namespace Adaptabrawl.UI
             AddSel(sfxVolumeSlider);
             AddSel(qualityDropdown);
             AddSel(resolutionDropdown);
-            AddSel(vsyncToggle);
             AddSel(fpsDropdown);
             AddSel(displayModeDropdown);
+            AddSel(vsyncToggle);
             AddSel(uiScaleDropdown != null ? uiScaleDropdown : uiScaleSlider);
             AddSel(colorBlindToggle);
             AddSel(showHitboxesToggle);
+            if (testButton != null) list.Add(testButton);
             if (applyButton != null) list.Add(applyButton);
             if (resetButton != null) list.Add(resetButton);
             if (backButton != null) list.Add(backButton);
@@ -237,60 +257,60 @@ namespace Adaptabrawl.UI
             if (uiScaleSlider != null && uiScaleDropdown != null)
                 uiScaleSlider.gameObject.SetActive(false);
 
+            if (uiScaleText != null)
+                uiScaleText.gameObject.SetActive(false);
+
             if (uiScaleDropdown == null)
                 ConfigureUIScaleSliderRange();
         }
 
         private void EnsureDisplayModeDropdown()
         {
-            if (displayModeDropdown != null)
-                return;
-
             RectTransform fpsRow = fpsDropdown != null ? fpsDropdown.transform.parent as RectTransform : null;
             RectTransform vsyncRow = vsyncToggle != null ? vsyncToggle.transform.parent as RectTransform : null;
             if (fpsRow == null || fpsRow.parent == null || vsyncRow == null)
                 return;
 
-            RectTransform existingRuntimeRow = FindChildRectByName(fpsRow.parent, "DisplayModeRow");
-            if (existingRuntimeRow != null)
+            RectTransform displayModeRow = FindChildRectByName(fpsRow.parent, "DisplayModeRow");
+            if (displayModeRow == null)
             {
-                displayModeDropdown = existingRuntimeRow.GetComponentInChildren<TMP_Dropdown>(true);
-                return;
+                GameObject clonedRow = Instantiate(fpsRow.gameObject, fpsRow.parent);
+                clonedRow.name = "DisplayModeRow";
+                displayModeRow = clonedRow.GetComponent<RectTransform>();
             }
 
-            GameObject clonedRow = Instantiate(fpsRow.gameObject, fpsRow.parent);
-            clonedRow.name = "DisplayModeRow";
-
-            RectTransform clonedRowRect = clonedRow.GetComponent<RectTransform>();
-            if (clonedRowRect != null)
-                clonedRowRect.anchoredPosition = new Vector2(clonedRowRect.anchoredPosition.x, vsyncRow.anchoredPosition.y - RowSpacing);
-
-            TextMeshProUGUI rowLabel = clonedRow.transform.Find("Label")?.GetComponent<TextMeshProUGUI>();
+            TextMeshProUGUI rowLabel = displayModeRow != null
+                ? displayModeRow.transform.Find("Label")?.GetComponent<TextMeshProUGUI>()
+                : null;
             if (rowLabel != null)
                 rowLabel.text = "Display Mode";
 
-            displayModeDropdown = clonedRow.GetComponentInChildren<TMP_Dropdown>(true);
+            displayModeDropdown = displayModeRow != null ? displayModeRow.GetComponentInChildren<TMP_Dropdown>(true) : null;
             if (displayModeDropdown != null)
                 displayModeDropdown.gameObject.name = "DisplayModeDropdown";
 
-            ShiftRectY(FindChildRectByName(fpsRow.parent, "VideoDiv"), -RowSpacing);
-            ShiftRectY(FindChildRectByName(fpsRow.parent, "AccessLabel"), -RowSpacing);
-            ShiftRectY(uiScaleSlider != null ? uiScaleSlider.transform.parent as RectTransform : uiScaleDropdown != null ? uiScaleDropdown.transform.parent as RectTransform : null, -RowSpacing);
-            ShiftRectY(colorBlindToggle != null ? colorBlindToggle.transform.parent as RectTransform : null, -RowSpacing);
-            ShiftRectY(showHitboxesToggle != null ? showHitboxesToggle.transform.parent as RectTransform : null, -RowSpacing);
+            if (displayModeRow == null)
+                return;
+
+            float fpsY = fpsRow.anchoredPosition.y;
+            float desiredDisplayModeY = fpsY - RowSpacing;
+            float desiredVsyncY = desiredDisplayModeY - RowSpacing;
+
+            SetRectY(displayModeRow, desiredDisplayModeY);
+            SetRectY(vsyncRow, desiredVsyncY);
+            SetRectY(FindChildRectByName(fpsRow.parent, "VideoDiv"), desiredVsyncY - SectionGap);
+            SetRectY(FindChildRectByName(fpsRow.parent, "AccessLabel"), desiredVsyncY - (SectionGap + 36f));
+            SetRectY(uiScaleSlider != null ? uiScaleSlider.transform.parent as RectTransform : uiScaleDropdown != null ? uiScaleDropdown.transform.parent as RectTransform : null, desiredVsyncY - (SectionGap + 36f + RowSpacing));
+            SetRectY(colorBlindToggle != null ? colorBlindToggle.transform.parent as RectTransform : null, desiredVsyncY - (SectionGap + 36f + (RowSpacing * 2f)));
+            SetRectY(showHitboxesToggle != null ? showHitboxesToggle.transform.parent as RectTransform : null, desiredVsyncY - (SectionGap + 36f + (RowSpacing * 3f)));
         }
 
         private void EnsureDropdownTemplate(TMP_Dropdown dropdown)
         {
             if (dropdown == null) return;
 
-            bool hasValidTemplate =
-                dropdown.template != null &&
-                dropdown.template.GetComponentInChildren<Toggle>(true) != null &&
-                dropdown.itemText != null;
-
-            if (!hasValidTemplate)
-                BuildRuntimeDropdownTemplate(dropdown);
+            NormalizeDropdownCaption(dropdown);
+            BuildRuntimeDropdownTemplate(dropdown);
 
             dropdown.RefreshShownValue();
         }
@@ -304,9 +324,12 @@ namespace Adaptabrawl.UI
 
             RectTransform dropdownRect = dropdown.GetComponent<RectTransform>();
             float controlHeight = dropdownRect != null ? Mathf.Max(30f, dropdownRect.rect.height) : 34f;
+            float fontSize = Mathf.Max(MinimumDropdownFontSize, Mathf.Round(controlHeight * 0.38f));
             float templateHeight = controlHeight * 5f;
 
-            // Remove stale runtime template (if any) so references don't drift.
+            if (dropdown.template != null && dropdown.template.parent == dropdown.transform)
+                Destroy(dropdown.template.gameObject);
+
             Transform oldTemplate = dropdown.transform.Find("RuntimeTemplate");
             if (oldTemplate != null)
                 Destroy(oldTemplate.gameObject);
@@ -317,7 +340,7 @@ namespace Adaptabrawl.UI
             templateRect.anchorMin = new Vector2(0f, 0f);
             templateRect.anchorMax = new Vector2(1f, 0f);
             templateRect.pivot = new Vector2(0.5f, 1f);
-            templateRect.anchoredPosition = new Vector2(0f, -(controlHeight + 4f));
+            templateRect.anchoredPosition = new Vector2(0f, -(controlHeight + DropdownTemplateGap));
             templateRect.sizeDelta = new Vector2(0f, templateHeight);
 
             Image templateImage = templateObj.GetComponent<Image>();
@@ -355,7 +378,8 @@ namespace Adaptabrawl.UI
             layout.childControlWidth = true;
             layout.childForceExpandHeight = false;
             layout.childForceExpandWidth = true;
-            layout.spacing = 2f;
+            layout.spacing = 0f;
+            layout.padding = new RectOffset(0, 0, 0, 0);
 
             ContentSizeFitter fitter = contentObj.GetComponent<ContentSizeFitter>();
             fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -395,8 +419,8 @@ namespace Adaptabrawl.UI
             labelRect.SetParent(itemRect, false);
             labelRect.anchorMin = Vector2.zero;
             labelRect.anchorMax = Vector2.one;
-            labelRect.offsetMin = new Vector2(30f, 2f);
-            labelRect.offsetMax = new Vector2(-8f, -2f);
+            labelRect.offsetMin = new Vector2(34f, 0f);
+            labelRect.offsetMax = new Vector2(-10f, 0f);
 
             TextMeshProUGUI itemLabel = labelObj.GetComponent<TextMeshProUGUI>();
             itemLabel.text = "Option";
@@ -408,13 +432,13 @@ namespace Adaptabrawl.UI
             if (dropdown.captionText != null)
             {
                 itemLabel.font = dropdown.captionText.font;
-                itemLabel.fontSize = dropdown.captionText.fontSize;
+                itemLabel.fontSize = Mathf.Max(dropdown.captionText.fontSize, fontSize);
                 itemLabel.fontStyle = dropdown.captionText.fontStyle;
             }
             else if (TMP_Settings.defaultFontAsset != null)
             {
                 itemLabel.font = TMP_Settings.defaultFontAsset;
-                itemLabel.fontSize = 24f;
+                itemLabel.fontSize = fontSize;
                 itemLabel.fontStyle = FontStyles.Normal;
             }
 
@@ -448,14 +472,16 @@ namespace Adaptabrawl.UI
             background.color = DropdownItemColor;
 
             TMP_Dropdown dropdown = dropdownObj.GetComponent<TMP_Dropdown>();
+            float controlHeight = Mathf.Max(30f, referenceRect.rect.height);
+            float fontSize = Mathf.Max(MinimumDropdownFontSize, Mathf.Round(controlHeight * 0.38f));
 
             GameObject labelObj = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
             RectTransform labelRect = labelObj.GetComponent<RectTransform>();
             labelRect.SetParent(dropdownRect, false);
             labelRect.anchorMin = Vector2.zero;
             labelRect.anchorMax = Vector2.one;
-            labelRect.offsetMin = new Vector2(10f, 2f);
-            labelRect.offsetMax = new Vector2(-30f, -2f);
+            labelRect.offsetMin = new Vector2(12f, 0f);
+            labelRect.offsetMax = new Vector2(-32f, 0f);
 
             TextMeshProUGUI label = labelObj.GetComponent<TextMeshProUGUI>();
             label.text = "1.00x";
@@ -465,7 +491,7 @@ namespace Adaptabrawl.UI
             label.raycastTarget = false;
             if (TMP_Settings.defaultFontAsset != null)
                 label.font = TMP_Settings.defaultFontAsset;
-            label.fontSize = 12f;
+            label.fontSize = fontSize;
 
             GameObject arrowObj = new GameObject("Arrow", typeof(RectTransform), typeof(TextMeshProUGUI));
             RectTransform arrowRect = arrowObj.GetComponent<RectTransform>();
@@ -473,7 +499,7 @@ namespace Adaptabrawl.UI
             arrowRect.anchorMin = new Vector2(1f, 0f);
             arrowRect.anchorMax = new Vector2(1f, 1f);
             arrowRect.pivot = new Vector2(0.5f, 0.5f);
-            arrowRect.sizeDelta = new Vector2(24f, 0f);
+            arrowRect.sizeDelta = new Vector2(28f, 0f);
             arrowRect.anchoredPosition = new Vector2(-12f, 0f);
 
             TextMeshProUGUI arrowText = arrowObj.GetComponent<TextMeshProUGUI>();
@@ -483,7 +509,7 @@ namespace Adaptabrawl.UI
             arrowText.raycastTarget = false;
             if (TMP_Settings.defaultFontAsset != null)
                 arrowText.font = TMP_Settings.defaultFontAsset;
-            arrowText.fontSize = 11f;
+            arrowText.fontSize = Mathf.Max(MinimumDropdownArrowFontSize, fontSize - 1f);
 
             dropdown.captionText = label;
             dropdown.AddOptions(new List<string> { "Option" });
@@ -502,12 +528,48 @@ namespace Adaptabrawl.UI
             return child as RectTransform;
         }
 
-        private static void ShiftRectY(RectTransform rect, float deltaY)
+        private static void SetRectY(RectTransform rect, float y)
         {
-            if (rect == null || Mathf.Approximately(deltaY, 0f))
+            if (rect == null)
                 return;
 
-            rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, rect.anchoredPosition.y + deltaY);
+            rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, y);
+        }
+
+        private static void NormalizeDropdownCaption(TMP_Dropdown dropdown)
+        {
+            if (dropdown == null)
+                return;
+
+            if (dropdown.captionText == null)
+                dropdown.captionText = dropdown.GetComponentInChildren<TextMeshProUGUI>(true);
+
+            if (dropdown.captionText == null)
+                return;
+
+            RectTransform dropdownRect = dropdown.GetComponent<RectTransform>();
+            float controlHeight = dropdownRect != null ? Mathf.Max(30f, dropdownRect.rect.height) : 34f;
+            float fontSize = Mathf.Max(MinimumDropdownFontSize, Mathf.Round(controlHeight * 0.38f));
+
+            dropdown.captionText.fontSize = fontSize;
+            dropdown.captionText.alignment = TextAlignmentOptions.MidlineLeft;
+            dropdown.captionText.textWrappingMode = TextWrappingModes.NoWrap;
+            dropdown.captionText.overflowMode = TextOverflowModes.Ellipsis;
+            dropdown.captionText.raycastTarget = false;
+
+            RectTransform captionRect = dropdown.captionText.rectTransform;
+            captionRect.anchorMin = Vector2.zero;
+            captionRect.anchorMax = Vector2.one;
+            captionRect.offsetMin = new Vector2(12f, 0f);
+            captionRect.offsetMax = new Vector2(-32f, 0f);
+
+            TextMeshProUGUI arrowText = dropdown.transform.Find("Arrow")?.GetComponent<TextMeshProUGUI>();
+            if (arrowText != null)
+            {
+                arrowText.fontSize = Mathf.Max(MinimumDropdownArrowFontSize, fontSize - 1f);
+                arrowText.alignment = TextAlignmentOptions.Center;
+                arrowText.raycastTarget = false;
+            }
         }
         
         private void SetupButtonListeners()
@@ -543,6 +605,8 @@ namespace Adaptabrawl.UI
                 showHitboxesToggle.onValueChanged.AddListener(OnShowHitboxesChanged);
             
             // Navigation buttons
+            if (testButton != null)
+                testButton.onClick.AddListener(RunLanConnectivityTest);
             if (backButton != null)
                 backButton.onClick.AddListener(GoBack);
             if (applyButton != null)
@@ -580,6 +644,8 @@ namespace Adaptabrawl.UI
             if (showHitboxesToggle != null)
                 showHitboxesToggle.onValueChanged.RemoveListener(OnShowHitboxesChanged);
 
+            if (testButton != null)
+                testButton.onClick.RemoveListener(RunLanConnectivityTest);
             if (backButton != null)
                 backButton.onClick.RemoveListener(GoBack);
             if (applyButton != null)
@@ -706,7 +772,7 @@ namespace Adaptabrawl.UI
                 musicVolumeText.text = $"Music: {Mathf.RoundToInt(musicVolumeSlider.value * 100)}%";
             if (sfxVolumeText != null && sfxVolumeSlider != null)
                 sfxVolumeText.text = $"SFX: {Mathf.RoundToInt(sfxVolumeSlider.value * 100)}%";
-            if (uiScaleText != null)
+            if (uiScaleText != null && uiScaleText.gameObject.activeSelf)
             {
                 float displayScale = uiScaleDropdown != null
                     ? UIScaleValueFromIndex(uiScaleDropdown.value)
@@ -849,6 +915,14 @@ namespace Adaptabrawl.UI
             // Settings are applied immediately, but this can be used for confirmation
             Debug.Log("Settings applied!");
         }
+
+        public void RunLanConnectivityTest()
+        {
+            if (networkTestInProgress)
+                return;
+
+            StartCoroutine(CoRunLanConnectivityTest());
+        }
         
         private void ResetToDefaults()
         {
@@ -881,6 +955,67 @@ namespace Adaptabrawl.UI
                 SceneManager.LoadScene("StartScene");
         }
 
+        private IEnumerator CoRunLanConnectivityTest()
+        {
+            networkTestInProgress = true;
+            SetNetworkTestStatus("Testing LAN access and Windows Firewall permissions...", NetworkTestIdleColor);
+            SetTestButtonState(interactable: false, label: "TESTING...");
+
+            var task = LanConnectivitySelfTest.RunAsync(waitForWindowsFirewallConfirmation: true);
+            while (!task.IsCompleted)
+                yield return null;
+
+            if (task.IsFaulted)
+            {
+                string message = task.Exception?.GetBaseException().Message ?? "LAN test failed unexpectedly.";
+                SetNetworkTestStatus(message, NetworkTestFailureColor);
+            }
+            else
+            {
+                LanConnectivityTestResult result = task.Result;
+                if (ShouldRequestFirewallApproval(result))
+                {
+                    SetNetworkTestStatus("Windows needs admin approval to allow LAN lobbies. Accept the prompt to add firewall rules...", NetworkTestWarningColor);
+                    SetTestButtonState(interactable: false, label: "APPROVE...");
+
+                    var approvalTask = LanConnectivitySelfTest.TryEnsureWindowsFirewallAccessAsync();
+                    while (!approvalTask.IsCompleted)
+                        yield return null;
+
+                    if (!approvalTask.IsFaulted && !approvalTask.IsCanceled && approvalTask.Result)
+                    {
+                        SetNetworkTestStatus("Firewall rules added. Re-checking LAN access...", NetworkTestIdleColor);
+                        var rerunTask = LanConnectivitySelfTest.RunAsync(waitForWindowsFirewallConfirmation: false);
+                        while (!rerunTask.IsCompleted)
+                            yield return null;
+
+                        if (rerunTask.IsFaulted)
+                        {
+                            string rerunMessage = rerunTask.Exception?.GetBaseException().Message ?? "LAN re-check failed unexpectedly.";
+                            SetNetworkTestStatus(rerunMessage, NetworkTestFailureColor);
+                        }
+                        else
+                        {
+                            ApplyNetworkTestResult(rerunTask.Result);
+                        }
+                    }
+                    else
+                    {
+                        SetNetworkTestStatus(
+                            "Firewall access was not approved. Click TEST again and allow the Windows admin prompt so other devices on this Wi-Fi can join.",
+                            NetworkTestWarningColor);
+                    }
+                }
+                else
+                {
+                    ApplyNetworkTestResult(result);
+                }
+            }
+
+            SetTestButtonState(interactable: true, label: "TEST");
+            networkTestInProgress = false;
+        }
+
         private void EnsureControlsPanel()
         {
             if (controlsConfigurationPanel != null)
@@ -902,6 +1037,161 @@ namespace Adaptabrawl.UI
             var host = new GameObject("ControlsConfigurationPanelHost", typeof(RectTransform));
             host.transform.SetParent(canvas.transform, false);
             controlsConfigurationPanel = host.AddComponent<ControlsConfigurationPanel>();
+        }
+
+        private void EnsureNetworkTestUi()
+        {
+            if (backButton == null)
+                return;
+
+            if (testButton == null)
+            {
+                Transform existingButton = backButton.transform.parent != null
+                    ? backButton.transform.parent.Find("TestBtn")
+                    : null;
+
+                if (existingButton != null)
+                    testButton = existingButton.GetComponent<Button>();
+            }
+
+            if (testButton == null)
+                testButton = CreateNetworkTestButton();
+
+            if (networkTestStatusText == null)
+            {
+                Transform existingStatus = backButton.transform.parent != null
+                    ? backButton.transform.parent.Find("LanTestStatusText")
+                    : null;
+
+                if (existingStatus != null)
+                    networkTestStatusText = existingStatus.GetComponent<TextMeshProUGUI>();
+            }
+
+            if (networkTestStatusText == null)
+                networkTestStatusText = CreateNetworkTestStatusLabel();
+        }
+
+        private Button CreateNetworkTestButton()
+        {
+            if (backButton == null)
+                return null;
+
+            GameObject buttonObject = Instantiate(backButton.gameObject, backButton.transform.parent);
+            buttonObject.name = "TestBtn";
+
+            RectTransform backRect = backButton.GetComponent<RectTransform>();
+            RectTransform testRect = buttonObject.GetComponent<RectTransform>();
+            if (backRect != null && testRect != null)
+            {
+                testRect.anchorMin = backRect.anchorMin;
+                testRect.anchorMax = backRect.anchorMax;
+                testRect.pivot = backRect.pivot;
+                testRect.sizeDelta = backRect.sizeDelta;
+                testRect.anchoredPosition = new Vector2(backRect.anchoredPosition.x - BottomButtonSpacing, backRect.anchoredPosition.y);
+            }
+
+            Image buttonImage = buttonObject.GetComponent<Image>();
+            if (buttonImage != null)
+                buttonImage.color = TestButtonColor;
+
+            TextMeshProUGUI label = buttonObject.GetComponentInChildren<TextMeshProUGUI>(true);
+            if (label != null)
+                label.text = "TEST";
+
+            Button button = buttonObject.GetComponent<Button>();
+            if (button != null)
+                button.onClick.RemoveAllListeners();
+
+            return button;
+        }
+
+        private TextMeshProUGUI CreateNetworkTestStatusLabel()
+        {
+            if (backButton == null || backButton.transform.parent == null)
+                return null;
+
+            GameObject statusObject = new GameObject("LanTestStatusText", typeof(RectTransform), typeof(TextMeshProUGUI));
+            RectTransform statusRect = statusObject.GetComponent<RectTransform>();
+            statusRect.SetParent(backButton.transform.parent, false);
+            statusRect.anchorMin = new Vector2(0.5f, 0f);
+            statusRect.anchorMax = new Vector2(0.5f, 0f);
+            statusRect.pivot = new Vector2(0.5f, 0.5f);
+            statusRect.anchoredPosition = new Vector2(0f, StatusLabelBottomOffset);
+            statusRect.sizeDelta = new Vector2(860f, 34f);
+
+            TextMeshProUGUI statusLabel = statusObject.GetComponent<TextMeshProUGUI>();
+            TextMeshProUGUI referenceLabel = backButton.GetComponentInChildren<TextMeshProUGUI>(true);
+            if (referenceLabel != null)
+            {
+                statusLabel.font = referenceLabel.font;
+                statusLabel.fontSharedMaterial = referenceLabel.fontSharedMaterial;
+            }
+
+            statusLabel.fontSize = 18f;
+            statusLabel.alignment = TextAlignmentOptions.Center;
+            statusLabel.textWrappingMode = TextWrappingModes.NoWrap;
+            statusLabel.overflowMode = TextOverflowModes.Ellipsis;
+            statusLabel.color = NetworkTestIdleColor;
+            statusLabel.text = "Run TEST before online play to confirm LAN access.";
+            statusLabel.raycastTarget = false;
+            return statusLabel;
+        }
+
+        private void RefreshNetworkTestStatusFromCache()
+        {
+            if (!LanConnectivitySelfTest.LastResult.HasValue)
+            {
+                SetNetworkTestStatus("Run TEST before online play to confirm LAN access.", NetworkTestIdleColor);
+                return;
+            }
+
+            ApplyNetworkTestResult(LanConnectivitySelfTest.LastResult.Value);
+        }
+
+        private void ApplyNetworkTestResult(LanConnectivityTestResult result)
+        {
+            Color statusColor = result.State switch
+            {
+                LanConnectivityTestState.Success => NetworkTestSuccessColor,
+                LanConnectivityTestState.Warning => NetworkTestWarningColor,
+                _ => NetworkTestFailureColor
+            };
+
+            string primaryLine = result.Summary;
+            if (!string.IsNullOrEmpty(result.PrimaryLanIpv4))
+                primaryLine = $"{primaryLine} IPv4: {result.PrimaryLanIpv4}";
+
+            SetNetworkTestStatus(primaryLine, statusColor);
+            Debug.Log($"[SettingsUI] LAN test: {result.Summary} {result.Details}");
+        }
+
+        private static bool ShouldRequestFirewallApproval(LanConnectivityTestResult result)
+        {
+            return result.State == LanConnectivityTestState.Warning &&
+                   result.FirewallCheckSupported &&
+                   !result.PrivateNetworkAllowed;
+        }
+
+        private void SetNetworkTestStatus(string message, Color color)
+        {
+            if (networkTestStatusText == null)
+                return;
+
+            networkTestStatusText.text = message;
+            networkTestStatusText.color = color;
+        }
+
+        private void SetTestButtonState(bool interactable, string label)
+        {
+            if (testButton != null)
+                testButton.interactable = interactable;
+
+            if (testButton == null)
+                return;
+
+            TextMeshProUGUI text = testButton.GetComponentInChildren<TextMeshProUGUI>(true);
+            if (text != null)
+                text.text = label;
         }
     }
 }

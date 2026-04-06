@@ -1,9 +1,11 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 using Adaptabrawl.Fighters;
 using Adaptabrawl.Gameplay;
 using Adaptabrawl.Networking;
+using System.Collections;
 
 namespace Adaptabrawl.UI
 {
@@ -25,6 +27,8 @@ namespace Adaptabrawl.UI
         [Tooltip("If empty, uses Play → Settings → Quit (main) and Local Play → Online → Back (play options).")]
         [SerializeField] private Selectable[] mainMenuFocusOrder;
         [SerializeField] private Selectable[] playOptionsFocusOrder;
+
+        private bool playOnlinePreflightInProgress;
 
         private void Start()
         {
@@ -129,6 +133,58 @@ namespace Adaptabrawl.UI
 
         public void PlayOnline()
         {
+            if (playOnlinePreflightInProgress)
+                return;
+
+            StartCoroutine(CoPlayOnlineWithLanPreflight());
+        }
+
+        private IEnumerator CoPlayOnlineWithLanPreflight()
+        {
+            playOnlinePreflightInProgress = true;
+            SetOnlineButtonState(interactable: false, label: "TESTING...");
+
+            var task = LanConnectivitySelfTest.RunAsync(waitForWindowsFirewallConfirmation: false);
+            while (!task.IsCompleted)
+                yield return null;
+
+            if (task.IsFaulted)
+                Debug.LogException(task.Exception);
+            else
+            {
+                Debug.Log($"[MainMenu] LAN preflight: {task.Result.Summary} {task.Result.Details}");
+
+                if (ShouldRequestFirewallApproval(task.Result))
+                {
+                    SetOnlineButtonState(interactable: false, label: "APPROVE...");
+                    var approvalTask = LanConnectivitySelfTest.TryEnsureWindowsFirewallAccessAsync();
+                    while (!approvalTask.IsCompleted)
+                        yield return null;
+
+                    if (!approvalTask.IsFaulted && !approvalTask.IsCanceled && approvalTask.Result)
+                    {
+                        SetOnlineButtonState(interactable: false, label: "RECHECK...");
+                        var rerunTask = LanConnectivitySelfTest.RunAsync(waitForWindowsFirewallConfirmation: false);
+                        while (!rerunTask.IsCompleted)
+                            yield return null;
+
+                        if (rerunTask.IsFaulted)
+                            Debug.LogException(rerunTask.Exception);
+                        else
+                            Debug.Log($"[MainMenu] LAN preflight after firewall rule update: {rerunTask.Result.Summary} {rerunTask.Result.Details}");
+                    }
+                    else
+                    {
+                        SetOnlineButtonState(interactable: true, label: "Play Online");
+                        playOnlinePreflightInProgress = false;
+                        yield break;
+                    }
+                }
+            }
+
+            SetOnlineButtonState(interactable: true, label: "Play Online");
+            playOnlinePreflightInProgress = false;
+
             LobbyContext.EnsureExists().Init(false);
             PublicRoomLobbyContext.EnsureExists().SetLanRoomListActive(true);
             CharacterSelectData.isLocalMatch = false;
@@ -142,6 +198,31 @@ namespace Adaptabrawl.UI
                     "Run Tools → Adaptabrawl → Setup Online Party Room Scene.");
                 SceneManager.LoadScene("LobbyScene");
             }
+        }
+
+        private static bool ShouldRequestFirewallApproval(LanConnectivityTestResult result)
+        {
+            return result.State == LanConnectivityTestState.Warning &&
+                   result.FirewallCheckSupported &&
+                   !result.PrivateNetworkAllowed;
+        }
+
+        private void SetOnlineButtonState(bool interactable, string label)
+        {
+            if (onlineButton != null)
+                onlineButton.interactable = interactable;
+
+            if (onlineButton == null)
+                return;
+
+            if (onlineButton.GetComponentInChildren<TextMeshProUGUI>(true) is TextMeshProUGUI tmpText)
+            {
+                tmpText.text = label;
+                return;
+            }
+
+            if (onlineButton.GetComponentInChildren<Text>(true) is Text legacyText)
+                legacyText.text = label;
         }
 
         private static int TryGetBuildIndexBySceneName(string sceneName)

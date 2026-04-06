@@ -23,6 +23,7 @@ namespace Adaptabrawl.Editor
         private static readonly Color SLIDER_BG       = new Color(0.18f, 0.18f, 0.24f, 1f);
         private static readonly Color SLIDER_FILL     = new Color(0.85f, 0.20f, 0.20f, 1f);
         private static readonly Color BUTTON_BACK     = new Color(0.20f, 0.20f, 0.28f, 1f);
+        private static readonly Color BUTTON_TEST     = new Color(0.16f, 0.38f, 0.58f, 1f);
         private static readonly Color BUTTON_APPLY    = new Color(0.15f, 0.60f, 0.25f, 1f);
         private static readonly Color BUTTON_RESET    = new Color(0.70f, 0.15f, 0.15f, 1f);
         private static readonly Color TEXT_PRIMARY    = new Color(0.95f, 0.95f, 0.95f, 1f);
@@ -173,11 +174,11 @@ namespace Adaptabrawl.Editor
             TMP_Dropdown fpsDrop; CreateDropdownRow("FPSRow", panel.transform,
                 "Target FPS", ref sectionY, out fpsDrop);
 
-            Toggle vsyncToggle; CreateToggleRow("VSyncRow", panel.transform,
-                "VSync", ref sectionY, out vsyncToggle);
-
             TMP_Dropdown displayModeDrop; CreateDropdownRow("DisplayModeRow", panel.transform,
                 "Display Mode", ref sectionY, out displayModeDrop);
+
+            Toggle vsyncToggle; CreateToggleRow("VSyncRow", panel.transform,
+                "VSync", ref sectionY, out vsyncToggle);
 
             sectionY -= SECTION_GAP;
             CreateDividerLine("VideoDiv", panel.transform, sectionY);
@@ -197,9 +198,11 @@ namespace Adaptabrawl.Editor
                 "Show Hitboxes", ref sectionY, out hitboxToggle);
 
             // ─── Bottom buttons ───────────────────────────────────────────────
-            Button backBtn   = CreateBottomButton("BackBtn",   panel.transform, "BACK",   BUTTON_BACK,  -1f);
-            Button applyBtn  = CreateBottomButton("ApplyBtn",  panel.transform, "APPLY",  BUTTON_APPLY,  0f);
-            Button resetBtn  = CreateBottomButton("ResetBtn",  panel.transform, "RESET",  BUTTON_RESET,  1f);
+            Button testBtn   = CreateBottomButton("TestBtn",   panel.transform, "TEST",   BUTTON_TEST,  -1.5f);
+            Button backBtn   = CreateBottomButton("BackBtn",   panel.transform, "BACK",   BUTTON_BACK,  -0.5f);
+            Button applyBtn  = CreateBottomButton("ApplyBtn",  panel.transform, "APPLY",  BUTTON_APPLY,  0.5f);
+            Button resetBtn  = CreateBottomButton("ResetBtn",  panel.transform, "RESET",  BUTTON_RESET,  1.5f);
+            TextMeshProUGUI networkTestStatusText = CreateBottomStatusText(panel.transform);
 
             // ─── Wire SettingsUI references via SerializedObject ──────────────
             SerializedObject so = new SerializedObject(settingsUI);
@@ -221,9 +224,11 @@ namespace Adaptabrawl.Editor
             so.FindProperty("uiScaleText").objectReferenceValue        = null;
             so.FindProperty("colorBlindToggle").objectReferenceValue   = colorBlindToggle;
             so.FindProperty("showHitboxesToggle").objectReferenceValue = hitboxToggle;
+            so.FindProperty("testButton").objectReferenceValue         = testBtn;
             so.FindProperty("backButton").objectReferenceValue         = backBtn;
             so.FindProperty("applyButton").objectReferenceValue        = applyBtn;
             so.FindProperty("resetButton").objectReferenceValue        = resetBtn;
+            so.FindProperty("networkTestStatusText").objectReferenceValue = networkTestStatusText;
 
             so.ApplyModifiedProperties();
 
@@ -478,21 +483,21 @@ namespace Adaptabrawl.Editor
 
             // Label inside dropdown
             var dropLabel = CreateTMPText("Label", dropGO.transform,
-                "Option A", 12f, FontStyles.Normal, TextAlignmentOptions.MidlineLeft, TEXT_PRIMARY);
+                "Option A", 16f, FontStyles.Normal, TextAlignmentOptions.MidlineLeft, TEXT_PRIMARY);
             var dropLabelRT = dropLabel.GetComponent<RectTransform>();
             dropLabelRT.anchorMin = Vector2.zero;
             dropLabelRT.anchorMax = Vector2.one;
-            dropLabelRT.offsetMin = new Vector2(10f, 2f);
-            dropLabelRT.offsetMax = new Vector2(-30f, -2f);
+            dropLabelRT.offsetMin = new Vector2(12f, 0f);
+            dropLabelRT.offsetMax = new Vector2(-32f, 0f);
 
             // Arrow text
             var arrow = CreateTMPText("Arrow", dropGO.transform,
-                "▼", 11f, FontStyles.Normal, TextAlignmentOptions.MidlineRight, TEXT_SECONDARY);
+                "▼", 15f, FontStyles.Normal, TextAlignmentOptions.Center, TEXT_SECONDARY);
             var arrowRT = arrow.GetComponent<RectTransform>();
             arrowRT.anchorMin = new Vector2(1f, 0f);
             arrowRT.anchorMax = new Vector2(1f, 1f);
-            arrowRT.sizeDelta = new Vector2(26f, 0f);
-            arrowRT.anchoredPosition = new Vector2(-13f, 0f);
+            arrowRT.sizeDelta = new Vector2(28f, 0f);
+            arrowRT.anchoredPosition = new Vector2(-12f, 0f);
 
             dropdown.captionText = dropLabel;
             dropdown.AddOptions(new System.Collections.Generic.List<string> { "Option A", "Option B", "Option C" });
@@ -512,7 +517,7 @@ namespace Adaptabrawl.Editor
             templateRect.anchorMin = new Vector2(0f, 0f);
             templateRect.anchorMax = new Vector2(1f, 0f);
             templateRect.pivot = new Vector2(0.5f, 1f);
-            templateRect.anchoredPosition = new Vector2(0f, -(controlHeight + 4f));
+            templateRect.anchoredPosition = new Vector2(0f, -(controlHeight + 1f));
             templateRect.sizeDelta = new Vector2(0f, templateHeight);
             SetColor(templateObj, new Color(0.12f, 0.12f, 0.16f, 0.98f));
 
@@ -541,7 +546,8 @@ namespace Adaptabrawl.Editor
             layout.childControlWidth = true;
             layout.childForceExpandHeight = false;
             layout.childForceExpandWidth = true;
-            layout.spacing = 2f;
+            layout.spacing = 0f;
+            layout.padding = new RectOffset(0, 0, 0, 0);
 
             var fitter = contentObj.AddComponent<ContentSizeFitter>();
             fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -570,12 +576,12 @@ namespace Adaptabrawl.Editor
             toggle.graphic = checkObj.GetComponent<Image>();
 
             var itemLabel = CreateTMPText("ItemLabel", itemObj.transform,
-                "Option", 12f, FontStyles.Normal, TextAlignmentOptions.MidlineLeft, TEXT_PRIMARY);
+                "Option", 16f, FontStyles.Normal, TextAlignmentOptions.MidlineLeft, TEXT_PRIMARY);
             var itemLabelRect = itemLabel.GetComponent<RectTransform>();
             itemLabelRect.anchorMin = Vector2.zero;
             itemLabelRect.anchorMax = Vector2.one;
-            itemLabelRect.offsetMin = new Vector2(30f, 2f);
-            itemLabelRect.offsetMax = new Vector2(-8f, -2f);
+            itemLabelRect.offsetMin = new Vector2(34f, 0f);
+            itemLabelRect.offsetMax = new Vector2(-10f, 0f);
             if (captionText != null)
             {
                 itemLabel.font = captionText.font;
@@ -647,10 +653,27 @@ namespace Adaptabrawl.Editor
         // ─────────────────────────────────────────────────────────────────────
         // Helper: Bottom navigation button
         // ─────────────────────────────────────────────────────────────────────
+        private static TextMeshProUGUI CreateBottomStatusText(Transform parent)
+        {
+            GameObject status = CreateRect("LanTestStatusText", parent);
+            SetAnchors(status, 0.5f, 0f, 0.5f, 0f);
+            status.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, 76f);
+            SetSize(status, 920f, 28f);
+
+            var text = CreateTMPText("Text", status.transform,
+                "Run TEST before online play to confirm LAN access.",
+                11f,
+                FontStyles.Normal,
+                TextAlignmentOptions.Center,
+                TEXT_SECONDARY);
+            FillParent(text.gameObject);
+            text.raycastTarget = false;
+            return text;
+        }
+
         private static Button CreateBottomButton(string name, Transform parent,
             string label, Color bgColor, float xSlot)
         {
-            // xSlot: -1 = left, 0 = center, 1 = right
             float btnW = 200f, btnH = 44f;
             float spacing = 220f;
 

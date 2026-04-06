@@ -51,6 +51,12 @@ public class PlayerController_Platform : MonoBehaviour
     [Header("Ground movement speed")]
     public float ground_move_speed = 5f;
 
+    [Header("Ground locomotion tuning")]
+    [Range(0.1f, 1f)]
+    public float backwardSpeedMultiplier = 0.82f;
+    [Range(1f, 30f)]
+    public float locomotionDirectionSharpness = 12f;
+
     [Header("Time available for combo")]
     public int term;
 
@@ -80,6 +86,15 @@ public class PlayerController_Platform : MonoBehaviour
     private bool canChainAttack;
     public bool isDead;
     private float currentHorizontalIntent;
+    private float locomotionDirection;
+    private bool scriptedLocomotionActive;
+    private float scriptedLocomotionDirection;
+
+    private static readonly int RunHash = Animator.StringToHash("Run");
+    private static readonly int WalkHash = Animator.StringToHash("Walk");
+    private static readonly int BlockHash = Animator.StringToHash("Block");
+    private static readonly int CrouchHash = Animator.StringToHash("Crouch");
+    private static readonly int LocomotionDirectionHash = Animator.StringToHash("LocomotionDirection");
 
     [Header("Input Lock (game-state, not death)")]
     [Tooltip("Set by the game manager during pre-round buffers and walk-backs. " +
@@ -443,7 +458,7 @@ public class PlayerController_Platform : MonoBehaviour
     {
         if (Mathf.Abs(currentHorizontalIntent) < 0.01f)
         {
-            SetLocomotionState(false, false);
+            ApplyGroundLocomotionState(0f);
             return;
         }
 
@@ -455,12 +470,12 @@ public class PlayerController_Platform : MonoBehaviour
         if (isJump)
         {
             transform.position += Vector3.right * (currentHorizontalIntent * speed_move * Time.deltaTime);
-            SetLocomotionState(false, false);
+            ApplyGroundLocomotionState(0f);
             return;
         }
 
-        bool useBackwardLocomotion = IsMovingBackwardRelativeToFacing();
-        SetLocomotionState(true, IsSprintPressed() || useBackwardLocomotion);
+        float direction = GetSignedLocomotionDirection(currentHorizontalIntent);
+        ApplyGroundLocomotionState(direction);
     }
 
     private void UpdateAttackState()
@@ -486,39 +501,88 @@ public class PlayerController_Platform : MonoBehaviour
 
     private void UpdateLocomotion()
     {
-        if (isAttacking)
+        if (isAttacking || IsBlockPressed() || anim.GetBool(BlockHash))
         {
-            SetLocomotionState(false, false);
+            ApplyGroundLocomotionState(0f);
             return;
         }
 
         Rotate();
     }
 
-    private void SetLocomotionState(bool run, bool walk)
+    private void SetLegacyLocomotionState(bool run, bool walk)
     {
-        anim.SetBool("Run", run);
-        anim.SetBool("Walk", walk);
+        anim.SetBool(RunHash, run);
+        anim.SetBool(WalkHash, walk);
     }
 
-    private bool IsMovingBackwardRelativeToFacing()
+    private float GetSignedLocomotionDirection(float horizontalIntent)
     {
-        if (fighterController == null || Mathf.Abs(currentHorizontalIntent) < 0.01f)
-            return false;
+        if (fighterController == null || Mathf.Abs(horizontalIntent) < 0.01f)
+            return 0f;
 
         float facingSign = fighterController.FacingRight ? 1f : -1f;
-        return Mathf.Sign(currentHorizontalIntent) != facingSign;
+        return Mathf.Sign(horizontalIntent) == facingSign ? 1f : -1f;
+    }
+
+    private void ApplyGroundLocomotionState(float targetDirection)
+    {
+        if (anim == null)
+            return;
+
+        float sharpness = Mathf.Max(1f, locomotionDirectionSharpness);
+        locomotionDirection = Mathf.MoveTowards(
+            locomotionDirection,
+            targetDirection,
+            sharpness * Time.deltaTime);
+
+        anim.SetFloat(LocomotionDirectionHash, locomotionDirection);
+
+        if (Mathf.Abs(targetDirection) < 0.01f)
+        {
+            SetLegacyLocomotionState(false, false);
+            return;
+        }
+
+        if (targetDirection > 0f)
+        {
+            SetLegacyLocomotionState(true, false);
+            return;
+        }
+
+        SetLegacyLocomotionState(false, false);
+
+        int targetStateHash = WalkHash;
+        AnimatorStateInfo currentState = anim.GetCurrentAnimatorStateInfo(0);
+        if (anim.IsInTransition(0) || currentState.shortNameHash == targetStateHash)
+            return;
+
+        anim.CrossFadeInFixedTime(targetStateHash, 0.08f);
+    }
+
+    public void SetScriptedLocomotion(float signedDirection)
+    {
+        scriptedLocomotionActive = Mathf.Abs(signedDirection) > 0.01f;
+        scriptedLocomotionDirection = Mathf.Clamp(signedDirection, -1f, 1f);
+        ApplyGroundLocomotionState(scriptedLocomotionDirection);
+    }
+
+    public void ClearScriptedLocomotion()
+    {
+        scriptedLocomotionActive = false;
+        scriptedLocomotionDirection = 0f;
+        ApplyGroundLocomotionState(0f);
     }
 
     private bool ShouldDriveGroundLocomotionManually()
     {
         return !isJump
             && !isAttacking
-            && Mathf.Abs(currentHorizontalIntent) > 0.01f
-            && !anim.GetBool("Block")
-            && !anim.GetBool("Crouch")
+            && GetActiveLocomotionDirectionMagnitude() > 0.01f
+            && !anim.GetBool(BlockHash)
+            && !anim.GetBool(CrouchHash)
             && !IsDodgeAnimationActive()
-            && anim.GetBool("Run");
+            && !scriptedLocomotionActive;
     }
 
     private void OnAnimatorMove()
@@ -526,9 +590,17 @@ public class PlayerController_Platform : MonoBehaviour
         if (anim == null || !anim.applyRootMotion || isDead || inputLocked)
             return;
 
+        if (scriptedLocomotionActive)
+        {
+            float directionSign = fighterController != null && fighterController.FacingRight ? 1f : -1f;
+            float deltaX = directionSign * scriptedLocomotionDirection * ground_move_speed * GetGroundSpeedMultiplier(scriptedLocomotionDirection) * Time.deltaTime;
+            transform.position = new Vector3(transform.position.x + deltaX, transform.position.y, 0f);
+            return;
+        }
+
         if (ShouldDriveGroundLocomotionManually())
         {
-            float deltaX = currentHorizontalIntent * ground_move_speed * Time.deltaTime;
+            float deltaX = currentHorizontalIntent * ground_move_speed * GetGroundSpeedMultiplier(locomotionDirection) * Time.deltaTime;
             transform.position = new Vector3(transform.position.x + deltaX, transform.position.y, 0f);
             return;
         }
@@ -607,14 +679,18 @@ public class PlayerController_Platform : MonoBehaviour
         canChainAttack = false;
         isJump = false;
         currentHorizontalIntent = 0f;
+        locomotionDirection = 0f;
+        scriptedLocomotionActive = false;
+        scriptedLocomotionDirection = 0f;
 
         if (anim == null)
             return;
 
-        anim.SetBool("Run", false);
-        anim.SetBool("Walk", false);
-        anim.SetBool("Block", false);
-        anim.SetBool("Crouch", false);
+        anim.SetFloat(LocomotionDirectionHash, 0f);
+        anim.SetBool(RunHash, false);
+        anim.SetBool(WalkHash, false);
+        anim.SetBool(BlockHash, false);
+        anim.SetBool(CrouchHash, false);
 
         anim.ResetTrigger("Jump");
         anim.ResetTrigger("Dodge");
@@ -646,6 +722,19 @@ public class PlayerController_Platform : MonoBehaviour
         return stateInfo.IsName("Dodge")
             || stateInfo.IsName("DodgeRoll")
             || stateInfo.IsTag("Dodge");
+    }
+
+    private float GetActiveLocomotionDirectionMagnitude()
+    {
+        if (scriptedLocomotionActive)
+            return Mathf.Abs(scriptedLocomotionDirection);
+
+        return Mathf.Abs(locomotionDirection);
+    }
+
+    private float GetGroundSpeedMultiplier(float signedDirection)
+    {
+        return signedDirection < -0.01f ? backwardSpeedMultiplier : 1f;
     }
 
 

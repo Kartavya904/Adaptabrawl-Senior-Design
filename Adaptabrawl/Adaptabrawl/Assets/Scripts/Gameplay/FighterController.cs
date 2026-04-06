@@ -328,11 +328,7 @@ namespace Adaptabrawl.Gameplay
             }
 
             // Play run animation
-            if (standerAnim != null)
-            {
-                standerAnim.SetBool("Run",  true);
-                standerAnim.SetBool("Walk", false);
-            }
+            pcp.SetScriptedLocomotion(1f);
 
             const float arrivalThreshold = 0.1f;
 
@@ -358,11 +354,7 @@ namespace Adaptabrawl.Gameplay
             // Snap X exactly to spawn; Y stays at whatever ground height the character is at
             pcp.transform.position = new Vector3(targetX, pcp.transform.position.y, 0f);
 
-            if (standerAnim != null)
-            {
-                standerAnim.SetBool("Run",  false);
-                standerAnim.SetBool("Walk", false);
-            }
+            pcp.ClearScriptedLocomotion();
 
             // Force character to face the center of the arena for the next round
             bool faceRight = targetX < 0f;

@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace Adaptabrawl.UI
@@ -89,24 +91,248 @@ namespace Adaptabrawl.UI
 
         public static void SelectFirstAvailable(IList<Selectable> order)
         {
-            if (order == null) return;
-            var es = EventSystem.current;
-            if (es == null) return;
+            MenuNavigationFocusGate.RequestSelection(order);
+        }
 
-            for (int i = 0; i < order.Count; i++)
-            {
-                var s = order[i];
-                if (s != null && s.IsInteractable() && s.gameObject.activeInHierarchy)
-                {
-                    es.SetSelectedGameObject(s.gameObject);
-                    return;
-                }
-            }
+        public static bool IsControllerFocusVisible(GameObject target)
+        {
+            return MenuNavigationFocusGate.IsControllerFocusVisible(target);
+        }
+
+        public static void NotifyPointerHover(Selectable hoveredSelectable)
+        {
+            MenuNavigationFocusGate.NotifyPointerHover(hoveredSelectable);
         }
 
         public void Refresh()
         {
             ApplyVerticalChain(orderedSelectables, wrapVertical);
+        }
+    }
+
+    internal enum MenuInputMode
+    {
+        None,
+        Pointer,
+        Controller
+    }
+
+    internal sealed class MenuNavigationFocusGate : MonoBehaviour
+    {
+        private static MenuNavigationFocusGate instance;
+        private readonly List<Selectable> pendingSelection = new List<Selectable>();
+
+        private MenuInputMode inputMode = MenuInputMode.None;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void Bootstrap()
+        {
+            if (instance != null)
+                return;
+
+            var host = new GameObject("MenuNavigationFocusGate");
+            instance = host.AddComponent<MenuNavigationFocusGate>();
+        }
+
+        private void Awake()
+        {
+            if (instance != null && instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+
+        private void OnEnable()
+        {
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            ClearSelection();
+        }
+
+        private void OnDisable()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+
+        private void Update()
+        {
+            if (DetectPointerActivity())
+            {
+                SetInputMode(MenuInputMode.Pointer);
+                return;
+            }
+
+            if (DetectControllerStyleActivity())
+            {
+                SetInputMode(MenuInputMode.Controller);
+            }
+        }
+
+        private void OnSceneLoaded(Scene _, LoadSceneMode __)
+        {
+            inputMode = MenuInputMode.None;
+            ClearSelection();
+        }
+
+        public static void RequestSelection(IList<Selectable> order)
+        {
+            EnsureInstance();
+            instance.StorePending(order);
+
+            if (instance.inputMode == MenuInputMode.Controller)
+            {
+                instance.SelectPendingFirstAvailable();
+            }
+            else
+            {
+                ClearSelection();
+            }
+        }
+
+        public static bool IsControllerFocusVisible(GameObject target)
+        {
+            return instance != null
+                   && instance.inputMode == MenuInputMode.Controller
+                   && EventSystem.current != null
+                   && EventSystem.current.currentSelectedGameObject == target;
+        }
+
+        public static void NotifyPointerHover(Selectable hoveredSelectable)
+        {
+            EnsureInstance();
+            instance.SetInputMode(MenuInputMode.Pointer);
+
+            if (hoveredSelectable == null || EventSystem.current == null)
+                return;
+
+            if (EventSystem.current.currentSelectedGameObject != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+            }
+        }
+
+        private static void EnsureInstance()
+        {
+            if (instance == null)
+                Bootstrap();
+        }
+
+        private void StorePending(IList<Selectable> order)
+        {
+            pendingSelection.Clear();
+            if (order == null)
+                return;
+
+            for (int i = 0; i < order.Count; i++)
+            {
+                if (order[i] != null)
+                    pendingSelection.Add(order[i]);
+            }
+        }
+
+        private void SetInputMode(MenuInputMode newMode)
+        {
+            if (inputMode == newMode)
+                return;
+
+            inputMode = newMode;
+
+            if (inputMode == MenuInputMode.Controller)
+            {
+                SelectPendingFirstAvailable();
+            }
+            else
+            {
+                ClearSelection();
+            }
+        }
+
+        private void SelectPendingFirstAvailable()
+        {
+            var es = EventSystem.current;
+            if (es == null)
+                return;
+
+            if (es.currentSelectedGameObject != null
+                && es.currentSelectedGameObject.activeInHierarchy)
+            {
+                return;
+            }
+
+            for (int i = 0; i < pendingSelection.Count; i++)
+            {
+                Selectable selectable = pendingSelection[i];
+                if (selectable != null
+                    && selectable.IsInteractable()
+                    && selectable.gameObject.activeInHierarchy)
+                {
+                    es.SetSelectedGameObject(selectable.gameObject);
+                    return;
+                }
+            }
+        }
+
+        private static void ClearSelection()
+        {
+            if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+            }
+        }
+
+        private static bool DetectPointerActivity()
+        {
+            Mouse mouse = Mouse.current;
+            if (mouse == null)
+                return false;
+
+            return mouse.delta.ReadValue().sqrMagnitude > 0.01f
+                   || mouse.leftButton.wasPressedThisFrame
+                   || mouse.rightButton.wasPressedThisFrame
+                   || mouse.middleButton.wasPressedThisFrame;
+        }
+
+        private static bool DetectControllerStyleActivity()
+        {
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard != null)
+            {
+                if (keyboard.upArrowKey.wasPressedThisFrame
+                    || keyboard.downArrowKey.wasPressedThisFrame
+                    || keyboard.leftArrowKey.wasPressedThisFrame
+                    || keyboard.rightArrowKey.wasPressedThisFrame
+                    || keyboard.tabKey.wasPressedThisFrame
+                    || keyboard.enterKey.wasPressedThisFrame
+                    || keyboard.numpadEnterKey.wasPressedThisFrame
+                    || keyboard.spaceKey.wasPressedThisFrame
+                    || keyboard.wKey.wasPressedThisFrame
+                    || keyboard.aKey.wasPressedThisFrame
+                    || keyboard.sKey.wasPressedThisFrame
+                    || keyboard.dKey.wasPressedThisFrame)
+                {
+                    return true;
+                }
+            }
+
+            Gamepad gamepad = Gamepad.current;
+            if (gamepad == null)
+                return false;
+
+            return gamepad.dpad.up.wasPressedThisFrame
+                   || gamepad.dpad.down.wasPressedThisFrame
+                   || gamepad.dpad.left.wasPressedThisFrame
+                   || gamepad.dpad.right.wasPressedThisFrame
+                   || gamepad.buttonSouth.wasPressedThisFrame
+                   || gamepad.buttonNorth.wasPressedThisFrame
+                   || gamepad.buttonWest.wasPressedThisFrame
+                   || gamepad.buttonEast.wasPressedThisFrame
+                   || gamepad.startButton.wasPressedThisFrame
+                   || gamepad.selectButton.wasPressedThisFrame
+                   || gamepad.leftShoulder.wasPressedThisFrame
+                   || gamepad.rightShoulder.wasPressedThisFrame;
         }
     }
 }

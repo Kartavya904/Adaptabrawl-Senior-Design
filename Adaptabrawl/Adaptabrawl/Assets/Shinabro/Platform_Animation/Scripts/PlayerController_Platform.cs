@@ -48,6 +48,9 @@ public class PlayerController_Platform : MonoBehaviour
     [Header("Movement speed during jump")]
     public float speed_move;
 
+    [Header("Ground movement speed")]
+    public float ground_move_speed = 5f;
+
     [Header("Time available for combo")]
     public int term;
 
@@ -77,7 +80,6 @@ public class PlayerController_Platform : MonoBehaviour
     private bool canChainAttack;
     public bool isDead;
     private float currentHorizontalIntent;
-    private Quaternion rot;
 
     [Header("Input Lock (game-state, not death)")]
     [Tooltip("Set by the game manager during pre-round buffers and walk-backs. " +
@@ -284,6 +286,7 @@ public class PlayerController_Platform : MonoBehaviour
     public void ApplyFighterStats(float moveSpeed, float jumpForce, float attackDmg,
                                    float skillDmg, float maxHealthVal, float currentHealthVal, float animSpeedMult)
     {
+        ground_move_speed = moveSpeed;
         speed_move = jumpForce * 0.5f;  // Scale air movement with jump force
         attackDamage = attackDmg;
         skillDamage = skillDmg;
@@ -374,29 +377,9 @@ public class PlayerController_Platform : MonoBehaviour
 
         currentHorizontalIntent = GetFilteredHorizontalIntent();
         movementController?.SetMoveInput(new Vector2(currentHorizontalIntent, IsCrouchPressed() ? -1f : 0f));
-        Rotate();
+        UpdateAttackState();
+        UpdateLocomotion();
         transform.position = new Vector3(transform.position.x, transform.position.y, 0f);
-
-        if (transitionDelay > 0f)
-        {
-            transitionDelay -= Time.deltaTime;
-            isAttacking = true;
-            canChainAttack = false;
-        }
-        else
-        {
-            // Check if the animator is currently in an attack state. 
-            AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(0);
-            isAttacking = stateInfo.IsTag("Attack") || stateInfo.IsName("Attack1") || stateInfo.IsName("Attack2") || stateInfo.IsName("Attack3") ||
-                          stateInfo.IsName("Skill1") || stateInfo.IsName("Skill2") || stateInfo.IsName("Skill3") || stateInfo.IsName("Skill4") ||
-                          stateInfo.IsName("Skill5") || stateInfo.IsName("Skill6") || stateInfo.IsName("Skill7") || stateInfo.IsName("Skill8");
-            
-            float animProgress = stateInfo.normalizedTime % 1f;
-            bool isTransitioning = anim.IsInTransition(0);
-            
-            // Allow chaining if we're mostly done with the current attack (e.g. 85%), or not attacking at all.
-            canChainAttack = !isAttacking || (isAttacking && animProgress >= comboChainPoint && !isTransitioning);
-        }
 
         if (!isJump)
         {
@@ -460,32 +443,101 @@ public class PlayerController_Platform : MonoBehaviour
     {
         if (Mathf.Abs(currentHorizontalIntent) < 0.01f)
         {
-            anim.SetBool("Run", false);
-            anim.SetBool("Walk", false);
+            SetLocomotionState(false, false);
             return;
         }
 
         Move();
-
-        rot = currentHorizontalIntent > 0f
-            ? Quaternion.LookRotation(Vector3.right)
-            : Quaternion.LookRotation(Vector3.left);
-
-        transform.rotation = Quaternion.Slerp(transform.rotation, rot, speed_rot * Time.deltaTime);
     }
     
     private void Move()
     {
         if (isJump)
         {
-            transform.position += transform.forward * speed_move * Time.deltaTime;
-            anim.SetBool("Run", false);
-            anim.SetBool("Walk", false);
+            transform.position += Vector3.right * (currentHorizontalIntent * speed_move * Time.deltaTime);
+            SetLocomotionState(false, false);
             return;
         }
 
-        anim.SetBool("Run", true);
-        anim.SetBool("Walk", IsSprintPressed());
+        bool useBackwardLocomotion = IsMovingBackwardRelativeToFacing();
+        SetLocomotionState(true, IsSprintPressed() || useBackwardLocomotion);
+    }
+
+    private void UpdateAttackState()
+    {
+        if (transitionDelay > 0f)
+        {
+            transitionDelay -= Time.deltaTime;
+            isAttacking = true;
+            canChainAttack = false;
+            return;
+        }
+
+        AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(0);
+        isAttacking = stateInfo.IsTag("Attack") || stateInfo.IsName("Attack1") || stateInfo.IsName("Attack2") || stateInfo.IsName("Attack3") ||
+                      stateInfo.IsName("Skill1") || stateInfo.IsName("Skill2") || stateInfo.IsName("Skill3") || stateInfo.IsName("Skill4") ||
+                      stateInfo.IsName("Skill5") || stateInfo.IsName("Skill6") || stateInfo.IsName("Skill7") || stateInfo.IsName("Skill8");
+
+        float animProgress = stateInfo.normalizedTime % 1f;
+        bool isTransitioning = anim.IsInTransition(0);
+
+        canChainAttack = !isAttacking || (isAttacking && animProgress >= comboChainPoint && !isTransitioning);
+    }
+
+    private void UpdateLocomotion()
+    {
+        if (isAttacking)
+        {
+            SetLocomotionState(false, false);
+            return;
+        }
+
+        Rotate();
+    }
+
+    private void SetLocomotionState(bool run, bool walk)
+    {
+        anim.SetBool("Run", run);
+        anim.SetBool("Walk", walk);
+    }
+
+    private bool IsMovingBackwardRelativeToFacing()
+    {
+        if (fighterController == null || Mathf.Abs(currentHorizontalIntent) < 0.01f)
+            return false;
+
+        float facingSign = fighterController.FacingRight ? 1f : -1f;
+        return Mathf.Sign(currentHorizontalIntent) != facingSign;
+    }
+
+    private bool ShouldDriveGroundLocomotionManually()
+    {
+        return !isJump
+            && !isAttacking
+            && Mathf.Abs(currentHorizontalIntent) > 0.01f
+            && !anim.GetBool("Block")
+            && !anim.GetBool("Crouch")
+            && !IsDodgeAnimationActive()
+            && anim.GetBool("Run");
+    }
+
+    private void OnAnimatorMove()
+    {
+        if (anim == null || !anim.applyRootMotion || isDead || inputLocked)
+            return;
+
+        if (ShouldDriveGroundLocomotionManually())
+        {
+            float deltaX = currentHorizontalIntent * ground_move_speed * Time.deltaTime;
+            transform.position = new Vector3(transform.position.x + deltaX, transform.position.y, 0f);
+            return;
+        }
+
+        Vector3 deltaPosition = anim.deltaPosition;
+        transform.position = new Vector3(
+            transform.position.x + deltaPosition.x,
+            transform.position.y + deltaPosition.y,
+            0f);
     }
 
     void Dodge()

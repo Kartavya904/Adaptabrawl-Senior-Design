@@ -12,19 +12,28 @@ namespace Adaptabrawl.Gameplay
         [SerializeField] private float minimumGroundSpacing = 1.1f;
         [SerializeField] private float airborneVerticalTolerance = 0.3f;
         [SerializeField] private float orderingDeadZone = 0.05f;
+        [SerializeField] private float facingCommitDelay = 0f;
 
         private FighterController player1;
         private FighterController player2;
         private FighterController lastKnownLeftFighter;
+        private FighterController committedLeftFighter;
+        private FighterController pendingLeftFighter;
+        private float pendingFacingChangeStartTime;
 
         public void Initialize(FighterController p1, FighterController p2)
         {
             player1 = p1;
             player2 = p2;
             lastKnownLeftFighter = null;
+            committedLeftFighter = null;
+            pendingLeftFighter = null;
+            pendingFacingChangeStartTime = 0f;
 
             player1?.RegisterSceneCoordinator(this);
             player2?.RegisterSceneCoordinator(this);
+
+            RefreshFacing();
         }
 
         private void LateUpdate()
@@ -34,6 +43,8 @@ namespace Adaptabrawl.Gameplay
 
             if (!TryGetOrderedFighters(out FighterController left, out FighterController right))
                 return;
+
+            UpdateFacing(left, right);
 
             if (ShouldBlockGroundCrossover())
                 EnforceMinimumSpacing(left, right);
@@ -65,7 +76,12 @@ namespace Adaptabrawl.Gameplay
 
         public void RefreshFacing()
         {
-            // Phase 1 auto-facing is intentionally disabled for now.
+            if (!TryGetOrderedFighters(out FighterController left, out FighterController right))
+                return;
+
+            committedLeftFighter = left;
+            pendingLeftFighter = null;
+            ApplyFacing(left, right);
         }
 
         private bool ShouldCoordinate()
@@ -138,6 +154,69 @@ namespace Adaptabrawl.Gameplay
             }
 
             return left != null && right != null;
+        }
+
+        private static void ApplyFacing(FighterController left, FighterController right)
+        {
+            left?.SetFacing(true);
+            right?.SetFacing(false);
+        }
+
+        private void UpdateFacing(FighterController currentLeft, FighterController currentRight)
+        {
+            if (currentLeft == null)
+                return;
+
+            if (committedLeftFighter == null)
+            {
+                committedLeftFighter = currentLeft;
+                pendingLeftFighter = null;
+                ApplyFacing(currentLeft, currentRight);
+                return;
+            }
+
+            if (ShouldFreezeFacingDuringDodge())
+            {
+                pendingLeftFighter = null;
+                ApplyCommittedFacing();
+                return;
+            }
+
+            if (currentLeft == committedLeftFighter)
+            {
+                pendingLeftFighter = null;
+                ApplyFacing(currentLeft, currentRight);
+                return;
+            }
+
+            if (pendingLeftFighter != currentLeft)
+            {
+                pendingLeftFighter = currentLeft;
+                pendingFacingChangeStartTime = Time.time;
+                ApplyFacing(committedLeftFighter, committedLeftFighter == player1 ? player2 : player1);
+                return;
+            }
+
+            if (Time.time - pendingFacingChangeStartTime < facingCommitDelay)
+            {
+                ApplyFacing(committedLeftFighter, committedLeftFighter == player1 ? player2 : player1);
+                return;
+            }
+
+            committedLeftFighter = currentLeft;
+            pendingLeftFighter = null;
+            ApplyFacing(currentLeft, currentRight);
+        }
+
+        private bool ShouldFreezeFacingDuringDodge()
+        {
+            return IsCollisionBypassed(player1) || IsCollisionBypassed(player2);
+        }
+
+        private void ApplyCommittedFacing()
+        {
+            FighterController committedRightFighter = committedLeftFighter == player1 ? player2 : player1;
+            ApplyFacing(committedLeftFighter, committedRightFighter);
         }
 
         private void EnforceMinimumSpacing(FighterController left, FighterController right)

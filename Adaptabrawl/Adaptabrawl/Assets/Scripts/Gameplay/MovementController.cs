@@ -79,10 +79,6 @@ namespace Adaptabrawl.Gameplay
         public void SetMoveInput(Vector2 input)
         {
             moveInput = input;
-
-            // Update facing direction from horizontal input.
-            if (fighterController != null && Mathf.Abs(input.x) > 0.1f)
-                fighterController.SetFacing(input.x > 0f);
         }
         
         public void Jump()

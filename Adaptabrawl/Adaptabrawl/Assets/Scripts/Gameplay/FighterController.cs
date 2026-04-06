@@ -373,21 +373,22 @@ namespace Adaptabrawl.Gameplay
 
         public void SetFacing(bool right)
         {
-            if (facingRight != right)
+            bool changed = facingRight != right;
+            facingRight = right;
+
+            var pcp = GetPlayerController();
+            if (pcp != null)
             {
-                facingRight = right;
-                var pcp = GetPlayerController();
-                if (pcp != null)
-                {
-                    pcp.transform.rotation = Quaternion.LookRotation(right ? Vector3.right : Vector3.left);
-                }
-                else
-                {
-                    // Fallback for missing PCP
-                    transform.localScale = new Vector3(right ? 1f : -1f, 1f, 1f);
-                }
-                OnFacingChanged?.Invoke(right);
+                pcp.transform.rotation = Quaternion.LookRotation(right ? Vector3.right : Vector3.left);
             }
+            else
+            {
+                // Fallback for missing PCP
+                transform.localScale = new Vector3(right ? 1f : -1f, 1f, 1f);
+            }
+
+            if (changed)
+                OnFacingChanged?.Invoke(right);
         }
 
         public void ClearGameplayState(bool snapToIdle = true)

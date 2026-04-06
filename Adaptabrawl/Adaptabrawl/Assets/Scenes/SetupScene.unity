@@ -3248,8 +3248,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.UI.CharacterSelectUI
   setupManager: {fileID: 1224466611}
   availableFighters:
-  - {fileID: 11400000, guid: 650c58ccce4fde649af6d0bbd894e6a5, type: 2}
   - {fileID: 11400000, guid: 3db14d7734ec08a45b6c8e7cfb993e07, type: 2}
+  - {fileID: 11400000, guid: 650c58ccce4fde649af6d0bbd894e6a5, type: 2}
   - {fileID: 11400000, guid: 2384042a0eec9ba4585cffcb627f0cfd, type: 2}
   - {fileID: 11400000, guid: b212aec6c8dd7fa4c9f902434a9da2fc, type: 2}
   player1PlayerName: {fileID: 0}

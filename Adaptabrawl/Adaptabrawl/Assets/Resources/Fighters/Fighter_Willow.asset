@@ -14,18 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.Data.FighterDef
   fighterPrefab: {fileID: 1509395497114597179, guid: 45d2d8c2083ee6e48860f807a35a5225, type: 3}
   fighterName: Willow
-  description: Versatile reach and sweeps. Good for zoning and catching approaches.
+  description: Mobile staff fighter with evasive movement, quick repositioning, and
+    slippery spacing control.
   portrait: {fileID: 0}
-  maxHealth: 100
-  moveSpeed: 6.0
-  jumpForce: 10
-  dashSpeed: 13
-  dashDuration: 0.28
-  weight: 1.0
-  baseDamageMultiplier: 1.05
-  baseDefenseMultiplier: 1.05
+  maxHealth: 80
+  moveSpeed: 6.5
+  jumpForce: 15
+  dashSpeed: 20
+  dashDuration: 0.18
+  weight: 0.75
+  baseDamageMultiplier: 0.95
+  baseDefenseMultiplier: 0.85
   armorBreakThreshold: 3
-  playStyle: 0
+  playStyle: 3
   hurtboxes:
   - name: Body
     offset: {x: 0, y: 0}

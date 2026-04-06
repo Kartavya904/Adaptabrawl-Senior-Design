@@ -10,22 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d6c396d8fbcecfa498efb2d8358f073d, type: 3}
-  m_Name: Fighter_Flicker
+  m_Name: Fighter_Bastion
   m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.Data.FighterDef
-  fighterPrefab: {fileID: 3743049983895971136, guid: 693737c5fdbb0e9489a1af613dbb5a68, type: 3}
-  fighterName: Flicker
-  description: Fast, precise thrusts. Low damage per hit but high combo potential.
+  fighterPrefab: {fileID: 2553231010451283874, guid: 66b1bcecba6745848a4a36d09d6cf059, type: 3}
+  fighterName: Bastion
+  description: Balanced offense and defense. Uses sword-and-shield tools to stay
+    stable in neutral and close-range scrambles.
   portrait: {fileID: 0}
-  maxHealth: 80
-  moveSpeed: 6.5
-  jumpForce: 15
-  dashSpeed: 20
-  dashDuration: 0.18
-  weight: 0.75
-  baseDamageMultiplier: 0.95
-  baseDefenseMultiplier: 0.85
+  maxHealth: 100
+  moveSpeed: 6.0
+  jumpForce: 10
+  dashSpeed: 13
+  dashDuration: 0.28
+  weight: 1.0
+  baseDamageMultiplier: 1.05
+  baseDefenseMultiplier: 1.05
   armorBreakThreshold: 3
-  playStyle: 3
+  playStyle: 0
   hurtboxes:
   - name: Body
     offset: {x: 0, y: 0}
@@ -43,21 +44,21 @@ MonoBehaviour:
     isActive: 1
     damageMultiplier: 1.2
     gizmoColor: {r: 1, g: 0, b: 0, a: 0.3}
-  lightAttack: {fileID: 11400000, guid: 3f9f1090af5005c42940639ce04d241e, type: 2}
-  heavyAttack: {fileID: 11400000, guid: 5516958d5efeb2c46aa49f0d71e3e42f, type: 2}
+  lightAttack: {fileID: 11400000, guid: cd693b3f539e49d45914167a70d9324a, type: 2}
+  heavyAttack: {fileID: 11400000, guid: 1e33e25bdc01a9249be0812f7eaeefef, type: 2}
   specialMoves:
-  - {fileID: 11400000, guid: bed98a0f46f46c04a8afb81f235a9f45, type: 2}
-  - {fileID: 11400000, guid: 8eaffa663da7b8343803d2f277d31e4f, type: 2}
-  - {fileID: 11400000, guid: 75530945b528b7543a026f6d8487896b, type: 2}
-  - {fileID: 11400000, guid: 997010845a8124c4790e6043b54d04b3, type: 2}
-  - {fileID: 11400000, guid: 4c0c541fde9db9b42899b163cbda771d, type: 2}
-  - {fileID: 11400000, guid: 86f67a87bc7955244ab6ef96f0a81be4, type: 2}
-  - {fileID: 11400000, guid: 2cdb7ec46ef706f48a232dd63f30b7e3, type: 2}
-  - {fileID: 11400000, guid: 4259188960e76fe48a00d3686016be06, type: 2}
-  moveLibrary: {fileID: 11400000, guid: 52982f3059d68944aa95a9f49bbed400, type: 2}
-  jumpAttackPrimary: {fileID: 11400000, guid: 4f66ad3d950b5c9439746435eda777ba, type: 2}
-  aerialSpecial: {fileID: 11400000, guid: 4259188960e76fe48a00d3686016be06, type: 2}
-  dodgeAttack: {fileID: 11400000, guid: 1e74f45a83c62364bab6689d89b23974, type: 2}
-  crouchAttack: {fileID: 11400000, guid: 13a47bac9194fa848ab6aac006e1b707, type: 2}
+  - {fileID: 11400000, guid: 1f0497bdf5fdb3646bd100318b948b43, type: 2}
+  - {fileID: 11400000, guid: 7f13c7989f8dd5e4f92a10972ac4212b, type: 2}
+  - {fileID: 11400000, guid: 0f1a4587cd9863849bd476c7d1735832, type: 2}
+  - {fileID: 11400000, guid: 32548fa83a6d46c47b8e1c665970ab68, type: 2}
+  - {fileID: 11400000, guid: 04526ef8fc98c0b4b8262575e7ed3efd, type: 2}
+  - {fileID: 11400000, guid: 906b55f0cfc269244be14b9ae83e0c69, type: 2}
+  - {fileID: 11400000, guid: 55de43940b1eae24e98e594c372ba2a3, type: 2}
+  - {fileID: 11400000, guid: 89d1eceda190a784995f11f04ec8b2a1, type: 2}
+  moveLibrary: {fileID: 11400000, guid: 4363a38e8a970b348bf8c4bddca6132e, type: 2}
+  jumpAttackPrimary: {fileID: 11400000, guid: 4e53bad7397a6b64db89d197e77601d9, type: 2}
+  aerialSpecial: {fileID: 11400000, guid: 89d1eceda190a784995f11f04ec8b2a1, type: 2}
+  dodgeAttack: {fileID: 11400000, guid: 78edf95d6074b7b40bc37847a20b0502, type: 2}
+  crouchAttack: {fileID: 11400000, guid: 01e8fc30da257a848a3c21bec77756a1, type: 2}
   canAdaptToConditions: 1
   adaptationRules: []

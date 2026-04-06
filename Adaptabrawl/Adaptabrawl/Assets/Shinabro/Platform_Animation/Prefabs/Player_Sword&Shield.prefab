@@ -74,6 +74,8 @@ GameObject:
   m_Component:
   - component: {fileID: 8872852239780587699}
   - component: {fileID: -3108953971749216368}
+  - component: {fileID: 5044711980089197945}
+  - component: {fileID: 4152612757520376274}
   m_Layer: 0
   m_Name: Player_Sword&Shield
   m_TagString: Untagged
@@ -109,7 +111,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2371728054
+  GlobalObjectIdHash: 627436127
   InScenePlacedSourceGlobalObjectIdHash: 627436127
   DeferredDespawnTick: 0
   Ownership: 1
@@ -122,6 +124,56 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
+--- !u!136 &5044711980089197945
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2553231010451283874}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 1
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!54 &4152612757520376274
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2553231010451283874}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1001 &3254731505734433977
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1726,6 +1778,7 @@ MonoBehaviour:
   skill6: 54
   skill7: 55
   skill8: 56
+  moveStickDeadZone: 0.22
   speed_rot: 20
   speed_move: 15
   term: 1
@@ -1733,13 +1786,8 @@ MonoBehaviour:
   comboChainPoint: 0.85
   maxHealth: 100
   currentHealth: 0
-  attackPoint: {fileID: 0}
-  attackRange: 0.5
   attackDamage: 10
   skillDamage: 20
-  enemyLayers:
-    serializedVersion: 2
-    m_Bits: 0
   deathAnimationState: Death
   isJump: 0
   isDead: 0

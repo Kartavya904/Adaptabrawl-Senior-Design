@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1509395497114597178}
   - component: {fileID: -8879807737255814566}
+  - component: {fileID: -6874970004532160397}
+  - component: {fileID: 9121588426204921797}
   m_Layer: 0
   m_Name: Player_Staff
   m_TagString: Untagged
@@ -45,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 0
+  GlobalObjectIdHash: 3558384749
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -58,6 +60,56 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
+--- !u!54 &-6874970004532160397
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1509395497114597179}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!136 &9121588426204921797
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1509395497114597179}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 1
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &82643592578098420
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1663,6 +1715,7 @@ MonoBehaviour:
   skill6: 54
   skill7: 55
   skill8: 56
+  moveStickDeadZone: 0.22
   speed_rot: 20
   speed_move: 15
   term: 1
@@ -1670,13 +1723,21 @@ MonoBehaviour:
   comboChainPoint: 0.85
   maxHealth: 100
   currentHealth: 0
-  attackPoint: {fileID: 0}
-  attackRange: 0.5
   attackDamage: 10
   skillDamage: 20
-  enemyLayers:
-    serializedVersion: 2
-    m_Bits: 0
   deathAnimationState: Death
   isJump: 0
   isDead: 0
+  inputLocked: 0
+  isNetworkControlled: 0
+  netRight: 0
+  netLeft: 0
+  netCrouch: 0
+  netSprint: 0
+  netJump: 0
+  netAttack: 0
+  netBlock: 0
+  netBlockDown: 0
+  netBlockUp: 0
+  netDodge: 0
+  netSkills: 0000000000000000

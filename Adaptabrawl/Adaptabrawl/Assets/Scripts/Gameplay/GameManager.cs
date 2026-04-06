@@ -28,6 +28,7 @@ namespace Adaptabrawl.Gameplay
         private List<FighterController> roundWinners = new List<FighterController>();
         private float roundTimer = 0f;
         private bool roundActive = false;
+        private bool roundEnding = false;
         private FighterController roundWinner = null;
 
         [Header("Events")]
@@ -129,6 +130,7 @@ namespace Adaptabrawl.Gameplay
             EnsureRoundWinEntries();
             roundTimer = roundDuration;
             roundWinner = null;
+            roundEnding = false;
             _inPreRoundBuffer = true; // block win detection before anything else
 
             // Every round starts from each player's original character selection with fresh switch timers.
@@ -210,7 +212,7 @@ namespace Adaptabrawl.Gameplay
 
         private void CheckWinConditions()
         {
-            if (_inPreRoundBuffer) return; // don't end the round during the countdown
+            if (_inPreRoundBuffer || roundEnding) return; // don't end the round during the countdown
 
             // Find a dead player this frame (poll-based backup for the event path).
             FighterController dead = null;
@@ -232,7 +234,7 @@ namespace Adaptabrawl.Gameplay
 
         private void OnPlayerDeath(FighterController deadPlayer)
         {
-            if (!roundActive || _inPreRoundBuffer) return;
+            if (!roundActive || _inPreRoundBuffer || roundEnding) return;
 
             FighterController winner = players.FirstOrDefault(p => p != deadPlayer && p != null && !p.IsDead);
             StartCoroutine(KOSlowdownRoutine(winner));
@@ -240,6 +242,7 @@ namespace Adaptabrawl.Gameplay
 
         private System.Collections.IEnumerator KOSlowdownRoutine(FighterController winner)
         {
+            roundEnding = true;
             roundActive = false; // block further death processing
             Time.timeScale = 0.12f;
             yield return new WaitForSecondsRealtime(0.45f);
@@ -249,6 +252,9 @@ namespace Adaptabrawl.Gameplay
 
         private void EndRoundByTime()
         {
+            if (roundEnding) return;
+            roundEnding = true;
+
             // Determine winner by health percentage
             FighterController winner = null;
             float highestHealth = 0f;
@@ -279,9 +285,10 @@ namespace Adaptabrawl.Gameplay
 
         private void EndRound(FighterController winner)
         {
-            if (!roundActive) return;
+            if (!roundActive && !roundEnding) return;
 
             roundActive = false;
+            roundEnding = true;
             roundWinner = winner;
             if (_audioSource != null && roundEndClip != null)
                 _audioSource.PlayOneShot(roundEndClip, 1f);
@@ -383,6 +390,8 @@ namespace Adaptabrawl.Gameplay
         {
             // Reset match
             currentRound = 1;
+            roundActive = false;
+            roundEnding = false;
             roundWins.Clear();
             roundWinners.Clear();
             foreach (var player in players)

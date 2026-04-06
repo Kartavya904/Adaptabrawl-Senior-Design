@@ -29,6 +29,10 @@ namespace Adaptabrawl.Gameplay
 
         [Header("Facing")]
         [SerializeField] private bool facingRight = true;
+
+        [Header("Audio")]
+        [SerializeField] private AudioClip swapSoundClip;
+        private AudioSource _audioSource;
         
         [Header("Events")]
         public System.Action<float, float> OnHealthChanged; // current, max
@@ -53,6 +57,10 @@ namespace Adaptabrawl.Gameplay
             
             if (movementController == null)
                 movementController = gameObject.AddComponent<MovementController>();
+
+            _audioSource = gameObject.AddComponent<AudioSource>();
+            _audioSource.playOnAwake = false;
+            if (swapSoundClip == null) swapSoundClip = Resources.Load<AudioClip>("SFX/swap");
         }
         
         private void Start()

@@ -13,6 +13,12 @@ namespace Adaptabrawl.Combat
         [SerializeField] private FighterController fighterController;
         [SerializeField] private CombatFSM combatFSM;
         
+        [Header("SFX")]
+        [SerializeField] private AudioClip[] lightHitClips;
+        [SerializeField] private AudioClip[] heavyHitClips;
+        [SerializeField] private AudioClip[] blockClips;
+        private AudioSource _audioSource;
+
         [Header("Events")]
         public System.Action<float, FighterController> OnDamageDealt;
         public System.Action<FighterController, MoveDef> OnBlocked;
@@ -23,6 +29,15 @@ namespace Adaptabrawl.Combat
                 fighterController = GetComponent<FighterController>();
             if (combatFSM == null)
                 combatFSM = GetComponent<CombatFSM>();
+
+            _audioSource = gameObject.AddComponent<AudioSource>();
+            _audioSource.playOnAwake = false;
+            if (lightHitClips == null || lightHitClips.Length == 0)
+                lightHitClips = new AudioClip[] { Resources.Load<AudioClip>("SFX/hit") };
+            if (heavyHitClips == null || heavyHitClips.Length == 0)
+                heavyHitClips = new AudioClip[] { Resources.Load<AudioClip>("SFX/heavy_hit") };
+            if (blockClips == null || blockClips.Length == 0)
+                blockClips = new AudioClip[] { Resources.Load<AudioClip>("SFX/block") };
         }
         
         public void DealDamage(
@@ -60,6 +75,7 @@ namespace Adaptabrawl.Combat
             
             // Apply damage to target
             target.TakeDamage(finalDamage);
+            ApplyKnockback(target, move);
 
             Vector3 resolvedHitPosition = hitPosition ?? target.transform.position;
             Vector3 resolvedHitDirection = hitDirection ?? GetHitDirection(target);
@@ -100,8 +116,25 @@ namespace Adaptabrawl.Combat
             
             // Check for armor break
             CheckArmorBreak(target, move);
-            
+            PlayHitSound(move.moveType == MoveType.HeavyAttack || move.moveType == MoveType.Special);
+
             OnDamageDealt?.Invoke(finalDamage, target);
+        }
+
+        private void ApplyKnockback(FighterController target, MoveDef move)
+        {
+            if (target == null || target.IsDead) return;
+            var rb = target.GetComponent<Rigidbody2D>();
+            if (rb == null) return;
+
+            Vector3 dir = GetHitDirection(target);
+            float strength = move.moveType switch
+            {
+                MoveType.HeavyAttack => 5.5f,
+                MoveType.Special     => 4.5f,
+                _                   => 2.5f
+            };
+            rb.AddForce(new Vector2(dir.x, 0.3f) * strength, ForceMode2D.Impulse);
         }
 
         private Vector3 GetHitDirection(FighterController target)
@@ -185,6 +218,20 @@ namespace Adaptabrawl.Combat
             }
             
             OnBlocked?.Invoke(target, move);
+        }
+
+        private void PlayHitSound(bool isHeavy)
+        {
+            if (_audioSource == null) return;
+            var clips = isHeavy ? heavyHitClips : lightHitClips;
+            if (clips != null && clips.Length > 0)
+                _audioSource.PlayOneShot(clips[Random.Range(0, clips.Length)]);
+        }
+
+        private void PlayBlockSound()
+        {
+            if (_audioSource == null || blockClips == null || blockClips.Length == 0) return;
+            _audioSource.PlayOneShot(blockClips[Random.Range(0, blockClips.Length)]);
         }
         
         private void ApplyStatusEffectsToTarget(FighterController target, StatusEffectData[] effects)

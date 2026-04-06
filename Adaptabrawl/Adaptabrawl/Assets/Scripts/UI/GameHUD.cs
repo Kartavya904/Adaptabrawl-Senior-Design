@@ -52,6 +52,29 @@ namespace Adaptabrawl.UI
         [Tooltip("The 'Timer' TMP text element in the scene. Displays time as mm:ss.")]
         [SerializeField] private TextMeshProUGUI timerText;
 
+        [Header("Ghost Health Bars (Chipping)")]
+        [SerializeField] private Slider p1GhostSlider;
+        [SerializeField] private Slider p2GhostSlider;
+        [Tooltip("Seconds to wait before ghost bar starts draining.")]
+        [SerializeField] private float ghostDrainDelay = 0.5f;
+        [Tooltip("Units per second the ghost bar drains.")]
+        [SerializeField] private float ghostDrainSpeed = 0.4f;
+
+        [Header("Countdown Overlay")]
+        [Tooltip("Large centered TMP text for 3-2-1-FIGHT display. Assign in Inspector.")]
+        [SerializeField] private TextMeshProUGUI countdownText;
+        [SerializeField] private Color countdownNumberColor = new Color(1f, 0.85f, 0.1f);
+        [SerializeField] private Color countdownFightColor  = new Color(1f, 0.25f, 0.1f);
+
+        [Header("Round Banners")]
+        [Tooltip("Panel that slides down from top. Assign in Inspector.")]
+        [SerializeField] private RectTransform bannerPanel;
+        [SerializeField] private TextMeshProUGUI bannerText;
+
+        [Header("KO Screen Flash")]
+        [Tooltip("Full-screen white Image (alpha=0 at start). Assign in Inspector.")]
+        [SerializeField] private Image screenFlashImage;
+
         [Header("Round Win Bubbles")]
         [Tooltip("Empty RectTransform placed under Player 1's health bar. " +
                  "Win-bubble Images will be parented here at runtime.")]
@@ -81,7 +104,11 @@ namespace Adaptabrawl.UI
         private FighterController _p2;
         private Image             _p1Fill;
         private Image             _p2Fill;
+        private Image             _p1GhostFill;
+        private Image             _p2GhostFill;
         private GameManager       _gameManager;
+        private Coroutine         _p1GhostCoroutine;
+        private Coroutine         _p2GhostCoroutine;
         private static Sprite     s_FallbackBubbleSprite;
 
         // -----------------------------------------------------------------------
@@ -92,6 +119,17 @@ namespace Adaptabrawl.UI
         {
             _p1Fill = GetFillImage(p1HealthSlider);
             _p2Fill = GetFillImage(p2HealthSlider);
+            _p1GhostFill = GetFillImage(p1GhostSlider);
+            _p2GhostFill = GetFillImage(p2GhostSlider);
+
+            // Tint ghost bars orange
+            SetGhostColor(_p1GhostFill);
+            SetGhostColor(_p2GhostFill);
+
+            // Hide countdown and banner at start
+            if (countdownText != null)  { countdownText.gameObject.SetActive(false); }
+            if (bannerPanel != null)    { bannerPanel.gameObject.SetActive(false); }
+            if (screenFlashImage != null) { var c = screenFlashImage.color; c.a = 0f; screenFlashImage.color = c; }
 
             // Built-in editor sprite names vary across Unity versions, so generate a small
             // runtime bubble sprite instead of depending on Knob.psd.
@@ -110,6 +148,8 @@ namespace Adaptabrawl.UI
             {
                 _gameManager.OnRoundTimerUpdate -= UpdateTimer;
                 _gameManager.OnRoundEnd         -= OnRoundEnd;
+                _gameManager.OnRoundStart       -= OnRoundStart;
+                _gameManager.OnRoundCountdown   -= OnRoundCountdown;
             }
         }
 
@@ -146,6 +186,8 @@ namespace Adaptabrawl.UI
             {
                 _gameManager.OnRoundTimerUpdate += UpdateTimer;
                 _gameManager.OnRoundEnd         += OnRoundEnd;
+                _gameManager.OnRoundStart       += OnRoundStart;
+                _gameManager.OnRoundCountdown   += OnRoundCountdown;
                 UpdateTimer(_gameManager.RoundTimer);
                 RefreshBubbles();
             }
@@ -183,11 +225,17 @@ namespace Adaptabrawl.UI
             return slider.fillRect.GetComponent<Image>();
         }
 
-        private void UpdateP1Health(float current, float max) =>
+        private void UpdateP1Health(float current, float max)
+        {
             ApplyHealth(p1HealthSlider, _p1Fill, current, max);
+            DriveGhostBar(ref _p1GhostCoroutine, p1GhostSlider, current, max);
+        }
 
-        private void UpdateP2Health(float current, float max) =>
+        private void UpdateP2Health(float current, float max)
+        {
             ApplyHealth(p2HealthSlider, _p2Fill, current, max);
+            DriveGhostBar(ref _p2GhostCoroutine, p2GhostSlider, current, max);
+        }
 
         private void ApplyHealth(Slider slider, Image fill, float current, float max)
         {
@@ -205,6 +253,40 @@ namespace Adaptabrawl.UI
                 else if (ratio > thresholdLow)  fill.color = colorMid;
                 else                            fill.color = colorLow;
             }
+        }
+
+        private void DriveGhostBar(ref Coroutine handle, Slider ghostSlider, float current, float max)
+        {
+            if (ghostSlider == null) return;
+            ghostSlider.minValue = 0f;
+            ghostSlider.maxValue = max;
+            // Only drain ghost if actual bar went down
+            if (current < ghostSlider.value)
+            {
+                if (handle != null) StopCoroutine(handle);
+                handle = StartCoroutine(DrainGhostRoutine(ghostSlider, current));
+            }
+            else
+            {
+                ghostSlider.value = current; // snap up immediately on heal
+            }
+        }
+
+        private System.Collections.IEnumerator DrainGhostRoutine(Slider ghostSlider, float targetValue)
+        {
+            yield return new WaitForSeconds(ghostDrainDelay);
+            while (ghostSlider != null && ghostSlider.value > targetValue)
+            {
+                ghostSlider.value -= ghostDrainSpeed * ghostSlider.maxValue * Time.deltaTime;
+                if (ghostSlider.value < targetValue) ghostSlider.value = targetValue;
+                yield return null;
+            }
+        }
+
+        private static void SetGhostColor(Image img)
+        {
+            if (img != null)
+                img.color = new Color(1f, 0.6f, 0.1f, 0.75f);
         }
 
         // -----------------------------------------------------------------------
@@ -225,7 +307,105 @@ namespace Adaptabrawl.UI
         // Round-win bubbles
         // -----------------------------------------------------------------------
 
-        private void OnRoundEnd(FighterController winner) => RefreshBubbles();
+        private void OnRoundEnd(FighterController winner)
+        {
+            RefreshBubbles();
+            string msg = winner != null ? "KO!" : "TIME!";
+            StartCoroutine(ShowBannerRoutine(msg));
+            StartCoroutine(ScreenFlashRoutine());
+        }
+
+        private void OnRoundStart(int roundNumber)
+        {
+            string label = roundNumber >= 3 ? "Final Round!" : $"Round {roundNumber}";
+            StartCoroutine(ShowBannerRoutine(label));
+        }
+
+        private void OnRoundCountdown(int tick)
+        {
+            if (countdownText == null) return;
+            if (tick > 0)
+            {
+                countdownText.gameObject.SetActive(true);
+                countdownText.text  = tick.ToString();
+                countdownText.color = countdownNumberColor;
+                StartCoroutine(PunchScaleRoutine(countdownText.transform, 1.4f, 0.15f));
+            }
+            else
+            {
+                countdownText.gameObject.SetActive(true);
+                countdownText.text  = "FIGHT!";
+                countdownText.color = countdownFightColor;
+                StartCoroutine(PunchScaleRoutine(countdownText.transform, 1.6f, 0.2f,
+                    fadeOutDelay: 0.75f, onDone: () => countdownText.gameObject.SetActive(false)));
+            }
+        }
+
+        private System.Collections.IEnumerator PunchScaleRoutine(
+            Transform target, float peakScale, float punchDuration,
+            float fadeOutDelay = 0f, System.Action onDone = null)
+        {
+            float t = 0f;
+            while (t < punchDuration)
+            {
+                float p = t / punchDuration;
+                float s = Mathf.Lerp(peakScale, 1f, p);
+                target.localScale = Vector3.one * s;
+                t += Time.deltaTime;
+                yield return null;
+            }
+            target.localScale = Vector3.one;
+            if (fadeOutDelay > 0f) yield return new WaitForSeconds(fadeOutDelay);
+            onDone?.Invoke();
+        }
+
+        private System.Collections.IEnumerator ShowBannerRoutine(string message)
+        {
+            if (bannerPanel == null || bannerText == null) yield break;
+            bannerText.text = message;
+            bannerPanel.gameObject.SetActive(true);
+
+            // Slide in from top
+            Vector2 offscreen = new Vector2(0f, 200f);
+            Vector2 onscreen  = Vector2.zero;
+            float elapsed = 0f, slideDuration = 0.25f;
+            while (elapsed < slideDuration)
+            {
+                bannerPanel.anchoredPosition = Vector2.Lerp(offscreen, onscreen, elapsed / slideDuration);
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+            bannerPanel.anchoredPosition = onscreen;
+
+            yield return new WaitForSeconds(1.5f);
+
+            elapsed = 0f;
+            while (elapsed < slideDuration)
+            {
+                bannerPanel.anchoredPosition = Vector2.Lerp(onscreen, offscreen, elapsed / slideDuration);
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+            bannerPanel.gameObject.SetActive(false);
+        }
+
+        private System.Collections.IEnumerator ScreenFlashRoutine()
+        {
+            if (screenFlashImage == null) yield break;
+            Color c = screenFlashImage.color;
+            c.a = 0.7f;
+            screenFlashImage.color = c;
+            float elapsed = 0f, fadeDuration = 0.35f;
+            while (elapsed < fadeDuration)
+            {
+                c.a = Mathf.Lerp(0.7f, 0f, elapsed / fadeDuration);
+                screenFlashImage.color = c;
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+            c.a = 0f;
+            screenFlashImage.color = c;
+        }
 
         private void RefreshBubbles()
         {

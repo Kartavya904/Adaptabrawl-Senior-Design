@@ -13,6 +13,12 @@ namespace Adaptabrawl.Gameplay
         [SerializeField] private float roundEndDelay = 3f;
         [SerializeField] private float preRoundBuffer = 3f; // Seconds fighters are frozen before round starts
 
+        [Header("Audio (Announcer)")]
+        [SerializeField] private AudioClip countdownBeepClip;
+        [SerializeField] private AudioClip fightStartClip;
+        [SerializeField] private AudioClip roundEndClip;
+        private AudioSource _audioSource;
+
         [Header("Players")]
         [SerializeField] private List<FighterController> players = new List<FighterController>();
 
@@ -72,6 +78,12 @@ namespace Adaptabrawl.Gameplay
         {
             if (_initialized) return;
             _initialized = true;
+
+            _audioSource = gameObject.AddComponent<AudioSource>();
+            _audioSource.playOnAwake = false;
+            if (countdownBeepClip == null) countdownBeepClip = Resources.Load<AudioClip>("SFX/beep");
+            if (fightStartClip == null)    fightStartClip    = Resources.Load<AudioClip>("SFX/fight");
+            if (roundEndClip == null)      roundEndClip      = Resources.Load<AudioClip>("SFX/matchover");
 
             // Find all fighters
             players.Clear();
@@ -158,9 +170,13 @@ namespace Adaptabrawl.Gameplay
             for (int i = steps; i > 0; i--)
             {
                 OnRoundCountdown?.Invoke(i);
+                if (_audioSource != null && countdownBeepClip != null)
+                    _audioSource.PlayOneShot(countdownBeepClip, 0.8f);
                 yield return new WaitForSeconds(1f);
             }
             OnRoundCountdown?.Invoke(0); // 0 = FIGHT!
+            if (_audioSource != null && fightStartClip != null)
+                _audioSource.PlayOneShot(fightStartClip, 1f);
 
             _inPreRoundBuffer = false;
 
@@ -218,8 +234,16 @@ namespace Adaptabrawl.Gameplay
         {
             if (!roundActive || _inPreRoundBuffer) return;
 
-            // Find the winner (the other player).
             FighterController winner = players.FirstOrDefault(p => p != deadPlayer && p != null && !p.IsDead);
+            StartCoroutine(KOSlowdownRoutine(winner));
+        }
+
+        private System.Collections.IEnumerator KOSlowdownRoutine(FighterController winner)
+        {
+            roundActive = false; // block further death processing
+            Time.timeScale = 0.12f;
+            yield return new WaitForSecondsRealtime(0.45f);
+            Time.timeScale = 1f;
             EndRound(winner);
         }
 
@@ -259,6 +283,8 @@ namespace Adaptabrawl.Gameplay
 
             roundActive = false;
             roundWinner = winner;
+            if (_audioSource != null && roundEndClip != null)
+                _audioSource.PlayOneShot(roundEndClip, 1f);
             EnsureRoundWinEntries();
 
             // Pause switching during round-end

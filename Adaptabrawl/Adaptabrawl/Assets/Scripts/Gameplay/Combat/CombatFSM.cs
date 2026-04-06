@@ -19,7 +19,7 @@ namespace Adaptabrawl.Combat
         private bool hitboxWindowActive = false;
         
         [Header("Input Buffer")]
-        private float inputBufferWindow = 0.1f;
+        [SerializeField] private float inputBufferWindow = 0.16f;
         private float lastInputTime = -1f;
         private MoveDef bufferedMove = null;
         

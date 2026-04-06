@@ -535,7 +535,7 @@ public class PlayerController_Platform : MonoBehaviour
     {
         Vector2 moveDirection = Vector2.zero;
 
-        moveDirection.x = currentHorizontalIntent;
+        moveDirection.x = GetRawHorizontalIntent();
 
         if (IsCrouchPressed())
             moveDirection.y -= 1f;
@@ -580,6 +580,20 @@ public class PlayerController_Platform : MonoBehaviour
 
         if (snapToIdle)
             anim.CrossFadeInFixedTime("Idle", 0.05f);
+    }
+
+    public bool IsDodgeAnimationActive()
+    {
+        if (anim == null || !anim.isActiveAndEnabled)
+            return false;
+
+        AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(0);
+        if (anim.IsInTransition(0))
+            return stateInfo.IsName("Dodge") || stateInfo.IsName("DodgeRoll") || stateInfo.IsTag("Dodge");
+
+        return stateInfo.IsName("Dodge")
+            || stateInfo.IsName("DodgeRoll")
+            || stateInfo.IsTag("Dodge");
     }
 
 

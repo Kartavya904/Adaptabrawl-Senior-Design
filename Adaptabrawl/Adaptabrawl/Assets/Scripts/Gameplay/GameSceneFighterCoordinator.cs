@@ -83,6 +83,9 @@ namespace Adaptabrawl.Gameplay
             if (!ShouldCoordinate())
                 return false;
 
+            if (IsCollisionBypassed(player1) || IsCollisionBypassed(player2))
+                return false;
+
             var p1Controller = player1.GetPlayerController();
             var p2Controller = player2.GetPlayerController();
             if (p1Controller == null || p2Controller == null)
@@ -93,6 +96,19 @@ namespace Adaptabrawl.Gameplay
 
             float verticalDelta = Mathf.Abs(player1.GetArenaPosition().y - player2.GetArenaPosition().y);
             return verticalDelta <= airborneVerticalTolerance;
+        }
+
+        private static bool IsCollisionBypassed(FighterController fighter)
+        {
+            if (fighter == null)
+                return false;
+
+            var evadeSystem = fighter.GetComponent<Adaptabrawl.Evade.EvadeSystem>();
+            if (evadeSystem != null && evadeSystem.IsDodging)
+                return true;
+
+            var playerController = fighter.GetPlayerController();
+            return playerController != null && playerController.IsDodgeAnimationActive();
         }
 
         private bool TryGetOrderedFighters(out FighterController left, out FighterController right)

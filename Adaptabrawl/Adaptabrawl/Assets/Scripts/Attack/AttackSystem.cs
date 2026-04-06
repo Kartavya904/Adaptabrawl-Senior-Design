@@ -11,10 +11,19 @@ namespace Adaptabrawl.Attack
         private FighterController fighterController;
         private CombatFSM combatFSM;
         
+        [Header("SFX")]
+        [SerializeField] private AudioClip[] swingClips;
+        private AudioSource _audioSource;
+
         private void Start()
         {
             fighterController = GetComponent<FighterController>();
             combatFSM = GetComponent<CombatFSM>();
+
+            _audioSource = gameObject.AddComponent<AudioSource>();
+            _audioSource.playOnAwake = false;
+            if (swingClips == null || swingClips.Length == 0)
+                swingClips = new AudioClip[] { Resources.Load<AudioClip>("SFX/slash") };
         }
         
         public void OnLightAttackInput(bool pressed)
@@ -41,7 +50,9 @@ namespace Adaptabrawl.Attack
             if (specials == null || index < 0 || index >= specials.Length || specials[index] == null)
                 return false;
 
-            return combatFSM.TryStartMove(specials[index]);
+            bool success = combatFSM.TryStartMove(specials[index]);
+            if (success) PlaySwingSound();
+            return success;
         }
         
         private void TryLightAttack()
@@ -54,7 +65,10 @@ namespace Adaptabrawl.Attack
                 lightAttack = fighter.lightAttack ?? fighter.moveLibrary?.attack1;
 
             if (lightAttack != null)
-                combatFSM.TryStartMove(lightAttack);
+            {
+                if (combatFSM.TryStartMove(lightAttack))
+                    PlaySwingSound();
+            }
         }
         
         private void TryHeavyAttack()
@@ -64,7 +78,16 @@ namespace Adaptabrawl.Attack
 
             MoveDef heavyAttack = fighter.heavyAttack ?? fighter.moveLibrary?.attack3;
             if (heavyAttack != null)
-                combatFSM.TryStartMove(heavyAttack);
+            {
+                if (combatFSM.TryStartMove(heavyAttack))
+                    PlaySwingSound();
+            }
+        }
+
+        private void PlaySwingSound()
+        {
+            if (_audioSource != null && swingClips != null && swingClips.Length > 0)
+                _audioSource.PlayOneShot(swingClips[Random.Range(0, swingClips.Length)], 0.75f);
         }
 
         private MoveDef ResolveComboMove(FighterDef fighter)

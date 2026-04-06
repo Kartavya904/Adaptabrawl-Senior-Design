@@ -39,6 +39,7 @@ namespace Adaptabrawl.Gameplay
         private FighterController player1;
         private FighterController player2;
         private ClassificationSwitcher classificationSwitcher;
+        private GameSceneFighterCoordinator sceneCoordinator;
         private Adaptabrawl.UI.MatchResults matchResults;
 
         /// <summary>Fired once both fighters are spawned. Subscribe in Start() or later.</summary>
@@ -115,6 +116,11 @@ namespace Adaptabrawl.Gameplay
                 classificationSwitcher = gameObject.AddComponent<ClassificationSwitcher>();
             classificationSwitcher.Initialize(new FighterController[] { player1, player2 });
             // Switcher starts paused — GameManager will resume it after the pre-round buffer
+
+            sceneCoordinator = GetComponent<GameSceneFighterCoordinator>();
+            if (sceneCoordinator == null)
+                sceneCoordinator = gameObject.AddComponent<GameSceneFighterCoordinator>();
+            sceneCoordinator.Initialize(player1, player2);
 
             // Notify HUD that fighters are ready
             OnFightersSpawned?.Invoke(player1, player2);

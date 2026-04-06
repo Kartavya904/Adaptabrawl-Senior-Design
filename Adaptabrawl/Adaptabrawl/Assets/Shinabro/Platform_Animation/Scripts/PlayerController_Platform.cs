@@ -10,6 +10,8 @@ using Adaptabrawl.Gameplay;
 public class PlayerController_Platform : MonoBehaviour
 {
     Animator anim;
+    private FighterController fighterController;
+    private MovementController movementController;
 
     [Header("Player Input Settings")]
     [Tooltip("Set to 0 for Controller 1, 1 for Controller 2, or -1 to Ignore Controllers.")]
@@ -74,6 +76,8 @@ public class PlayerController_Platform : MonoBehaviour
     private bool isAttacking;
     private bool canChainAttack;
     public bool isDead;
+    private float currentHorizontalIntent;
+    private Quaternion rot;
 
     [Header("Input Lock (game-state, not death)")]
     [Tooltip("Set by the game manager during pre-round buffers and walk-backs. " +
@@ -301,6 +305,8 @@ public class PlayerController_Platform : MonoBehaviour
         currentHealth = maxHealth;
         if (anim != null) anim.speed = _animSpeedMultiplier;
 
+        fighterController = GetComponentInParent<FighterController>();
+        movementController = fighterController != null ? fighterController.GetComponent<MovementController>() : null;
         attackSystem = GetComponentInParent<AttackSystem>();
         defenseSystem = GetComponentInParent<DefenseSystem>();
         evadeSystem = GetComponentInParent<EvadeSystem>();
@@ -366,6 +372,8 @@ public class PlayerController_Platform : MonoBehaviour
     {
         if (isDead || inputLocked) return;
 
+        currentHorizontalIntent = GetFilteredHorizontalIntent();
+        movementController?.SetMoveInput(new Vector2(currentHorizontalIntent, IsCrouchPressed() ? -1f : 0f));
         Rotate();
         transform.position = new Vector3(transform.position.x, transform.position.y, 0f);
 
@@ -425,42 +433,59 @@ public class PlayerController_Platform : MonoBehaviour
         if (isNetworkControlled) ConsumeNetworkTriggers();
     }
 
-    Quaternion rot;
-    
-    void Rotate()
+    private float GetRawHorizontalIntent()
     {
+        float horizontal = 0f;
+
+        if (IsLeftPressed())
+            horizontal -= 1f;
+
         if (IsRightPressed())
-        {            
-            Move();            
-            rot = Quaternion.LookRotation(Vector3.right);
-        }
-        else if (IsLeftPressed())
-        {            
-            Move();
-            rot = Quaternion.LookRotation(Vector3.left);
-        }
-        else
-        {            
+            horizontal += 1f;
+
+        return Mathf.Clamp(horizontal, -1f, 1f);
+    }
+
+    private float GetFilteredHorizontalIntent()
+    {
+        float desired = GetRawHorizontalIntent();
+        if (fighterController == null || Mathf.Abs(desired) < 0.01f)
+            return desired;
+
+        var coordinator = fighterController.GetSceneCoordinator();
+        return coordinator != null ? coordinator.FilterHorizontalIntent(fighterController, desired) : desired;
+    }
+
+    private void Rotate()
+    {
+        if (Mathf.Abs(currentHorizontalIntent) < 0.01f)
+        {
             anim.SetBool("Run", false);
             anim.SetBool("Walk", false);
+            return;
         }
+
+        Move();
+
+        rot = currentHorizontalIntent > 0f
+            ? Quaternion.LookRotation(Vector3.right)
+            : Quaternion.LookRotation(Vector3.left);
 
         transform.rotation = Quaternion.Slerp(transform.rotation, rot, speed_rot * Time.deltaTime);
     }
     
-    void Move()
+    private void Move()
     {
         if (isJump)
-        {            
-            transform.position += transform.forward * speed_move * Time.deltaTime;            
+        {
+            transform.position += transform.forward * speed_move * Time.deltaTime;
             anim.SetBool("Run", false);
             anim.SetBool("Walk", false);
+            return;
         }
-        else
-        {            
-            anim.SetBool("Run", true);
-            anim.SetBool("Walk", IsSprintPressed());
-        }
+
+        anim.SetBool("Run", true);
+        anim.SetBool("Walk", IsSprintPressed());
     }
 
     void Dodge()
@@ -510,11 +535,7 @@ public class PlayerController_Platform : MonoBehaviour
     {
         Vector2 moveDirection = Vector2.zero;
 
-        if (IsLeftPressed())
-            moveDirection.x -= 1f;
-
-        if (IsRightPressed())
-            moveDirection.x += 1f;
+        moveDirection.x = currentHorizontalIntent;
 
         if (IsCrouchPressed())
             moveDirection.y -= 1f;
@@ -525,6 +546,40 @@ public class PlayerController_Platform : MonoBehaviour
     void JumpEnd()
     {
         isJump = false;
+    }
+
+    public void ResetGameplayState(bool snapToIdle)
+    {
+        transitionDelay = 0f;
+        isAttacking = false;
+        canChainAttack = false;
+        isJump = false;
+        currentHorizontalIntent = 0f;
+
+        if (anim == null)
+            return;
+
+        anim.SetBool("Run", false);
+        anim.SetBool("Walk", false);
+        anim.SetBool("Block", false);
+        anim.SetBool("Crouch", false);
+
+        anim.ResetTrigger("Jump");
+        anim.ResetTrigger("Dodge");
+        anim.ResetTrigger("Attack1");
+        anim.ResetTrigger("Attack2");
+        anim.ResetTrigger("Attack3");
+        anim.ResetTrigger("Skill1");
+        anim.ResetTrigger("Skill2");
+        anim.ResetTrigger("Skill3");
+        anim.ResetTrigger("Skill4");
+        anim.ResetTrigger("Skill5");
+        anim.ResetTrigger("Skill6");
+        anim.ResetTrigger("Skill7");
+        anim.ResetTrigger("Skill8");
+
+        if (snapToIdle)
+            anim.CrossFadeInFixedTime("Idle", 0.05f);
     }
 
 

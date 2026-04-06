@@ -366,6 +366,22 @@ namespace Adaptabrawl.Combat
                 || stateInfo.IsName("Skill7")
                 || stateInfo.IsName("Skill8");
         }
+
+        public void ForceResetState()
+        {
+            DeactivateHitboxWindow();
+
+            currentMove = null;
+            currentFrame = 0;
+            totalFrames = 0;
+            inCancelWindow = false;
+            cancelWindowStart = 0;
+            cancelWindowEnd = 0;
+            bufferedMove = null;
+            lastInputTime = -1f;
+
+            SetState(CombatState.Idle);
+        }
         
         // Public getters
         public CombatState CurrentState => currentState;

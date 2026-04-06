@@ -33,6 +33,8 @@ namespace Adaptabrawl.Gameplay
         [Header("Audio")]
         [SerializeField] private AudioClip swapSoundClip;
         private AudioSource _audioSource;
+
+        private GameSceneFighterCoordinator sceneCoordinator;
         
         [Header("Events")]
         public System.Action<float, float> OnHealthChanged; // current, max
@@ -46,6 +48,14 @@ namespace Adaptabrawl.Gameplay
         public bool FacingRight => facingRight;
         public bool IsDead => currentHealth <= 0f;
         public int PlayerNumber => _playerNumber;
+        public bool IsInputLocked
+        {
+            get
+            {
+                var pcp = GetPlayerController();
+                return pcp != null && pcp.inputLocked;
+            }
+        }
 
         /// <summary>Set by LocalGameManager after spawning so SwapClassification knows which input config to use.</summary>
         public void SetPlayerNumber(int num) { _playerNumber = num; }
@@ -236,21 +246,56 @@ namespace Adaptabrawl.Gameplay
         /// </summary>
         public void SetSpawnPosition(Vector3 pos) => _spawnPosition = pos;
 
+        public void RegisterSceneCoordinator(GameSceneFighterCoordinator coordinator)
+        {
+            sceneCoordinator = coordinator;
+        }
+
+        public GameSceneFighterCoordinator GetSceneCoordinator() => sceneCoordinator;
+
+        public PlayerController_Platform GetPlayerController() => GetComponentInChildren<PlayerController_Platform>();
+
+        public Transform GetArenaTransform()
+        {
+            var pcp = GetPlayerController();
+            return pcp != null ? pcp.transform : transform;
+        }
+
+        public Vector3 GetArenaPosition() => GetArenaTransform().position;
+
+        public void SetArenaPosition(Vector3 position)
+        {
+            Transform arenaTransform = GetArenaTransform();
+            if (arenaTransform == null)
+                return;
+
+            arenaTransform.position = new Vector3(position.x, position.y, 0f);
+        }
+
         /// <summary>
         /// Starts the walk-back-to-spawn coroutine on this fighter.
         /// <paramref name="onComplete"/> is invoked when the fighter has arrived.
         /// </summary>
         public void StartReturnToSpawn(System.Action onComplete)
         {
-            StartCoroutine(ReturnToSpawnCoroutine(onComplete));
+            StartCoroutine(ReturnToSpawnCoroutine(returnToSpawnSpeed, onComplete));
         }
 
-        private System.Collections.IEnumerator ReturnToSpawnCoroutine(System.Action onComplete)
+        public void StartReturnToSpawn(float moveDurationSeconds, System.Action onComplete)
+        {
+            float distance = Mathf.Abs(_spawnPosition.x - GetArenaPosition().x);
+            float effectiveDuration = Mathf.Max(0.01f, moveDurationSeconds);
+            float customSpeed = distance <= 0.01f ? returnToSpawnSpeed : distance / effectiveDuration;
+            StartCoroutine(ReturnToSpawnCoroutine(customSpeed, onComplete));
+        }
+
+        private System.Collections.IEnumerator ReturnToSpawnCoroutine(float moveSpeedOverride, System.Action onComplete)
         {
             // Freeze all input and systems while walking back
             LockInput();
+            ClearGameplayState(true);
 
-            var pcp = GetComponentInChildren<PlayerController_Platform>();
+            var pcp = GetPlayerController();
 
             if (pcp == null)
             {
@@ -297,7 +342,7 @@ namespace Adaptabrawl.Gameplay
 
                 if (Mathf.Abs(xDist) <= arrivalThreshold) break;
 
-                float step = Mathf.Sign(xDist) * returnToSpawnSpeed * Time.deltaTime;
+                float step = Mathf.Sign(xDist) * moveSpeedOverride * Time.deltaTime;
                 // Clamp so we don't overshoot
                 if (Mathf.Abs(step) > Mathf.Abs(xDist)) step = xDist;
 
@@ -331,7 +376,7 @@ namespace Adaptabrawl.Gameplay
             if (facingRight != right)
             {
                 facingRight = right;
-                var pcp = GetComponentInChildren<PlayerController_Platform>();
+                var pcp = GetPlayerController();
                 if (pcp != null)
                 {
                     pcp.transform.rotation = Quaternion.LookRotation(right ? Vector3.right : Vector3.left);
@@ -343,6 +388,16 @@ namespace Adaptabrawl.Gameplay
                 }
                 OnFacingChanged?.Invoke(right);
             }
+        }
+
+        public void ClearGameplayState(bool snapToIdle = true)
+        {
+            combatFSM?.ForceResetState();
+            movementController?.SetMoveInput(Vector2.zero);
+
+            var pcp = GetPlayerController();
+            if (pcp != null)
+                pcp.ResetGameplayState(snapToIdle);
         }
         
         public void SetFighterDef(FighterDef def)
@@ -363,7 +418,7 @@ namespace Adaptabrawl.Gameplay
 
             // 1. Capture state from old prefab
             float healthPercent = maxHealth > 0 ? currentHealth / maxHealth : 1f;
-            var oldPcp = GetComponentInChildren<PlayerController_Platform>();
+            var oldPcp = GetPlayerController();
             Vector3 oldPos = oldPcp != null ? oldPcp.transform.position : transform.position;
             Quaternion oldRot = oldPcp != null ? oldPcp.transform.rotation : transform.rotation;
             int oldGamepadIndex = oldPcp != null ? oldPcp.gamepadIndex : -1;
@@ -486,7 +541,7 @@ namespace Adaptabrawl.Gameplay
             // NOTE: pcp.isDead, Rigidbody.isKinematic, and applyRootMotion are intentionally
             // left frozen here. LockInput() keeps them frozen through the pre-round buffer;
             // UnlockInput() releases them only when the round actually goes live.
-            var pcp = GetComponentInChildren<PlayerController_Platform>();
+            var pcp = GetPlayerController();
             if (pcp != null)
             {
                 pcp.currentHealth = pcp.maxHealth;

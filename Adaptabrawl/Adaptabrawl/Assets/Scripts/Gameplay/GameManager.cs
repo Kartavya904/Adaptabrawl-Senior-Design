@@ -41,6 +41,7 @@ namespace Adaptabrawl.Gameplay
         private bool _initialized;
         private bool _inPreRoundBuffer; // true while the countdown is running; blocks win detection
         private ClassificationSwitcher _classificationSwitcher;
+        private int _matchFlowPauseCount;
 
         private void Start()
         {
@@ -59,7 +60,8 @@ namespace Adaptabrawl.Gameplay
             if (roundActive)
             {
                 UpdateRoundTimer();
-                CheckWinConditions();
+                if (!IsMatchFlowPaused)
+                    CheckWinConditions();
             }
         }
 
@@ -194,7 +196,7 @@ namespace Adaptabrawl.Gameplay
         private void UpdateRoundTimer()
         {
             // Pre-round countdown should not consume playable round time.
-            if (_inPreRoundBuffer)
+            if (_inPreRoundBuffer || IsMatchFlowPaused)
             {
                 OnRoundTimerUpdate?.Invoke(roundTimer);
                 return;
@@ -234,7 +236,7 @@ namespace Adaptabrawl.Gameplay
 
         private void OnPlayerDeath(FighterController deadPlayer)
         {
-            if (!roundActive || _inPreRoundBuffer || roundEnding) return;
+            if (!roundActive || _inPreRoundBuffer || roundEnding || IsMatchFlowPaused) return;
 
             FighterController winner = players.FirstOrDefault(p => p != deadPlayer && p != null && !p.IsDead);
             StartCoroutine(KOSlowdownRoutine(winner));
@@ -402,6 +404,16 @@ namespace Adaptabrawl.Gameplay
             StartRound();
         }
 
+        public void PauseMatchFlow()
+        {
+            _matchFlowPauseCount++;
+        }
+
+        public void ResumeMatchFlow()
+        {
+            _matchFlowPauseCount = Mathf.Max(0, _matchFlowPauseCount - 1);
+        }
+
         private void EnsureRoundWinEntries()
         {
             foreach (FighterController player in players)
@@ -436,5 +448,6 @@ namespace Adaptabrawl.Gameplay
         public bool RoundActive => roundActive;
         public FighterController RoundWinner => roundWinner;
         public Dictionary<FighterController, int> RoundWins => new Dictionary<FighterController, int>(roundWins);
+        public bool IsMatchFlowPaused => _matchFlowPauseCount > 0;
     }
 }

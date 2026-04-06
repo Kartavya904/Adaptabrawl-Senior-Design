@@ -30,6 +30,11 @@ namespace Adaptabrawl.Gameplay
         [Tooltip("Maximum swaps per player per round. 3 means a 2-minute round at 30s interval gives 4 total fighters including the selected starter.")]
         [SerializeField] private int maxSwitchesPerRound = 3;
 
+        [Header("Swap Reset")]
+        [SerializeField] private float swapFreezeDuration = 0.5f;
+        [SerializeField] private float swapReturnDuration = 1f;
+        [SerializeField] private float swapPostReturnLockDuration = 1f;
+
         private float sharedTimer;
         private float roundElapsedTime;
         private float lastSwapTime;
@@ -40,6 +45,8 @@ namespace Adaptabrawl.Gameplay
         private Queue<FighterDef>[] plannedSwitchQueues;
         private bool paused = true;       // Starts paused until explicitly resumed
         private bool hasPlayedWarning;
+        private Coroutine activeSwapRoutine;
+        private GameManager gameManager;
 
         [Header("Audio")]
         [SerializeField] private AudioClip preswapWarningClip;
@@ -50,6 +57,14 @@ namespace Adaptabrawl.Gameplay
         /// Args: (fighter, oldDef, newDef)
         /// </summary>
         public System.Action<FighterController, FighterDef, FighterDef> OnClassificationChanged;
+
+        private struct PendingSwap
+        {
+            public int playerIndex;
+            public FighterController player;
+            public FighterDef oldDef;
+            public FighterDef newDef;
+        }
 
         /// <summary>
         /// Call once after fighters are spawned. Loads the roster if not
@@ -92,8 +107,9 @@ namespace Adaptabrawl.Gameplay
                       $"{fighterRoster.Length} roster entries, interval={switchInterval}s.");
 
             // Self-register with GameManager so it can pause/resume us
-            var gm = FindFirstObjectByType<GameManager>();
-            if (gm != null) gm.RegisterClassificationSwitcher(this);
+            gameManager = FindFirstObjectByType<GameManager>();
+            if (gameManager != null)
+                gameManager.RegisterClassificationSwitcher(this);
         }
 
         /// <summary>Pause the timer (e.g. during pre-round buffer, round end).</summary>
@@ -380,14 +396,11 @@ namespace Adaptabrawl.Gameplay
 
         private void TriggerSwapEvent(string reason)
         {
-            bool swappedAtLeastOnePlayer = false;
+            if (activeSwapRoutine != null)
+                return;
 
-            for (int i = 0; i < players.Length; i++)
-            {
-                swappedAtLeastOnePlayer |= SwitchClassification(i);
-            }
-
-            if (!swappedAtLeastOnePlayer)
+            List<PendingSwap> pendingSwaps = BuildPendingSwaps();
+            if (pendingSwaps.Count == 0)
                 return;
 
             swapEventsThisRound++;
@@ -395,29 +408,154 @@ namespace Adaptabrawl.Gameplay
             sharedTimer = switchInterval;
             hasPlayedWarning = false;
 
+            if (gameManager != null)
+            {
+                activeSwapRoutine = StartCoroutine(ExecuteSwapEventRoutine(pendingSwaps, reason));
+                return;
+            }
+
+            foreach (PendingSwap pendingSwap in pendingSwaps)
+                PerformPendingSwap(pendingSwap);
+
             Debug.Log($"[ClassificationSwitcher] Triggered {reason} at {roundElapsedTime:F1}s. " +
                       $"Next timed swap scheduled in {switchInterval:F1}s.");
         }
 
-        private bool SwitchClassification(int playerIndex)
+        private List<PendingSwap> BuildPendingSwaps()
         {
-            if (!HasPendingSwitches(playerIndex)) return false;
-            if (players[playerIndex] == null || players[playerIndex].IsDead) return false;
+            var pendingSwaps = new List<PendingSwap>();
 
-            var oldDef = players[playerIndex].FighterDef;
-            var queue = plannedSwitchQueues[playerIndex];
-            FighterDef newDef = queue.Dequeue();
+            for (int i = 0; i < players.Length; i++)
+            {
+                if (!HasPendingSwitches(i))
+                    continue;
 
-            if (newDef == null || newDef == oldDef) return false;
+                if (players[i] == null || players[i].IsDead)
+                    continue;
 
-            players[playerIndex].SwapClassification(newDef);
-            switchesThisRound[playerIndex]++;
-            OnClassificationChanged?.Invoke(players[playerIndex], oldDef, newDef);
+                Queue<FighterDef> queue = plannedSwitchQueues[i];
+                if (queue == null || queue.Count == 0)
+                    continue;
 
-            Debug.Log($"[ClassificationSwitcher] P{playerIndex + 1}: " +
-                      $"'{oldDef?.fighterName}' → '{newDef.fighterName}'");
+                FighterDef oldDef = players[i].FighterDef;
+                FighterDef newDef = queue.Peek();
+                if (newDef == null || newDef == oldDef)
+                    continue;
+
+                pendingSwaps.Add(new PendingSwap
+                {
+                    playerIndex = i,
+                    player = players[i],
+                    oldDef = oldDef,
+                    newDef = newDef
+                });
+            }
+
+            return pendingSwaps;
+        }
+
+        private bool PerformPendingSwap(PendingSwap pendingSwap)
+        {
+            if (pendingSwap.player == null || pendingSwap.player.IsDead)
+                return false;
+
+            Queue<FighterDef> queue = plannedSwitchQueues[pendingSwap.playerIndex];
+            if (queue == null || queue.Count == 0)
+                return false;
+
+            FighterDef queuedDef = queue.Dequeue();
+            if (queuedDef == null || queuedDef == pendingSwap.oldDef)
+                return false;
+
+            pendingSwap.player.SwapClassification(queuedDef);
+            switchesThisRound[pendingSwap.playerIndex]++;
+            OnClassificationChanged?.Invoke(pendingSwap.player, pendingSwap.oldDef, queuedDef);
+
+            Debug.Log($"[ClassificationSwitcher] P{pendingSwap.playerIndex + 1}: " +
+                      $"'{pendingSwap.oldDef?.fighterName}' → '{queuedDef.fighterName}'");
 
             return true;
+        }
+
+        private System.Collections.IEnumerator ExecuteSwapEventRoutine(List<PendingSwap> pendingSwaps, string reason)
+        {
+            Pause();
+            Time.timeScale = 1f;
+            gameManager?.PauseMatchFlow();
+
+            foreach (FighterController player in players)
+            {
+                if (player == null)
+                    continue;
+
+                player.LockInput();
+                player.ClearGameplayState(true);
+            }
+
+            foreach (PendingSwap pendingSwap in pendingSwaps)
+            {
+                if (!PerformPendingSwap(pendingSwap))
+                    continue;
+
+                pendingSwap.player.LockInput();
+                pendingSwap.player.ClearGameplayState(true);
+            }
+
+            yield return new WaitForSecondsRealtime(swapFreezeDuration);
+
+            int fightersToReturn = 0;
+            int fightersReturned = 0;
+
+            foreach (FighterController player in players)
+            {
+                if (player == null)
+                    continue;
+
+                fightersToReturn++;
+                player.StartReturnToSpawn(swapReturnDuration, () => fightersReturned++);
+            }
+
+            if (fightersToReturn > 0)
+                yield return new WaitUntil(() => fightersReturned >= fightersToReturn);
+
+            foreach (FighterController player in players)
+            {
+                if (player == null)
+                    continue;
+
+                player.ClearGameplayState(true);
+                player.LockInput();
+            }
+
+            yield return new WaitForSecondsRealtime(swapPostReturnLockDuration);
+
+            GameSceneFighterCoordinator sceneCoordinator = null;
+
+            foreach (FighterController player in players)
+            {
+                if (player == null)
+                    continue;
+
+                player.ClearGameplayState(true);
+                sceneCoordinator ??= player.GetSceneCoordinator();
+            }
+
+            sceneCoordinator?.RefreshFacing();
+
+            foreach (FighterController player in players)
+            {
+                if (player == null)
+                    continue;
+
+                player.UnlockInput();
+            }
+
+            gameManager?.ResumeMatchFlow();
+            Resume();
+            activeSwapRoutine = null;
+
+            Debug.Log($"[ClassificationSwitcher] Triggered {reason} at {roundElapsedTime:F1}s. " +
+                      $"Next timed swap scheduled in {switchInterval:F1}s.");
         }
     }
 }

@@ -3365,7 +3365,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.UI.GameHUD
   p1HealthSlider: {fileID: 2056471552}
-  p2HealthSlider: {fileID: 0}
+  p2HealthSlider: {fileID: 106178172}
   colorHigh: {r: 0, g: 1, b: 0, a: 1}
   colorMid: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   colorLow: {r: 1, g: 0, b: 0, a: 1}

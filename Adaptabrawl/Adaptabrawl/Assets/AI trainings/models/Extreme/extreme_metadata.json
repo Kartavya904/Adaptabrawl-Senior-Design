@@ -1,0 +1,27 @@
+{
+    "schemaVersion": 1,
+    "tier": "Extreme",
+    "policyType": "Heuristic",
+    "assetPath": "Assets/AI trainings/models/Extreme/extreme_model.json",
+    "policyId": "extreme-20260406T104159178Z",
+    "createdUtc": "2026-04-06T10:41:59.1857528Z",
+    "training": {
+        "gitCommit": "",
+        "trainingConfig": "heuristic_grid_search_v1",
+        "seed": 20260406,
+        "steps": 144
+    },
+    "evaluation": {
+        "protocol": "heuristic_grid_search_v1",
+        "primaryMetric": "composite_strength_score",
+        "value": 82.33086395263672,
+        "normalizedScore": 1.0,
+        "winRate": 0.9200000166893005,
+        "confidence": "Deterministic heuristic tuning score; normalized=1.000"
+    },
+    "promotion": {
+        "status": "champion",
+        "replacesPolicyId": "",
+        "notes": "Tier assignment followed normalized anchors for Extreme."
+    }
+}

@@ -425,6 +425,7 @@ namespace Adaptabrawl.UI
         {
             Time.timeScale = 1f;
             _frozenLocally = false;
+            QuickMatchSession.Instance?.ClearSession();
 
             if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
             {

@@ -138,6 +138,11 @@ namespace Adaptabrawl.Gameplay
         {
             isQuickMatchActive = false;
             currentConfig = new QuickMatchMatchConfig();
+            CharacterSelectData.selectedFighter1 = null;
+            CharacterSelectData.selectedFighter2 = null;
+            CharacterSelectData.finalP1ControllerIndex = 0;
+            CharacterSelectData.finalP2ControllerIndex = 0;
+            ArenaSelectData.selectedArenaName = "TrainingStage";
         }
 
         public bool IsCpuControlled(int playerNumber)

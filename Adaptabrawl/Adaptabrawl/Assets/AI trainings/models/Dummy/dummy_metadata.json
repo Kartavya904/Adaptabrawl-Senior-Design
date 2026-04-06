@@ -1,0 +1,27 @@
+{
+    "schemaVersion": 1,
+    "tier": "Dummy",
+    "policyType": "Heuristic",
+    "assetPath": "Assets/AI trainings/models/Dummy/dummy_model.json",
+    "policyId": "dummy-20260406T104159193Z",
+    "createdUtc": "2026-04-06T10:41:59.1935655Z",
+    "training": {
+        "gitCommit": "",
+        "trainingConfig": "heuristic_grid_search_v1",
+        "seed": 20260406,
+        "steps": 144
+    },
+    "evaluation": {
+        "protocol": "heuristic_grid_search_v1",
+        "primaryMetric": "composite_strength_score",
+        "value": 44.64064025878906,
+        "normalizedScore": 0.12466134876012802,
+        "winRate": 0.27224940061569216,
+        "confidence": "Deterministic heuristic tuning score; normalized=0.125"
+    },
+    "promotion": {
+        "status": "champion",
+        "replacesPolicyId": "",
+        "notes": "Tier assignment followed normalized anchors for Dummy."
+    }
+}

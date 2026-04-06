@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9d79f979589b734fb670083df09325d, type: 3}
+  m_Name: QuickMatchModelCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.AI.QuickMatchModelCatalog
+  dummy:
+    modelAsset: {fileID: 4900000, guid: 27602411e88668f4bb104dbf7159f734, type: 3}
+    metadataAsset: {fileID: 4900000, guid: 22c9195be9eeb0a4f9663129f7e7fa70, type: 3}
+  trainer:
+    modelAsset: {fileID: 4900000, guid: d2707759d45c37942812015243b6ff81, type: 3}
+    metadataAsset: {fileID: 4900000, guid: 69af0d94caa046d458466e34729dfc15, type: 3}
+  extreme:
+    modelAsset: {fileID: 4900000, guid: bf851b27a3f0bb842bc7b867411e4c46, type: 3}
+    metadataAsset: {fileID: 4900000, guid: 8853fb4d02a191844ab70dca3d78fab3, type: 3}

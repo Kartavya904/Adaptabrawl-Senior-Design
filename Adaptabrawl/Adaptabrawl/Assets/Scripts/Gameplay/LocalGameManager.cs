@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
+using Adaptabrawl.AI;
 using Adaptabrawl.Data;
 using Adaptabrawl.Fighters;
 using Adaptabrawl.UI;
@@ -56,13 +57,21 @@ namespace Adaptabrawl.Gameplay
 
         private void InitializeMatchSession()
         {
+            QuickMatchMatchConfig quickMatchConfig = null;
+            if (QuickMatchSession.Instance != null)
+                QuickMatchSession.Instance.TryGetCurrentConfig(out quickMatchConfig);
+
             // CharacterSelectData takes priority (set by the character select screen).
             // Test overrides are only used when CharacterSelectData is null (direct scene testing).
-            FighterDef fighter1Def = CharacterSelectData.selectedFighter1 != null
+            FighterDef fighter1Def = quickMatchConfig != null && quickMatchConfig.player1Fighter != null
+                ? quickMatchConfig.player1Fighter
+                : CharacterSelectData.selectedFighter1 != null
                 ? CharacterSelectData.selectedFighter1
                 : testFighterP1;
 
-            FighterDef fighter2Def = CharacterSelectData.selectedFighter2 != null
+            FighterDef fighter2Def = quickMatchConfig != null && quickMatchConfig.player2Fighter != null
+                ? quickMatchConfig.player2Fighter
+                : CharacterSelectData.selectedFighter2 != null
                 ? CharacterSelectData.selectedFighter2
                 : testFighterP2;
 
@@ -85,6 +94,7 @@ namespace Adaptabrawl.Gameplay
 
             // Spawn fighters first so GameManager.InitializeMatch() can find them.
             SpawnFighters(fighter1Def, fighter2Def);
+            ConfigureInputSources(quickMatchConfig);
 
             GameContext.EnsureExists().BeginLocalMatch(player1, player2);
 
@@ -156,7 +166,6 @@ namespace Adaptabrawl.Gameplay
                 player1 = p1Obj.GetComponent<FighterController>();
                 player1?.SetPlayerNumber(1);
                 ApplySpawnSetup(p1Obj);
-                SetupPlayerInput(p1Obj, 1);
                 player1?.SetSpawnPosition(player1SpawnPoint.position);
             }
 
@@ -166,7 +175,6 @@ namespace Adaptabrawl.Gameplay
                 player2 = p2Obj.GetComponent<FighterController>();
                 player2?.SetPlayerNumber(2);
                 ApplySpawnSetup(p2Obj);
-                SetupPlayerInput(p2Obj, 2);
                 player2?.SetSpawnPosition(player2SpawnPoint.position);
             }
         }
@@ -192,17 +200,48 @@ namespace Adaptabrawl.Gameplay
             return controller != null ? controller.gameObject : null;
         }
 
-        private void SetupPlayerInput(GameObject fighterObj, int playerNumber)
+        private void ConfigureInputSources(QuickMatchMatchConfig quickMatchConfig)
         {
-            var pcp = fighterObj.GetComponentInChildren<PlayerController_Platform>();
+            ConfigureInputSourceForPlayer(player1, player2, 1, quickMatchConfig);
+            ConfigureInputSourceForPlayer(player2, player1, 2, quickMatchConfig);
+        }
+
+        private void ConfigureInputSourceForPlayer(FighterController fighter, FighterController opponent, int playerNumber, QuickMatchMatchConfig quickMatchConfig)
+        {
+            if (fighter == null)
+                return;
+
+            var pcp = fighter.GetPlayerController();
             if (pcp == null)
             {
                 Debug.LogWarning($"[LocalGameManager] No PlayerController_Platform found under P{playerNumber} — input not configured.");
                 return;
             }
 
-            int padIndex = PickGamepadForPlayer(playerNumber);
+            bool cpuControlled = quickMatchConfig != null
+                && quickMatchConfig.GetRoleForPlayer(playerNumber) == QuickMatchPlayerRole.Cpu;
+            int padIndex = cpuControlled ? -1 : PickGamepadForPlayer(playerNumber);
             pcp.ConfigureForPlayer(playerNumber, padIndex);
+
+            if (!cpuControlled)
+            {
+                ResetInjectedInput(pcp);
+                return;
+            }
+
+            QuickMatchHeuristicModel model = null;
+            if (quickMatchConfig != null)
+                QuickMatchModelStore.TryLoadChampion(quickMatchConfig.difficulty, out model, out _);
+
+            var cpuController = fighter.GetComponent<QuickMatchCpuController>();
+            if (cpuController == null)
+                cpuController = fighter.gameObject.AddComponent<QuickMatchCpuController>();
+
+            cpuController.Initialize(
+                fighter,
+                opponent,
+                quickMatchConfig != null ? quickMatchConfig.difficulty : QuickMatchDifficultyTier.Trainer,
+                model);
         }
 
         /// <summary>
@@ -225,6 +264,30 @@ namespace Adaptabrawl.Gameplay
                 return -1;
 
             return idx;
+        }
+
+        private static void ResetInjectedInput(PlayerController_Platform platformController)
+        {
+            if (platformController == null)
+                return;
+
+            platformController.isNetworkControlled = false;
+            platformController.netLeft = false;
+            platformController.netRight = false;
+            platformController.netCrouch = false;
+            platformController.netSprint = false;
+            platformController.netJump = false;
+            platformController.netAttack = false;
+            platformController.netBlock = false;
+            platformController.netBlockDown = false;
+            platformController.netBlockUp = false;
+            platformController.netDodge = false;
+
+            if (platformController.netSkills == null || platformController.netSkills.Length < 8)
+                platformController.netSkills = new bool[8];
+
+            for (int i = 0; i < platformController.netSkills.Length; i++)
+                platformController.netSkills[i] = false;
         }
 
         private void OnRoundEnd(FighterController winner)

@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Adaptabrawl.Gameplay;
 using UnityEngine;
@@ -88,7 +89,7 @@ namespace Adaptabrawl.AI
                 return;
 
             Debug.LogWarning("[QuickMatchModelStore] No QuickMatchModelCatalog was found. Bootstrapping heuristic champions locally.");
-            QuickMatchTrainer.TrainChampionSet(seed: System.DateTime.UtcNow.Millisecond, saveToPersistent: true);
+            QuickMatchTrainer.TrainChampionSet(seed: Environment.TickCount, saveToPersistent: true);
             defaultsEnsured = true;
         }
 

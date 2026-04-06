@@ -345,12 +345,13 @@ namespace Adaptabrawl.UI
 
         private void ApplyButtonLabels(bool isLocal)
         {
+            bool quickMatchActive = QuickMatchSession.Instance != null && QuickMatchSession.Instance.IsQuickMatchActive;
             if (continueButtonText != null)
-                continueButtonText.text = isLocal ? "Back to Setup" : "Back to Online";
+                continueButtonText.text = quickMatchActive ? "Back to Quick Match" : isLocal ? "Back to Setup" : "Back to Online";
             if (rematchButtonText != null)
                 rematchButtonText.text = "Rematch";
             if (rematchDifferentButtonText != null)
-                rematchDifferentButtonText.text = "Change Characters";
+                rematchDifferentButtonText.text = quickMatchActive ? "Adjust Quick Match" : "Change Characters";
         }
 
         private string GetFighterName(FighterController fighter)
@@ -364,9 +365,12 @@ namespace Adaptabrawl.UI
         private void Continue()
         {
             CancelAutoMainMenuTimer();
+            bool quickMatchActive = QuickMatchSession.Instance != null && QuickMatchSession.Instance.IsQuickMatchActive;
             bool isLocal = MatchResultsData.isLocalMatch;
             MatchResultsData.Clear();
-            if (isLocal)
+            if (quickMatchActive)
+                TransitionTo(MainMenu.QuickMatchSceneName);
+            else if (isLocal)
                 TransitionTo("SetupScene");
             else
                 TransitionToOnlinePartyOrLobby();
@@ -383,6 +387,14 @@ namespace Adaptabrawl.UI
         private void RematchDifferentCharacters()
         {
             CancelAutoMainMenuTimer();
+            bool quickMatchActive = QuickMatchSession.Instance != null && QuickMatchSession.Instance.IsQuickMatchActive;
+            if (quickMatchActive)
+            {
+                MatchResultsData.Clear();
+                TransitionTo(MainMenu.QuickMatchSceneName);
+                return;
+            }
+
             MatchResultsData.rematchSkipToCharacterSelect = true;
             TransitionTo("SetupScene");
         }
@@ -391,6 +403,7 @@ namespace Adaptabrawl.UI
         {
             CancelAutoMainMenuTimer();
             MatchResultsData.Clear();
+            QuickMatchSession.Instance?.ClearSession();
             TransitionTo("StartScene");
         }
 

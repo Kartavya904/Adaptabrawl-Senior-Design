@@ -439,6 +439,7 @@ namespace Adaptabrawl.Gameplay
 
         public void ReturnToMenu()
         {
+            QuickMatchSession.Instance?.ClearSession();
             SceneManager.LoadScene("StartScene");
         }
 

@@ -22,6 +22,7 @@ namespace Adaptabrawl.UI
         [SerializeField] private UnityEngine.UI.Button quitButton;
         [SerializeField] private UnityEngine.UI.Button backButton;
         [SerializeField] private UnityEngine.UI.Button localPlayButton;
+        [SerializeField] private UnityEngine.UI.Button quickMatchButton;
 
         [Header("Controller / keyboard UI (optional overrides)")]
         [Tooltip("If empty, uses Play → Settings → Quit (main) and Local Play → Online → Back (play options).")]
@@ -50,6 +51,9 @@ namespace Adaptabrawl.UI
 
             if (localPlayButton != null)
                 localPlayButton.onClick.AddListener(PlayLocal);
+
+            if (quickMatchButton != null)
+                quickMatchButton.onClick.AddListener(OpenQuickMatch);
 
             ApplyStartSceneShadowSilhouettes();
             WireMenuNavigation();
@@ -86,7 +90,7 @@ namespace Adaptabrawl.UI
 
             Selectable[] play = playOptionsFocusOrder != null && playOptionsFocusOrder.Length > 0
                 ? playOptionsFocusOrder
-                : new Selectable[] { localPlayButton, onlineButton, backButton };
+                : new Selectable[] { quickMatchButton, localPlayButton, onlineButton, backButton };
 
             MenuNavigationGroup.ApplyVerticalChain(main, wrap: true);
             MenuNavigationGroup.ApplyVerticalChain(play, wrap: true);
@@ -95,6 +99,7 @@ namespace Adaptabrawl.UI
         public void PlayLocal()
         {
             ShutdownAnyExistingOnlineSession();
+            QuickMatchSession.Instance?.ClearSession();
 
             // Init persistent lobby context — carries player names, devices, fighters across scenes
             LobbyContext.EnsureExists().Init(true);
@@ -130,6 +135,7 @@ namespace Adaptabrawl.UI
 
         /// <summary>LAN / online party flow (auto-host + join-by-code). Must stay in Build Settings.</summary>
         public const string OnlinePartyRoomSceneName = "OnlinePartyRoomScene";
+        public const string QuickMatchSceneName = "QuickMatchScene";
 
         public void PlayOnline()
         {
@@ -185,6 +191,7 @@ namespace Adaptabrawl.UI
             SetOnlineButtonState(interactable: true, label: "Play Online");
             playOnlinePreflightInProgress = false;
 
+            QuickMatchSession.Instance?.ClearSession();
             LobbyContext.EnsureExists().Init(false);
             PublicRoomLobbyContext.EnsureExists().SetLanRoomListActive(true);
             CharacterSelectData.isLocalMatch = false;
@@ -262,8 +269,21 @@ namespace Adaptabrawl.UI
 
             Selectable[] play = playOptionsFocusOrder != null && playOptionsFocusOrder.Length > 0
                 ? playOptionsFocusOrder
-                : new Selectable[] { localPlayButton, onlineButton, backButton };
+                : new Selectable[] { quickMatchButton, localPlayButton, onlineButton, backButton };
             MenuNavigationGroup.SelectFirstAvailable(play);
+        }
+
+        public void OpenQuickMatch()
+        {
+            ShutdownAnyExistingOnlineSession();
+            QuickMatchSession.EnsureExists().ClearSession();
+
+            LobbyContext.EnsureExists().Init(true);
+            if (PublicRoomLobbyContext.Instance != null)
+                PublicRoomLobbyContext.Instance.SetLanRoomListActive(false);
+
+            CharacterSelectData.isLocalMatch = true;
+            SceneManager.LoadScene(QuickMatchSceneName);
         }
 
         private void ShowMainMenu()

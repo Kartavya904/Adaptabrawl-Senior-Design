@@ -1,0 +1,27 @@
+{
+    "schemaVersion": 1,
+    "tier": "Trainer",
+    "policyType": "Heuristic",
+    "assetPath": "Assets/AI trainings/models/Trainer/trainer_model.json",
+    "policyId": "trainer-20260406T104159191Z",
+    "createdUtc": "2026-04-06T10:41:59.1918321Z",
+    "training": {
+        "gitCommit": "",
+        "trainingConfig": "heuristic_grid_search_v1",
+        "seed": 20260406,
+        "steps": 144
+    },
+    "evaluation": {
+        "protocol": "heuristic_grid_search_v1",
+        "primaryMetric": "composite_strength_score",
+        "value": 60.83601379394531,
+        "normalizedScore": 0.5007916688919067,
+        "winRate": 0.5505858659744263,
+        "confidence": "Deterministic heuristic tuning score; normalized=0.501"
+    },
+    "promotion": {
+        "status": "champion",
+        "replacesPolicyId": "",
+        "notes": "Tier assignment followed normalized anchors for Trainer."
+    }
+}

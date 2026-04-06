@@ -216,6 +216,12 @@ namespace Adaptabrawl.UI
             // Controller/keyboard navigation
             if (setupManager == null || availableFighters.Count == 0) return;
 
+            // Only the instance wired to the arrow buttons should drive cycling. Scenes may add a second
+            // CharacterSelectUI (e.g. a "manager" object that only holds the fighter roster); without this
+            // guard both run Update and each gamepad step applies twice (roster of 4 looks like only 2 fighters).
+            if (!HasArrowButtonsForNavigation())
+                return;
+
             bool networked = NetworkManager.Singleton != null;
             bool isHost = networked && NetworkManager.Singleton.IsServer;
             bool isLocal = CharacterSelectData.isLocalMatch;
@@ -256,6 +262,15 @@ namespace Adaptabrawl.UI
             }
             characterToArenaCountdownText.gameObject.SetActive(true);
             characterToArenaCountdownText.text = n.ToString();
+        }
+
+        /// <summary>
+        /// True when this component owns the left/right UI used for character cycling (not a roster-only duplicate).
+        /// </summary>
+        private bool HasArrowButtonsForNavigation()
+        {
+            return (player1LeftButton != null && player1RightButton != null)
+                || (player2LeftButton != null && player2RightButton != null);
         }
 
         private void HandleCharacterNavigation(int player, int controllerIndex, int p1Device, int p2Device, ref float cooldown)

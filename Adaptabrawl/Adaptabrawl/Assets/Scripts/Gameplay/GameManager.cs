@@ -80,7 +80,7 @@ namespace Adaptabrawl.Gameplay
             // Initialize round wins
             foreach (var player in players)
             {
-                roundWins[player] = 0;
+                EnsureRoundWinEntry(player);
 
                 // Subscribe to death events
                 player.OnDeath += () => OnPlayerDeath(player);
@@ -114,6 +114,7 @@ namespace Adaptabrawl.Gameplay
 
         private void StartRound()
         {
+            EnsureRoundWinEntries();
             roundTimer = roundDuration;
             roundWinner = null;
             _inPreRoundBuffer = true; // block win detection before anything else
@@ -258,6 +259,7 @@ namespace Adaptabrawl.Gameplay
 
             roundActive = false;
             roundWinner = winner;
+            EnsureRoundWinEntries();
 
             // Pause switching during round-end
             if (_classificationSwitcher != null)
@@ -265,6 +267,7 @@ namespace Adaptabrawl.Gameplay
 
             if (winner != null)
             {
+                EnsureRoundWinEntry(winner);
                 roundWins[winner]++;
             }
 
@@ -274,7 +277,7 @@ namespace Adaptabrawl.Gameplay
             OnRoundEnd?.Invoke(winner);
 
             // Check if match is over
-            if (winner != null && roundWins[winner] >= roundsToWin)
+            if (winner != null && GetRoundWinsForPlayer(winner) >= roundsToWin)
             {
                 EndMatch(winner);
             }
@@ -312,6 +315,7 @@ namespace Adaptabrawl.Gameplay
         private void EndMatch(FighterController winner)
         {
             Time.timeScale = 1f;
+            EnsureRoundWinEntries();
             OnMatchEnd?.Invoke(winner);
 
             // Create match results
@@ -320,8 +324,8 @@ namespace Adaptabrawl.Gameplay
                 player1 = players.Count > 0 ? players[0] : null,
                 player2 = players.Count > 1 ? players[1] : null,
                 winner = winner,
-                player1Wins = players.Count > 0 && roundWins.ContainsKey(players[0]) ? roundWins[players[0]] : 0,
-                player2Wins = players.Count > 1 && roundWins.ContainsKey(players[1]) ? roundWins[players[1]] : 0,
+                player1Wins = players.Count > 0 ? GetRoundWinsForPlayer(players[0]) : 0,
+                player2Wins = players.Count > 1 ? GetRoundWinsForPlayer(players[1]) : 0,
                 roundWinners = new System.Collections.Generic.List<FighterController>(roundWinners),
                 totalRounds = currentRound
             };
@@ -357,10 +361,33 @@ namespace Adaptabrawl.Gameplay
             roundWinners.Clear();
             foreach (var player in players)
             {
-                roundWins[player] = 0;
+                EnsureRoundWinEntry(player);
             }
 
             StartRound();
+        }
+
+        private void EnsureRoundWinEntries()
+        {
+            foreach (FighterController player in players)
+                EnsureRoundWinEntry(player);
+        }
+
+        private void EnsureRoundWinEntry(FighterController player)
+        {
+            if (player == null || roundWins.ContainsKey(player))
+                return;
+
+            roundWins[player] = 0;
+        }
+
+        private int GetRoundWinsForPlayer(FighterController player)
+        {
+            if (player == null)
+                return 0;
+
+            EnsureRoundWinEntry(player);
+            return roundWins[player];
         }
 
         public void ReturnToMenu()

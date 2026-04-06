@@ -5,6 +5,8 @@ namespace Adaptabrawl.Camera
 {
     public class FightingGameCamera : MonoBehaviour
     {
+        public static FightingGameCamera Instance { get; private set; }
+
         [Header("Targets")]
         [SerializeField] private FighterController player1;
         [SerializeField] private FighterController player2;
@@ -20,9 +22,28 @@ namespace Adaptabrawl.Camera
         [SerializeField] private bool useBounds = true;
         [SerializeField] private Vector2 minBounds = new Vector2(-10f, -5f);
         [SerializeField] private Vector2 maxBounds = new Vector2(10f, 5f);
+
+        [Header("Impact Shake")]
+        [SerializeField] private float defaultShakeDuration = 0.1f;
+        [SerializeField] private float defaultShakeMagnitude = 0.14f;
+        [SerializeField] private float shakeDamping = 14f;
         
         private UnityEngine.Camera cam;
         private Vector3 targetPosition;
+        private float shakeTimeRemaining;
+        private float shakeMagnitude;
+        private Vector3 shakeOffset;
+
+        private void Awake()
+        {
+            Instance = this;
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this)
+                Instance = null;
+        }
         
         private void Start()
         {
@@ -72,7 +93,9 @@ namespace Adaptabrawl.Camera
             }
             
             // Smoothly move camera
-            transform.position = Vector3.Lerp(transform.position, targetPosition, followSpeed * Time.deltaTime);
+            Vector3 desiredPosition = Vector3.Lerp(transform.position, targetPosition, followSpeed * Time.deltaTime);
+            UpdateShakeOffset();
+            transform.position = desiredPosition + shakeOffset;
             
             // Optionally adjust orthographic size based on distance
             if (cam != null && cam.orthographic)
@@ -80,6 +103,29 @@ namespace Adaptabrawl.Camera
                 float targetSize = Mathf.Lerp(5f, 10f, (distance - minDistance) / (maxDistance - minDistance));
                 cam.orthographicSize = Mathf.Lerp(cam.orthographicSize, targetSize, followSpeed * Time.deltaTime);
             }
+        }
+
+        public void TriggerImpactShake(float duration, float magnitude)
+        {
+            shakeTimeRemaining = Mathf.Max(shakeTimeRemaining, duration > 0f ? duration : defaultShakeDuration);
+            shakeMagnitude = Mathf.Max(shakeMagnitude, magnitude > 0f ? magnitude : defaultShakeMagnitude);
+        }
+
+        private void UpdateShakeOffset()
+        {
+            if (shakeTimeRemaining <= 0f)
+            {
+                shakeOffset = Vector3.zero;
+                shakeMagnitude = 0f;
+                return;
+            }
+
+            shakeTimeRemaining -= Time.unscaledDeltaTime;
+            float currentMagnitude = Mathf.Lerp(0f, shakeMagnitude, shakeTimeRemaining / Mathf.Max(defaultShakeDuration, 0.001f));
+
+            Vector2 randomOffset = Random.insideUnitCircle * currentMagnitude;
+            shakeOffset = new Vector3(randomOffset.x, randomOffset.y, 0f);
+            shakeMagnitude = Mathf.MoveTowards(shakeMagnitude, 0f, shakeDamping * Time.unscaledDeltaTime);
         }
         
         public void SetPlayers(FighterController p1, FighterController p2)
@@ -96,4 +142,3 @@ namespace Adaptabrawl.Camera
         }
     }
 }
-

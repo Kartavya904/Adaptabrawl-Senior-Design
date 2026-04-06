@@ -2,6 +2,8 @@ using UnityEngine;
 using Adaptabrawl.Data;
 using Adaptabrawl.Combat;
 using Adaptabrawl.Gameplay;
+using Adaptabrawl.VFX;
+using Adaptabrawl.Camera;
 
 namespace Adaptabrawl.Combat
 {
@@ -23,7 +25,12 @@ namespace Adaptabrawl.Combat
                 combatFSM = GetComponent<CombatFSM>();
         }
         
-        public void DealDamage(FighterController target, MoveDef move, float hurtboxMultiplier = 1f)
+        public void DealDamage(
+            FighterController target,
+            MoveDef move,
+            float hurtboxMultiplier = 1f,
+            Vector3? hitPosition = null,
+            Vector3? hitDirection = null)
         {
             if (target == null || move == null) return;
             
@@ -53,6 +60,16 @@ namespace Adaptabrawl.Combat
             
             // Apply damage to target
             target.TakeDamage(finalDamage);
+
+            Vector3 resolvedHitPosition = hitPosition ?? target.transform.position;
+            Vector3 resolvedHitDirection = hitDirection ?? GetHitDirection(target);
+            DamageImpactSettings impactSettings = BuildImpactSettings(finalDamage, hurtboxMultiplier, move);
+
+            VFXManager vfxManager = VFXManager.EnsureExists();
+            if (vfxManager != null)
+            {
+                vfxManager.SpawnDamageImpact(resolvedHitPosition, resolvedHitDirection, impactSettings);
+            }
             
             // Apply hitstop
             if (move.hitstopFrames > 0)
@@ -60,6 +77,15 @@ namespace Adaptabrawl.Combat
                 var gameManager = Object.FindFirstObjectByType<GameManager>();
                 if (gameManager != null)
                     gameManager.TriggerHitStop(move.hitstopFrames / 60f);
+            }
+
+            ImpactCameraShake cameraShake = ImpactCameraShake.EnsureExistsOnMainCamera();
+            if (cameraShake != null)
+            {
+                float shakeStrength = Mathf.Clamp(0.18f + impactSettings.Intensity * 0.42f, 0.24f, 0.8f);
+                float shakeDuration = Mathf.Clamp(0.08f + move.hitstopFrames / 100f, 0.1f, 0.22f);
+                float rotationStrength = Mathf.Clamp(0.65f + impactSettings.Intensity * 1.2f, 0.85f, 2.4f);
+                cameraShake.AddShake(shakeStrength, shakeDuration, rotationStrength);
             }
             
             // Apply hitstun
@@ -76,6 +102,75 @@ namespace Adaptabrawl.Combat
             CheckArmorBreak(target, move);
             
             OnDamageDealt?.Invoke(finalDamage, target);
+        }
+
+        private Vector3 GetHitDirection(FighterController target)
+        {
+            if (fighterController == null || target == null)
+                return Vector3.right;
+
+            Vector3 delta = target.transform.position - fighterController.transform.position;
+            delta.y = 0f;
+            delta.z = 0f;
+
+            if (delta.sqrMagnitude < 0.0001f)
+                return fighterController.FacingRight ? Vector3.right : Vector3.left;
+
+            return delta.normalized;
+        }
+
+        private DamageImpactSettings BuildImpactSettings(float finalDamage, float hurtboxMultiplier, MoveDef move)
+        {
+            float intensity = Mathf.Clamp01(finalDamage / 22f);
+            intensity += Mathf.Clamp01((hurtboxMultiplier - 1f) * 0.6f);
+
+            if (move.moveType == MoveType.HeavyAttack)
+                intensity += 0.25f;
+            else if (move.moveType == MoveType.Special)
+                intensity += 0.12f;
+
+            FighterDef attackerDef = fighterController != null ? fighterController.FighterDef : null;
+
+            float particleMultiplier = 1f;
+            float splashRangeMultiplier = 1f;
+            float particleSizeMultiplier = 1f;
+
+            if (attackerDef != null)
+            {
+                switch (attackerDef.playStyle)
+                {
+                    case FighterPlayStyle.Strength:
+                        particleMultiplier *= 1.45f;
+                        splashRangeMultiplier *= 1.28f;
+                        particleSizeMultiplier *= 1.12f;
+                        break;
+                    case FighterPlayStyle.Defense:
+                        particleMultiplier *= 0.95f;
+                        splashRangeMultiplier *= 0.92f;
+                        particleSizeMultiplier *= 1.05f;
+                        break;
+                    case FighterPlayStyle.Invasion:
+                        particleMultiplier *= 0.82f;
+                        splashRangeMultiplier *= 0.98f;
+                        particleSizeMultiplier *= 0.92f;
+                        break;
+                    default:
+                        particleMultiplier *= 1.05f;
+                        splashRangeMultiplier *= 1.06f;
+                        break;
+                }
+
+                float heftBonus = Mathf.InverseLerp(0.75f, 1.8f, attackerDef.weight);
+                particleMultiplier += heftBonus * 0.4f;
+                splashRangeMultiplier += heftBonus * 0.3f;
+                particleSizeMultiplier += heftBonus * 0.18f;
+            }
+
+            particleMultiplier *= Mathf.Lerp(1f, 1.28f, intensity);
+            splashRangeMultiplier *= Mathf.Lerp(1f, 1.22f, intensity);
+
+            intensity = Mathf.Clamp01(intensity);
+            return new DamageImpactSettings(intensity, particleMultiplier, splashRangeMultiplier, particleSizeMultiplier);
         }
         
         public void HandleBlock(FighterController target, MoveDef move)

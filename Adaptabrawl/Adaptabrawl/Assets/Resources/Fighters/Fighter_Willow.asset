@@ -25,6 +25,7 @@ MonoBehaviour:
   baseDamageMultiplier: 1.05
   baseDefenseMultiplier: 1.05
   armorBreakThreshold: 3
+  playStyle: 0
   hurtboxes:
   - name: Body
     offset: {x: 0, y: 0}

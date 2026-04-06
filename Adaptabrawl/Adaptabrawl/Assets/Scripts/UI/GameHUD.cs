@@ -82,6 +82,7 @@ namespace Adaptabrawl.UI
         private Image             _p1Fill;
         private Image             _p2Fill;
         private GameManager       _gameManager;
+        private static Sprite     s_FallbackBubbleSprite;
 
         // -----------------------------------------------------------------------
         // Unity lifecycle
@@ -92,9 +93,10 @@ namespace Adaptabrawl.UI
             _p1Fill = GetFillImage(p1HealthSlider);
             _p2Fill = GetFillImage(p2HealthSlider);
 
-            // Fall back to Unity's built-in knob (circle) sprite when none is assigned.
+            // Built-in editor sprite names vary across Unity versions, so generate a small
+            // runtime bubble sprite instead of depending on Knob.psd.
             if (winBubbleSprite == null)
-                winBubbleSprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/Knob.psd");
+                winBubbleSprite = GetOrCreateFallbackBubbleSprite();
 
             StartCoroutine(ConnectRoutine());
         }
@@ -268,6 +270,39 @@ namespace Adaptabrawl.UI
                 img.preserveAspect   = false;
                 img.color            = i < wins ? winBubbleColor : emptyBubbleColor;
             }
+        }
+
+        private static Sprite GetOrCreateFallbackBubbleSprite()
+        {
+            if (s_FallbackBubbleSprite != null)
+                return s_FallbackBubbleSprite;
+
+            const int size = 32;
+            Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                name = "HUD_WinBubbleFallback"
+            };
+
+            Vector2 center = new Vector2((size - 1) * 0.5f, (size - 1) * 0.5f);
+            float radius = size * 0.42f;
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float distance = Vector2.Distance(new Vector2(x, y), center);
+                    texture.SetPixel(x, y, distance <= radius ? Color.white : Color.clear);
+                }
+            }
+
+            texture.Apply();
+            s_FallbackBubbleSprite = Sprite.Create(
+                texture,
+                new Rect(0f, 0f, size, size),
+                new Vector2(0.5f, 0.5f),
+                size);
+
+            return s_FallbackBubbleSprite;
         }
     }
 }

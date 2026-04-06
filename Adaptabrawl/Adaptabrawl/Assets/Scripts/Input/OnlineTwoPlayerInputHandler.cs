@@ -191,7 +191,7 @@ namespace Adaptabrawl.Input
             );
         }
 
-        [ServerRpc(RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         private void UpdateP2StateServerRpc(
             Vector3 position, Quaternion rotation,
             bool left, bool right, bool crouch, bool sprint,

@@ -8,6 +8,7 @@ using TMPro;
 using Adaptabrawl.Gameplay;
 using Adaptabrawl.Networking;
 using Unity.Netcode;
+using Adaptabrawl.Settings;
 
 namespace Adaptabrawl.UI
 {
@@ -202,15 +203,25 @@ namespace Adaptabrawl.UI
         /// </summary>
         private static bool PauseOrUnpausePressedThisFrame(bool pauseMenuIsOpen)
         {
-            if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+            var bindings = ControlBindingsContext.EnsureExists();
+            if (bindings.WasActionPressedThisFrame(ControlProfileId.GlobalKeyboardPlayer1, ControlActionId.Pause))
                 return true;
 
-            foreach (var pad in Gamepad.all)
+            var lobby = LobbyContext.Instance;
+            if (lobby != null
+                && LobbyContext.IsDualKeyboardMode(lobby.p1InputDevice, lobby.p2InputDevice)
+                && bindings.WasActionPressedThisFrame(ControlProfileId.GlobalKeyboardPlayer2, ControlActionId.Pause))
+                return true;
+
+            for (int i = 0; i < Gamepad.all.Count; i++)
             {
-                if (pad == null) continue;
-                if (pad.startButton.wasPressedThisFrame)
+                if (Gamepad.all[i] == null)
+                    continue;
+
+                if (bindings.WasActionPressedThisFrame(ControlProfileId.GlobalController, ControlActionId.Pause, i))
                     return true;
-                if (pauseMenuIsOpen && pad.buttonEast.wasPressedThisFrame)
+
+                if (pauseMenuIsOpen && bindings.WasActionPressedThisFrame(ControlProfileId.GlobalController, ControlActionId.BackCancel, i))
                     return true;
             }
 
@@ -337,10 +348,29 @@ namespace Adaptabrawl.UI
             string n2 = lobby != null ? lobby.p2Name : "Player 2";
 
             if (p1 && !p2)
-                return $"{n1} is requesting a pause.\n\nThe other player must press Esc or the controller Options/Start button to confirm.";
+                return $"{n1} is requesting a pause.\n\nThe other player must press {GetPauseBindingLabel(2)} to confirm.";
             if (p2 && !p1)
-                return $"{n2} is requesting a pause.\n\nThe other player must press Esc or the controller Options/Start button to confirm.";
+                return $"{n2} is requesting a pause.\n\nThe other player must press {GetPauseBindingLabel(1)} to confirm.";
             return "";
+        }
+
+        private static string GetPauseBindingLabel(int playerNumber)
+        {
+            var bindings = ControlBindingsContext.EnsureExists();
+            var lobby = LobbyContext.Instance;
+            int p1Device = lobby != null ? lobby.p1InputDevice : 0;
+            int p2Device = lobby != null ? lobby.p2InputDevice : 0;
+            bool dualKeyboard = LobbyContext.IsDualKeyboardMode(p1Device, p2Device);
+
+            if (playerNumber == 1 && p1Device == 1)
+                return bindings.GetDefaultBindingsLabel(ControlProfileId.GlobalController, ControlActionId.Pause);
+
+            if (playerNumber == 2 && p2Device == 1)
+                return bindings.GetDefaultBindingsLabel(ControlProfileId.GlobalController, ControlActionId.Pause);
+
+            return bindings.GetDefaultBindingsLabel(
+                ControlBindingProfileResolver.ResolveGlobalKeyboardProfile(playerNumber, dualKeyboard),
+                ControlActionId.Pause);
         }
 
         private void HideAll()

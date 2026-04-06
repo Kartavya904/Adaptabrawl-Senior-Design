@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using Unity.Netcode;
 using Adaptabrawl.Gameplay;
+using Adaptabrawl.Settings;
 
 namespace Adaptabrawl.UI
 {
@@ -60,49 +61,19 @@ namespace Adaptabrawl.UI
             bool r1 = networked ? _setup.p1ControllerReady.Value : _setup.LocalP1ControllerReady;
             bool r2 = networked ? _setup.p2ControllerReady.Value : _setup.LocalP2ControllerReady;
 
-            bool esc = UnityEngine.Input.GetKeyDown(KeyCode.Escape);
-            bool anyCircle = AnyGamepadEastPressed();
-
-            if (r1 && p1Idx == 1 && LobbyContext.TryGetGamepadForPlayer(1, p1Idx, p2Idx, out var g1) && g1 != null && g1.buttonEast.wasPressedThisFrame)
+            if (r1 && WasBackPressedForPlayer(1, p1Idx, p2Idx))
             {
                 RequestControllerToggleReady(1, networked);
                 return;
             }
 
-            if (r2 && p2Idx == 1 && LobbyContext.TryGetGamepadForPlayer(2, p1Idx, p2Idx, out var g2) && g2 != null && g2.buttonEast.wasPressedThisFrame)
+            if (r2 && WasBackPressedForPlayer(2, p1Idx, p2Idx))
             {
                 RequestControllerToggleReady(2, networked);
                 return;
             }
 
-            if (r2 && p2Idx == 0 && UnityEngine.Input.GetKeyDown(KeyCode.Backspace))
-            {
-                RequestControllerToggleReady(2, networked);
-                return;
-            }
-
-            if (esc)
-            {
-                if (r1 && p1Idx == 0)
-                {
-                    RequestControllerToggleReady(1, networked);
-                    return;
-                }
-
-                if (r2 && p2Idx == 0)
-                {
-                    RequestControllerToggleReady(2, networked);
-                    return;
-                }
-            }
-
-            if (!r1 && !r2 && anyCircle && CharacterSelectData.isLocalMatch)
-            {
-                _setup.GoBackToLocalJoin();
-                return;
-            }
-
-            if (!r1 && !r2 && esc && CharacterSelectData.isLocalMatch)
+            if (!r1 && !r2 && CharacterSelectData.isLocalMatch)
                 _setup.GoBackToLocalJoin();
         }
 
@@ -139,43 +110,19 @@ namespace Adaptabrawl.UI
             bool r1 = networked ? _setup.p1CharacterReady.Value : _setup.LocalP1CharacterReady;
             bool r2 = networked ? _setup.p2CharacterReady.Value : _setup.LocalP2CharacterReady;
 
-            bool esc = UnityEngine.Input.GetKeyDown(KeyCode.Escape);
-            bool anyCircle = AnyGamepadEastPressed();
-
-            if (r1 && p1Dev == 1 && LobbyContext.TryGetGamepadForPlayer(1, p1Dev, p2Dev, out var gp1) && gp1 != null && gp1.buttonEast.wasPressedThisFrame)
+            if (r1 && WasBackPressedForPlayer(1, p1Dev, p2Dev))
             {
                 RequestCharacterToggleReady(1, networked, isServer, isClientOnly);
                 return;
             }
 
-            if (r2 && p2Dev == 1 && LobbyContext.TryGetGamepadForPlayer(2, p1Dev, p2Dev, out var gp2) && gp2 != null && gp2.buttonEast.wasPressedThisFrame)
+            if (r2 && WasBackPressedForPlayer(2, p1Dev, p2Dev))
             {
                 RequestCharacterToggleReady(2, networked, isServer, isClientOnly);
                 return;
             }
 
-            if (r2 && p2Dev == 0 && UnityEngine.Input.GetKeyDown(KeyCode.Backspace) && (isClientOnly || isLocal || !networked))
-            {
-                RequestCharacterToggleReady(2, networked, isServer, isClientOnly);
-                return;
-            }
-
-            if (esc)
-            {
-                if (r1 && p1Dev == 0 && (isServer || isLocal || !networked))
-                {
-                    RequestCharacterToggleReady(1, networked, isServer, isClientOnly);
-                    return;
-                }
-
-                if (r2 && p2Dev == 0 && (isClientOnly || isLocal || !networked))
-                {
-                    RequestCharacterToggleReady(2, networked, isServer, isClientOnly);
-                    return;
-                }
-            }
-
-            if (!r1 && !r2 && (esc || anyCircle))
+            if (!r1 && !r2)
             {
                 if (networked && !isServer) return;
                 if (networked)
@@ -218,36 +165,19 @@ namespace Adaptabrawl.UI
             bool p1R = networked ? _setup.p1ArenaReady.Value : _setup.LocalP1ArenaReady;
             bool p2R = networked ? _setup.p2ArenaReady.Value : _setup.LocalP2ArenaReady;
 
-            bool esc = UnityEngine.Input.GetKeyDown(KeyCode.Escape);
-
-            if (p1R && p1Dev == 1 && LobbyContext.TryGetGamepadForPlayer(1, p1Dev, p2Dev, out var g1) && g1 != null && g1.buttonEast.wasPressedThisFrame)
+            if (p1R && WasBackPressedForPlayer(1, p1Dev, p2Dev))
             {
                 RequestArenaToggleReady(networked, isServer);
                 return;
             }
 
-            if (p2R && p2Dev == 1 && LobbyContext.TryGetGamepadForPlayer(2, p1Dev, p2Dev, out var g2) && g2 != null && g2.buttonEast.wasPressedThisFrame)
+            if (p2R && WasBackPressedForPlayer(2, p1Dev, p2Dev))
             {
                 RequestArenaToggleReady(networked, isClientOnly);
                 return;
             }
 
-            if (esc)
-            {
-                if (p1R && p1Dev == 0 && (isServer || !networked || CharacterSelectData.isLocalMatch))
-                {
-                    RequestArenaToggleReady(networked, true);
-                    return;
-                }
-
-                if (p2R && p2Dev == 0 && (isClientOnly || !networked || CharacterSelectData.isLocalMatch))
-                {
-                    RequestArenaToggleReady(networked, false);
-                    return;
-                }
-            }
-
-            if (!p1R && !p2R && (esc || AnyGamepadEastPressed()))
+            if (!p1R && !p2R)
             {
                 if (networked && !isServer) return;
                 if (networked)
@@ -275,15 +205,18 @@ namespace Adaptabrawl.UI
             }
         }
 
-        private static bool AnyGamepadEastPressed()
+        private static bool WasBackPressedForPlayer(int playerNumber, int p1Device, int p2Device)
         {
-            foreach (var pad in Gamepad.all)
-            {
-                if (pad != null && pad.buttonEast.wasPressedThisFrame)
-                    return true;
-            }
+            var bindings = ControlBindingsContext.EnsureExists();
+            if (playerNumber == 1 && p1Device == 1)
+                return bindings.WasActionPressedThisFrame(ControlProfileId.GlobalController, ControlActionId.BackCancel, LobbyContext.GetGamepadListIndexForPlayer(1, p1Device, p2Device));
 
-            return false;
+            if (playerNumber == 2 && p2Device == 1)
+                return bindings.WasActionPressedThisFrame(ControlProfileId.GlobalController, ControlActionId.BackCancel, LobbyContext.GetGamepadListIndexForPlayer(2, p1Device, p2Device));
+
+            bool dualKeyboard = LobbyContext.IsDualKeyboardMode(p1Device, p2Device);
+            var profile = ControlBindingProfileResolver.ResolveGlobalKeyboardProfile(playerNumber, dualKeyboard);
+            return bindings.WasActionPressedThisFrame(profile, ControlActionId.BackCancel);
         }
     }
 }

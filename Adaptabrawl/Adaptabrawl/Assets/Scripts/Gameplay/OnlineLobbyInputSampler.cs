@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Adaptabrawl.Settings;
 
 namespace Adaptabrawl.Gameplay
 {
@@ -9,8 +10,6 @@ namespace Adaptabrawl.Gameplay
     /// </summary>
     public static class OnlineLobbyInputSampler
     {
-        private const float StickDead = 0.5f;
-
         public static void SamplePlayer(int playerOneOrTwo, out bool left, out bool right, out bool crouch, out bool sprint,
             out bool jumpDown, out bool attackDown, out bool blockHeld, out bool blockDown, out bool blockUp, out bool dodgeDown)
         {
@@ -18,72 +17,43 @@ namespace Adaptabrawl.Gameplay
             jumpDown = attackDown = blockDown = blockUp = dodgeDown = false;
             blockHeld = false;
 
+            var bindings = ControlBindingsContext.EnsureExists();
             var lobby = LobbyContext.Instance;
             int p1Dev = lobby != null ? lobby.p1InputDevice : 0;
             int p2Dev = lobby != null ? lobby.p2InputDevice : 0;
+            bool dualKeyboard = LobbyContext.IsDualKeyboardMode(p1Dev, p2Dev);
 
             bool useGamepad = playerOneOrTwo == 1 ? p1Dev == 1 : p2Dev == 1;
-            if (useGamepad && LobbyContext.TryGetGamepadForPlayer(playerOneOrTwo, p1Dev, p2Dev, out var pad))
+            if (useGamepad)
             {
-                SampleGamepad(pad, out left, out right, out crouch, out sprint,
-                    out jumpDown, out attackDown, out blockHeld, out blockDown, out blockUp, out dodgeDown);
+                int gamepadIndex = LobbyContext.GetGamepadListIndexForPlayer(playerOneOrTwo, p1Dev, p2Dev);
+                left = bindings.IsActionHeld(ControlProfileId.Controller, ControlActionId.MoveLeft, gamepadIndex);
+                right = bindings.IsActionHeld(ControlProfileId.Controller, ControlActionId.MoveRight, gamepadIndex);
+                crouch = bindings.IsActionHeld(ControlProfileId.Controller, ControlActionId.Crouch, gamepadIndex);
+                sprint = gamepadIndex >= 0 && gamepadIndex < Gamepad.all.Count && Gamepad.all[gamepadIndex] != null
+                    && Gamepad.all[gamepadIndex].leftTrigger.isPressed;
+                jumpDown = bindings.WasActionPressedThisFrame(ControlProfileId.Controller, ControlActionId.Jump, gamepadIndex);
+                attackDown = bindings.WasActionPressedThisFrame(ControlProfileId.Controller, ControlActionId.Attack, gamepadIndex);
+                blockHeld = bindings.IsActionHeld(ControlProfileId.Controller, ControlActionId.Block, gamepadIndex);
+                blockDown = bindings.WasActionPressedThisFrame(ControlProfileId.Controller, ControlActionId.Block, gamepadIndex);
+                blockUp = bindings.WasActionReleasedThisFrame(ControlProfileId.Controller, ControlActionId.Block, gamepadIndex);
+                dodgeDown = bindings.WasActionPressedThisFrame(ControlProfileId.Controller, ControlActionId.Dodge, gamepadIndex);
                 return;
             }
 
-            if (playerOneOrTwo == 1)
-                SampleKeyboardP1(out left, out right, out crouch, out sprint,
-                    out jumpDown, out attackDown, out blockHeld, out blockDown, out blockUp, out dodgeDown);
-            else
-                SampleKeyboardP2(out left, out right, out crouch, out sprint,
-                    out jumpDown, out attackDown, out blockHeld, out blockDown, out blockUp, out dodgeDown);
-        }
-
-        private static void SampleGamepad(Gamepad pad, out bool left, out bool right, out bool crouch, out bool sprint,
-            out bool jumpDown, out bool attackDown, out bool blockHeld, out bool blockDown, out bool blockUp, out bool dodgeDown)
-        {
-            float sx = pad.leftStick.x.ReadValue();
-            float sy = pad.leftStick.y.ReadValue();
-            left = sx < -StickDead || pad.dpad.left.isPressed;
-            right = sx > StickDead || pad.dpad.right.isPressed;
-            crouch = sy < -StickDead || pad.dpad.down.isPressed;
-            sprint = pad.leftTrigger.isPressed;
-            jumpDown = pad.buttonSouth.wasPressedThisFrame;
-            attackDown = pad.buttonWest.wasPressedThisFrame;
-            blockHeld = pad.rightTrigger.isPressed;
-            blockDown = pad.rightTrigger.wasPressedThisFrame;
-            blockUp = pad.rightTrigger.wasReleasedThisFrame;
-            dodgeDown = pad.buttonEast.wasPressedThisFrame;
-        }
-
-        private static void SampleKeyboardP1(out bool left, out bool right, out bool crouch, out bool sprint,
-            out bool jumpDown, out bool attackDown, out bool blockHeld, out bool blockDown, out bool blockUp, out bool dodgeDown)
-        {
-            // UnityEngine.Input — fully qualified so "Input" does not resolve to Adaptabrawl.Input.
-            left = UnityEngine.Input.GetKey(KeyCode.A);
-            right = UnityEngine.Input.GetKey(KeyCode.D);
-            crouch = UnityEngine.Input.GetKey(KeyCode.S);
-            sprint = UnityEngine.Input.GetKey(KeyCode.LeftShift);
-            jumpDown = UnityEngine.Input.GetKeyDown(KeyCode.W);
-            attackDown = UnityEngine.Input.GetKeyDown(KeyCode.F);
-            blockHeld = UnityEngine.Input.GetKey(KeyCode.G);
-            blockDown = UnityEngine.Input.GetKeyDown(KeyCode.G);
-            blockUp = UnityEngine.Input.GetKeyUp(KeyCode.G);
-            dodgeDown = UnityEngine.Input.GetKeyDown(KeyCode.Space);
-        }
-
-        private static void SampleKeyboardP2(out bool left, out bool right, out bool crouch, out bool sprint,
-            out bool jumpDown, out bool attackDown, out bool blockHeld, out bool blockDown, out bool blockUp, out bool dodgeDown)
-        {
-            left = UnityEngine.Input.GetKey(KeyCode.LeftArrow);
-            right = UnityEngine.Input.GetKey(KeyCode.RightArrow);
-            crouch = UnityEngine.Input.GetKey(KeyCode.DownArrow);
-            sprint = UnityEngine.Input.GetKey(KeyCode.RightShift);
-            jumpDown = UnityEngine.Input.GetKeyDown(KeyCode.UpArrow);
-            attackDown = UnityEngine.Input.GetKeyDown(KeyCode.Keypad1);
-            blockHeld = UnityEngine.Input.GetKey(KeyCode.Keypad2);
-            blockDown = UnityEngine.Input.GetKeyDown(KeyCode.Keypad2);
-            blockUp = UnityEngine.Input.GetKeyUp(KeyCode.Keypad2);
-            dodgeDown = UnityEngine.Input.GetKeyDown(KeyCode.Keypad0);
+            ControlProfileId profile = ControlBindingProfileResolver.ResolveGameplayKeyboardProfile(playerOneOrTwo, dualKeyboard);
+            left = bindings.IsActionHeld(profile, ControlActionId.MoveLeft);
+            right = bindings.IsActionHeld(profile, ControlActionId.MoveRight);
+            crouch = bindings.IsActionHeld(profile, ControlActionId.Crouch);
+            sprint = dualKeyboard && playerOneOrTwo == 2
+                ? UnityEngine.Input.GetKey(KeyCode.RightControl)
+                : UnityEngine.Input.GetKey(KeyCode.LeftShift);
+            jumpDown = bindings.WasActionPressedThisFrame(profile, ControlActionId.Jump);
+            attackDown = bindings.WasActionPressedThisFrame(profile, ControlActionId.Attack);
+            blockHeld = bindings.IsActionHeld(profile, ControlActionId.Block);
+            blockDown = bindings.WasActionPressedThisFrame(profile, ControlActionId.Block);
+            blockUp = bindings.WasActionReleasedThisFrame(profile, ControlActionId.Block);
+            dodgeDown = bindings.WasActionPressedThisFrame(profile, ControlActionId.Dodge);
         }
     }
 }

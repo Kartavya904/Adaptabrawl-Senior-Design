@@ -146,6 +146,31 @@ namespace Adaptabrawl.Gameplay
             return pad != null;
         }
 
+        public static int ConnectedGamepadCount()
+        {
+            int count = 0;
+            foreach (var pad in Gamepad.all)
+            {
+                if (pad != null)
+                    count++;
+            }
+
+            return count;
+        }
+
+        public static bool IsControllerConfigurationValid(int p1Device, int p2Device)
+        {
+            int requestedControllers = 0;
+            if (p1Device == 1) requestedControllers++;
+            if (p2Device == 1) requestedControllers++;
+            return requestedControllers <= ConnectedGamepadCount();
+        }
+
+        public static bool IsDualKeyboardMode(int p1Device, int p2Device)
+        {
+            return p1Device == 0 && p2Device == 0;
+        }
+
         /// <summary>
         /// Index into <see cref="Gamepad.all"/> for this player, or -1 if they use keyboard only.
         /// First player on gamepad gets device 0; if both use gamepads, P2 gets device 1.

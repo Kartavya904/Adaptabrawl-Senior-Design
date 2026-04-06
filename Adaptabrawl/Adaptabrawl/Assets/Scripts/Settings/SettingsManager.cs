@@ -38,6 +38,12 @@ namespace Adaptabrawl.Settings
         public static SettingsManager Instance => instance;
         public static float SFXVolumeScale { get; private set; } = 1f;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void Bootstrap()
+        {
+            EnsureExists();
+        }
+
         public static SettingsManager EnsureExists()
         {
             if (instance != null)

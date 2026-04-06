@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using Unity.Netcode;
 using Adaptabrawl.Gameplay;
+using Adaptabrawl.Settings;
 
 namespace Adaptabrawl.UI
 {
@@ -43,6 +44,10 @@ namespace Adaptabrawl.UI
         {
             if (setupManager == null)
                 setupManager = FindFirstObjectByType<SetupSceneManager>();
+
+            controllerPhaseCountdownText = SetupCountdownVisualUtility.EnsureCountdown(
+                controllerPhaseCountdownText,
+                "ControllerPhaseCountdownText");
 
             // Button bindings
             if (p1ToggleBtn != null) p1ToggleBtn.onClick.AddListener(() => RequestToggleController(1));
@@ -117,28 +122,29 @@ namespace Adaptabrawl.UI
             bool r1 = networked ? setupManager.p1ControllerReady.Value : setupManager.LocalP1ControllerReady;
             bool r2 = networked ? setupManager.p2ControllerReady.Value : setupManager.LocalP2ControllerReady;
 
-            if (isHost || isLocal || !networked)
+            if (!networked)
             {
-                if (p1Idx == 1 && LobbyContext.TryGetGamepadForPlayer(1, p1Idx, p2Idx, out var g1))
+                if (!r1 && WasReadyPressedForPlayer(1, p1Idx, p2Idx))
                 {
-                    if (!r1 && g1.buttonNorth.wasPressedThisFrame) RequestToggleReady(1);
+                    RequestToggleReady(1);
+                    return;
                 }
-                else if (p1Idx == 0)
-                {
-                    if (!r1 && UnityEngine.Input.GetKeyDown(KeyCode.Space)) RequestToggleReady(1);
-                }
+
+                if (!r2 && WasReadyPressedForPlayer(2, p1Idx, p2Idx))
+                    RequestToggleReady(2);
+
+                return;
             }
 
-            if (isClient || isLocal || !networked)
+            if ((isHost || isLocal) && !r1 && WasReadyPressedForPlayer(1, p1Idx, p2Idx))
             {
-                if (p2Idx == 1 && LobbyContext.TryGetGamepadForPlayer(2, p1Idx, p2Idx, out var g2))
-                {
-                    if (!r2 && g2.buttonNorth.wasPressedThisFrame) RequestToggleReady(2);
-                }
-                else if (p2Idx == 0)
-                {
-                    if (!r2 && r1 && UnityEngine.Input.GetKeyDown(KeyCode.Space)) RequestToggleReady(2);
-                }
+                RequestToggleReady(1);
+                return;
+            }
+
+            if ((isClient || isLocal) && !r2 && WasReadyPressedForPlayer(2, p1Idx, p2Idx))
+            {
+                RequestToggleReady(2);
             }
         }
 
@@ -186,10 +192,10 @@ namespace Adaptabrawl.UI
             bool countdown = setupManager.ControllerPhaseCountdownActive;
 
             // Lock buttons: Host owns P1, Client owns P2, Local owns both
-            if (p1ToggleBtn != null) p1ToggleBtn.interactable = (isHost || isLocal) && !r1 && !countdown;
+            if (p1ToggleBtn != null) p1ToggleBtn.interactable = (isHost || isLocal) && !r1 && !countdown && setupManager.CanToggleControllerChoice(1, networked);
             if (p1ReadyBtn != null) p1ReadyBtn.interactable = (isHost || isLocal) && !countdown;
 
-            if (p2ToggleBtn != null) p2ToggleBtn.interactable = (isClient || isLocal) && !r2 && !countdown;
+            if (p2ToggleBtn != null) p2ToggleBtn.interactable = (isClient || isLocal) && !r2 && !countdown && setupManager.CanToggleControllerChoice(2, networked);
             if (p2ReadyBtn != null) p2ReadyBtn.interactable = (isClient || isLocal) && !countdown;
 
             // Update display texts
@@ -197,8 +203,14 @@ namespace Adaptabrawl.UI
             if (p2ControllerText != null) p2ControllerText.text = configOptions[p2Idx];
 
             // Toggle button labels: show what switching WOULD change TO
-            if (p1ToggleBtnText != null) p1ToggleBtnText.text = p1Idx == 0 ? "Change to Controller" : "Change to Keyboard";
-            if (p2ToggleBtnText != null) p2ToggleBtnText.text = p2Idx == 0 ? "Change to Controller" : "Change to Keyboard";
+            if (p1ToggleBtnText != null)
+                p1ToggleBtnText.text = p1Idx == 0
+                    ? (setupManager.CanToggleControllerChoice(1, networked) ? "Change to Controller" : "Controller Unavailable")
+                    : "Change to Keyboard";
+            if (p2ToggleBtnText != null)
+                p2ToggleBtnText.text = p2Idx == 0
+                    ? (setupManager.CanToggleControllerChoice(2, networked) ? "Change to Controller" : "Controller Unavailable")
+                    : "Change to Keyboard";
 
             if (p1ReadyBtnText != null)
                 p1ReadyBtnText.text = LobbySetupInputHints.ControllerReadyButtonRich(r1, p1Idx, true);
@@ -218,6 +230,20 @@ namespace Adaptabrawl.UI
                 p2ReadyText.text = r2 ? $"Ready ({p2Dev})" : $"Not ready ({p2Dev})";
                 p2ReadyText.color = r2 ? Color.green : Color.white;
             }
+        }
+
+        private static bool WasReadyPressedForPlayer(int playerNumber, int p1Device, int p2Device)
+        {
+            var bindings = ControlBindingsContext.EnsureExists();
+            if (playerNumber == 1 && p1Device == 1 && LobbyContext.TryGetGamepadForPlayer(1, p1Device, p2Device, out var g1))
+                return bindings.WasActionPressedThisFrame(ControlProfileId.GlobalController, ControlActionId.ReadyUp, g1 != null ? LobbyContext.GetGamepadListIndexForPlayer(1, p1Device, p2Device) : -1);
+
+            if (playerNumber == 2 && p2Device == 1 && LobbyContext.TryGetGamepadForPlayer(2, p1Device, p2Device, out var g2))
+                return bindings.WasActionPressedThisFrame(ControlProfileId.GlobalController, ControlActionId.ReadyUp, g2 != null ? LobbyContext.GetGamepadListIndexForPlayer(2, p1Device, p2Device) : -1);
+
+            bool dualKeyboard = LobbyContext.IsDualKeyboardMode(p1Device, p2Device);
+            var profile = ControlBindingProfileResolver.ResolveGlobalKeyboardProfile(playerNumber, dualKeyboard);
+            return bindings.WasActionPressedThisFrame(profile, ControlActionId.ReadyUp);
         }
     }
 }

@@ -6,6 +6,7 @@ using Unity.Netcode;
 using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem;
 using Adaptabrawl.Gameplay;
+using Adaptabrawl.Settings;
 
 namespace Adaptabrawl.UI
 {
@@ -109,7 +110,7 @@ namespace Adaptabrawl.UI
         {
             if (setupManager == null || _countdownRunning) return;
 
-            bool networked = NetworkManager.Singleton != null;
+            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
             bool isHost = networked && NetworkManager.Singleton.IsServer;
             bool isLocal = CharacterSelectData.isLocalMatch;
             bool p1Ready = networked ? setupManager.p1ArenaReady.Value : setupManager.LocalP1ArenaReady;
@@ -120,24 +121,29 @@ namespace Adaptabrawl.UI
             int p2CtrlIdx = LobbyContext.Instance != null ? LobbyContext.Instance.p2InputDevice
                           : (networked ? setupManager.p2ControllerIndex.Value : setupManager.LocalP2ControllerIndex);
 
-            if (!p1Ready && (isHost || isLocal || !networked))
+            if (!networked)
             {
-                bool p1Confirm = false;
-                if (p1CtrlIdx == 1 && LobbyContext.TryGetGamepadForPlayer(1, p1CtrlIdx, p2CtrlIdx, out var gp1))
-                    p1Confirm = gp1.buttonNorth.wasPressedThisFrame;
-                else if (p1CtrlIdx != 1)
-                    p1Confirm = UnityEngine.Input.GetKeyDown(KeyCode.Space);
-                if (p1Confirm) RequestReady(1);
+                if (!p1Ready && WasReadyPressedForPlayer(1, p1CtrlIdx, p2CtrlIdx))
+                {
+                    RequestReady(1);
+                    return;
+                }
+
+                if (!p2Ready && WasReadyPressedForPlayer(2, p1CtrlIdx, p2CtrlIdx))
+                    RequestReady(2);
+
+                return;
             }
 
-            if (!p2Ready && (!isHost || isLocal || !networked))
+            if (!p1Ready && (isHost || isLocal || !networked) && WasReadyPressedForPlayer(1, p1CtrlIdx, p2CtrlIdx))
             {
-                bool p2Confirm = false;
-                if (p2CtrlIdx == 1 && LobbyContext.TryGetGamepadForPlayer(2, p1CtrlIdx, p2CtrlIdx, out var gp2))
-                    p2Confirm = gp2.buttonNorth.wasPressedThisFrame;
-                else if (p2CtrlIdx != 1)
-                    p2Confirm = UnityEngine.Input.GetKeyDown(KeyCode.Return);
-                if (p2Confirm) RequestReady(2);
+                RequestReady(1);
+                return;
+            }
+
+            if (!p2Ready && (!isHost || isLocal || !networked) && WasReadyPressedForPlayer(2, p1CtrlIdx, p2CtrlIdx))
+            {
+                RequestReady(2);
             }
         }
 
@@ -171,7 +177,7 @@ namespace Adaptabrawl.UI
         {
             if (setupManager == null || availableArenas.Count == 0) return;
 
-            if (NetworkManager.Singleton != null)
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
             {
                 setupManager.ChangeArenaServerRpc(NetworkManager.Singleton.LocalClientId, direction, availableArenas.Count);
             }
@@ -185,7 +191,7 @@ namespace Adaptabrawl.UI
         {
             if (setupManager == null) return;
 
-            if (NetworkManager.Singleton != null)
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
             {
                 bool isHost = NetworkManager.Singleton.IsServer;
                 
@@ -206,7 +212,7 @@ namespace Adaptabrawl.UI
         {
             if (setupManager == null) return;
 
-            if (NetworkManager.Singleton != null)
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
             {
                 // Only Host has the authority to move everyone backward scenes
                 if (NetworkManager.Singleton.IsServer)
@@ -227,7 +233,7 @@ namespace Adaptabrawl.UI
         private void PushCurrentArenaToLobbyContext()
         {
             if (setupManager == null) return;
-            bool networked = NetworkManager.Singleton != null;
+            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
             int aIdx = networked ? setupManager.arenaIndex.Value : setupManager.LocalArenaIndex;
             TryGetArenaSpriteForIndex(aIdx, out Sprite sprite);
             if (availableArenas.Count > 0 && aIdx >= 0 && aIdx < availableArenas.Count)
@@ -262,7 +268,7 @@ namespace Adaptabrawl.UI
         {
             if (setupManager == null) return;
 
-            bool networked = NetworkManager.Singleton != null;
+            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
             bool isHost = networked && NetworkManager.Singleton.IsServer;
 
             int aIdx = networked ? setupManager.arenaIndex.Value : setupManager.LocalArenaIndex;
@@ -386,7 +392,7 @@ namespace Adaptabrawl.UI
 
             // Host (or local instance) actually triggers the scene load.
             string gameSceneName = CharacterSelectData.isLocalMatch ? "GameScene" : "OnlineGameScene";
-            if (NetworkManager.Singleton != null)
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
             {
                 if (NetworkManager.Singleton.IsServer)
                 {
@@ -397,6 +403,20 @@ namespace Adaptabrawl.UI
             {
                 SceneManager.LoadScene(gameSceneName);
             }
+        }
+
+        private static bool WasReadyPressedForPlayer(int playerNumber, int p1Device, int p2Device)
+        {
+            var bindings = ControlBindingsContext.EnsureExists();
+            if (playerNumber == 1 && p1Device == 1 && LobbyContext.TryGetGamepadForPlayer(1, p1Device, p2Device, out var g1))
+                return bindings.WasActionPressedThisFrame(ControlProfileId.GlobalController, ControlActionId.ReadyUp, g1 != null ? LobbyContext.GetGamepadListIndexForPlayer(1, p1Device, p2Device) : -1);
+
+            if (playerNumber == 2 && p2Device == 1 && LobbyContext.TryGetGamepadForPlayer(2, p1Device, p2Device, out var g2))
+                return bindings.WasActionPressedThisFrame(ControlProfileId.GlobalController, ControlActionId.ReadyUp, g2 != null ? LobbyContext.GetGamepadListIndexForPlayer(2, p1Device, p2Device) : -1);
+
+            bool dualKeyboard = LobbyContext.IsDualKeyboardMode(p1Device, p2Device);
+            var profile = ControlBindingProfileResolver.ResolveGlobalKeyboardProfile(playerNumber, dualKeyboard);
+            return bindings.WasActionPressedThisFrame(profile, ControlActionId.ReadyUp);
         }
     }
 }

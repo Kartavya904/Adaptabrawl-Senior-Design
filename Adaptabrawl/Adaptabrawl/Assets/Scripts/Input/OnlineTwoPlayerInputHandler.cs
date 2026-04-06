@@ -1,5 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
+using Adaptabrawl.Gameplay;
+using Adaptabrawl.Settings;
 
 namespace Adaptabrawl.Input
 {
@@ -80,30 +82,12 @@ namespace Adaptabrawl.Input
             if (IsServer)
             {
                 p1Controller.isNetworkControlled = false;
-                p1Controller.keyLeft   = KeyCode.A;
-                p1Controller.keyRight  = KeyCode.D;
-                p1Controller.keyJump   = KeyCode.W;
-                p1Controller.keyCrouch = KeyCode.S;
-                p1Controller.keySprint = KeyCode.LeftShift;
-                p1Controller.keyAttack = KeyCode.F;
-                p1Controller.keyBlock  = KeyCode.G;
-                p1Controller.keyDodge  = KeyCode.Space;
-
                 p2Controller.isNetworkControlled = true;
             }
             else if (IsClient)
             {
                 p1Controller.isNetworkControlled = true;
-
                 p2Controller.isNetworkControlled = false;
-                p2Controller.keyLeft   = KeyCode.A;
-                p2Controller.keyRight  = KeyCode.D;
-                p2Controller.keyJump   = KeyCode.W;
-                p2Controller.keyCrouch = KeyCode.S;
-                p2Controller.keySprint = KeyCode.LeftShift;
-                p2Controller.keyAttack = KeyCode.F;
-                p2Controller.keyBlock  = KeyCode.G;
-                p2Controller.keyDodge  = KeyCode.Space;
             }
 
             rolesApplied = true;
@@ -127,16 +111,8 @@ namespace Adaptabrawl.Input
 
         private void SendP1InputsToClients()
         {
-            bool left      = UnityEngine.Input.GetKey(p1Controller.keyLeft);
-            bool right     = UnityEngine.Input.GetKey(p1Controller.keyRight);
-            bool crouch    = UnityEngine.Input.GetKey(p1Controller.keyCrouch);
-            bool sprint    = UnityEngine.Input.GetKey(p1Controller.keySprint);
-            bool jump      = UnityEngine.Input.GetKeyDown(p1Controller.keyJump);
-            bool attack    = UnityEngine.Input.GetKeyDown(p1Controller.keyAttack);
-            bool block     = UnityEngine.Input.GetKey(p1Controller.keyBlock);
-            bool blockDown = UnityEngine.Input.GetKeyDown(p1Controller.keyBlock);
-            bool blockUp   = UnityEngine.Input.GetKeyUp(p1Controller.keyBlock);
-            bool dodge     = UnityEngine.Input.GetKeyDown(p1Controller.keyDodge);
+            SampleConfiguredPlayer(1, out bool left, out bool right, out bool crouch, out bool sprint,
+                out bool jump, out bool attack, out bool block, out bool blockDown, out bool blockUp, out bool dodge);
 
             UpdateP1StateClientRpc(
                 p1Controller.transform.position,
@@ -173,16 +149,8 @@ namespace Adaptabrawl.Input
 
         private void SendP2InputsToServer()
         {
-            bool left      = UnityEngine.Input.GetKey(p2Controller.keyLeft);
-            bool right     = UnityEngine.Input.GetKey(p2Controller.keyRight);
-            bool crouch    = UnityEngine.Input.GetKey(p2Controller.keyCrouch);
-            bool sprint    = UnityEngine.Input.GetKey(p2Controller.keySprint);
-            bool jump      = UnityEngine.Input.GetKeyDown(p2Controller.keyJump);
-            bool attack    = UnityEngine.Input.GetKeyDown(p2Controller.keyAttack);
-            bool block     = UnityEngine.Input.GetKey(p2Controller.keyBlock);
-            bool blockDown = UnityEngine.Input.GetKeyDown(p2Controller.keyBlock);
-            bool blockUp   = UnityEngine.Input.GetKeyUp(p2Controller.keyBlock);
-            bool dodge     = UnityEngine.Input.GetKeyDown(p2Controller.keyDodge);
+            SampleConfiguredPlayer(2, out bool left, out bool right, out bool crouch, out bool sprint,
+                out bool jump, out bool attack, out bool block, out bool blockDown, out bool blockUp, out bool dodge);
 
             UpdateP2StateServerRpc(
                 p2Controller.transform.position,
@@ -226,6 +194,48 @@ namespace Adaptabrawl.Input
                     Time.deltaTime * positionLerpSpeed
                 );
             }
+        }
+
+        private static void SampleConfiguredPlayer(int playerNumber, out bool left, out bool right, out bool crouch, out bool sprint,
+            out bool jump, out bool attack, out bool block, out bool blockDown, out bool blockUp, out bool dodge)
+        {
+            var bindings = ControlBindingsContext.EnsureExists();
+            var lobby = LobbyContext.Instance;
+            int p1Device = lobby != null ? lobby.p1InputDevice : 0;
+            int p2Device = lobby != null ? lobby.p2InputDevice : 0;
+            bool dualKeyboard = LobbyContext.IsDualKeyboardMode(p1Device, p2Device);
+
+            bool useController = playerNumber == 1 ? p1Device == 1 : p2Device == 1;
+            if (useController)
+            {
+                int gamepadIndex = LobbyContext.GetGamepadListIndexForPlayer(playerNumber, p1Device, p2Device);
+                left = bindings.IsActionHeld(ControlProfileId.Controller, ControlActionId.MoveLeft, gamepadIndex);
+                right = bindings.IsActionHeld(ControlProfileId.Controller, ControlActionId.MoveRight, gamepadIndex);
+                crouch = bindings.IsActionHeld(ControlProfileId.Controller, ControlActionId.Crouch, gamepadIndex);
+                sprint = gamepadIndex >= 0 && gamepadIndex < UnityEngine.InputSystem.Gamepad.all.Count && UnityEngine.InputSystem.Gamepad.all[gamepadIndex] != null
+                    && UnityEngine.InputSystem.Gamepad.all[gamepadIndex].leftTrigger.isPressed;
+                jump = bindings.WasActionPressedThisFrame(ControlProfileId.Controller, ControlActionId.Jump, gamepadIndex);
+                attack = bindings.WasActionPressedThisFrame(ControlProfileId.Controller, ControlActionId.Attack, gamepadIndex);
+                block = bindings.IsActionHeld(ControlProfileId.Controller, ControlActionId.Block, gamepadIndex);
+                blockDown = bindings.WasActionPressedThisFrame(ControlProfileId.Controller, ControlActionId.Block, gamepadIndex);
+                blockUp = bindings.WasActionReleasedThisFrame(ControlProfileId.Controller, ControlActionId.Block, gamepadIndex);
+                dodge = bindings.WasActionPressedThisFrame(ControlProfileId.Controller, ControlActionId.Dodge, gamepadIndex);
+                return;
+            }
+
+            ControlProfileId profile = ControlBindingProfileResolver.ResolveGameplayKeyboardProfile(playerNumber, dualKeyboard);
+            left = bindings.IsActionHeld(profile, ControlActionId.MoveLeft);
+            right = bindings.IsActionHeld(profile, ControlActionId.MoveRight);
+            crouch = bindings.IsActionHeld(profile, ControlActionId.Crouch);
+            sprint = dualKeyboard && playerNumber == 2
+                ? UnityEngine.Input.GetKey(KeyCode.RightControl)
+                : UnityEngine.Input.GetKey(KeyCode.LeftShift);
+            jump = bindings.WasActionPressedThisFrame(profile, ControlActionId.Jump);
+            attack = bindings.WasActionPressedThisFrame(profile, ControlActionId.Attack);
+            block = bindings.IsActionHeld(profile, ControlActionId.Block);
+            blockDown = bindings.WasActionPressedThisFrame(profile, ControlActionId.Block);
+            blockUp = bindings.WasActionReleasedThisFrame(profile, ControlActionId.Block);
+            dodge = bindings.WasActionPressedThisFrame(profile, ControlActionId.Dodge);
         }
     }
 }

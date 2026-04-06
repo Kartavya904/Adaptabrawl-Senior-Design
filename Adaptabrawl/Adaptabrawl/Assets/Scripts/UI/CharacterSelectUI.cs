@@ -120,6 +120,10 @@ namespace Adaptabrawl.UI
             if (setupManager == null)
                 setupManager = FindFirstObjectByType<SetupSceneManager>();
 
+            characterToArenaCountdownText = SetupCountdownVisualUtility.EnsureCountdown(
+                characterToArenaCountdownText,
+                "CharacterPhaseCountdownText");
+
             // Load available fighters
             LoadAvailableFighters();
 
@@ -228,7 +232,7 @@ namespace Adaptabrawl.UI
             if (!HasArrowButtonsForNavigation())
                 return;
 
-            bool networked = NetworkManager.Singleton != null;
+            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
             bool isHost = networked && NetworkManager.Singleton.IsServer;
             bool isLocal = CharacterSelectData.isLocalMatch;
 
@@ -416,7 +420,7 @@ namespace Adaptabrawl.UI
         private void RequestChangeSelection(int direction, int targetPlayer)
         {
             if (setupManager == null || availableFighters.Count == 0) return;
-            if (NetworkManager.Singleton != null)
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
                 setupManager.ChangeCharacterServerRpc(NetworkManager.Singleton.LocalClientId, direction, availableFighters.Count, targetPlayer);
             else
                 setupManager.LocalChangeCharacter(direction, availableFighters.Count, targetPlayer);
@@ -425,7 +429,7 @@ namespace Adaptabrawl.UI
         private void RequestConfirmSelection(int targetPlayer)
         {
             if (setupManager == null) return;
-            if (NetworkManager.Singleton != null)
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
                 setupManager.ToggleCharacterReadyServerRpc(NetworkManager.Singleton.LocalClientId, targetPlayer);
             else
                 setupManager.LocalToggleCharacterReady(targetPlayer);
@@ -434,7 +438,7 @@ namespace Adaptabrawl.UI
         private void RequestGoBack()
         {
             if (setupManager == null) return;
-            if (NetworkManager.Singleton != null)
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
             {
                 if (NetworkManager.Singleton.IsServer)
                     setupManager.GoBackToControllerServerRpc();
@@ -449,7 +453,7 @@ namespace Adaptabrawl.UI
         {
             if (setupManager == null) return;
 
-            bool networked = NetworkManager.Singleton != null;
+            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
             bool isHost = networked && NetworkManager.Singleton.IsServer;
             bool isClient = networked && !isHost;
             bool isLocal = CharacterSelectData.isLocalMatch;

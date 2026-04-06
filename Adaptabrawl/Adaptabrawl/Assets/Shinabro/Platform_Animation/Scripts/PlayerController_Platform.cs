@@ -6,6 +6,8 @@ using Adaptabrawl.Attack;
 using Adaptabrawl.Defend;
 using Adaptabrawl.Evade;
 using Adaptabrawl.Gameplay;
+using Adaptabrawl.Settings;
+using Adaptabrawl.UI;
 
 public class PlayerController_Platform : MonoBehaviour
 {
@@ -89,6 +91,8 @@ public class PlayerController_Platform : MonoBehaviour
     private float locomotionDirection;
     private bool scriptedLocomotionActive;
     private float scriptedLocomotionDirection;
+    private int configuredPlayerNumber = 1;
+    private bool dualKeyboardMode;
 
     private static readonly int RunHash = Animator.StringToHash("Run");
     private static readonly int WalkHash = Animator.StringToHash("Walk");
@@ -140,6 +144,16 @@ public class PlayerController_Platform : MonoBehaviour
         return gamepadIndex >= 0 && GetGamepad() != null;
     }
 
+    private ControlBindingsContext Bindings => ControlBindingsContext.EnsureExists();
+
+    private ControlProfileId GetGameplayProfile()
+    {
+        if (GamepadMovementActive())
+            return ControlProfileId.Controller;
+
+        return ControlBindingProfileResolver.ResolveGameplayKeyboardProfile(configuredPlayerNumber, dualKeyboardMode);
+    }
+
     private bool GamepadHorizontalRight(Gamepad pad)
     {
         float x = pad.leftStick.x.ReadValue();
@@ -168,24 +182,24 @@ public class PlayerController_Platform : MonoBehaviour
     {
         if (isNetworkControlled) return netRight;
         if (GamepadMovementActive())
-            return GamepadHorizontalRight(GetGamepad());
-        return Input.GetKey(keyRight);
+            return Bindings.IsActionHeld(ControlProfileId.Controller, ControlActionId.MoveRight, gamepadIndex);
+        return Bindings.IsActionHeld(GetGameplayProfile(), ControlActionId.MoveRight);
     }
 
     private bool IsLeftPressed()
     {
         if (isNetworkControlled) return netLeft;
         if (GamepadMovementActive())
-            return GamepadHorizontalLeft(GetGamepad());
-        return Input.GetKey(keyLeft);
+            return Bindings.IsActionHeld(ControlProfileId.Controller, ControlActionId.MoveLeft, gamepadIndex);
+        return Bindings.IsActionHeld(GetGameplayProfile(), ControlActionId.MoveLeft);
     }
 
     private bool IsCrouchPressed()
     {
         if (isNetworkControlled) return netCrouch;
         if (GamepadMovementActive())
-            return GamepadVerticalDown(GetGamepad());
-        return Input.GetKey(keyCrouch);
+            return Bindings.IsActionHeld(ControlProfileId.Controller, ControlActionId.Crouch, gamepadIndex);
+        return Bindings.IsActionHeld(GetGameplayProfile(), ControlActionId.Crouch);
     }
 
     private bool IsSprintPressed()
@@ -193,69 +207,78 @@ public class PlayerController_Platform : MonoBehaviour
         if (isNetworkControlled) return netSprint;
         if (GamepadMovementActive())
             return GetGamepad().leftTrigger.isPressed;
-        return Input.GetKey(keySprint);
+
+        if (dualKeyboardMode && configuredPlayerNumber == 2)
+            return Input.GetKey(KeyCode.RightControl);
+
+        return Input.GetKey(KeyCode.LeftShift);
     }
 
     private bool WasJumpPressed()
     {
         if (isNetworkControlled) return netJump;
         if (GamepadMovementActive())
-            return GetGamepad().buttonSouth.wasPressedThisFrame;
-        return Input.GetKeyDown(keyJump);
+            return Bindings.WasActionPressedThisFrame(ControlProfileId.Controller, ControlActionId.Jump, gamepadIndex);
+        return Bindings.WasActionPressedThisFrame(GetGameplayProfile(), ControlActionId.Jump);
     }
 
     private bool WasAttackPressed()
     {
         if (isNetworkControlled) return netAttack;
         if (GamepadMovementActive())
-            return GetGamepad().buttonWest.wasPressedThisFrame;
-        return Input.GetKeyDown(keyAttack) || Input.GetMouseButtonDown(0);
+            return Bindings.WasActionPressedThisFrame(ControlProfileId.Controller, ControlActionId.Attack, gamepadIndex);
+        return Bindings.WasActionPressedThisFrame(GetGameplayProfile(), ControlActionId.Attack);
     }
 
     private bool IsBlockPressed()
     {
         if (isNetworkControlled) return netBlock;
         if (GamepadMovementActive())
-            return GetGamepad().rightTrigger.isPressed;
-        return Input.GetKey(keyBlock) || Input.GetMouseButton(1);
+            return Bindings.IsActionHeld(ControlProfileId.Controller, ControlActionId.Block, gamepadIndex);
+        return Bindings.IsActionHeld(GetGameplayProfile(), ControlActionId.Block);
     }
 
     private bool WasBlockPressed()
     {
         if (isNetworkControlled) return netBlockDown;
         if (GamepadMovementActive())
-            return GetGamepad().rightTrigger.wasPressedThisFrame;
-        return Input.GetKeyDown(keyBlock) || Input.GetMouseButtonDown(1);
+            return Bindings.WasActionPressedThisFrame(ControlProfileId.Controller, ControlActionId.Block, gamepadIndex);
+        return Bindings.WasActionPressedThisFrame(GetGameplayProfile(), ControlActionId.Block);
     }
 
     private bool WasBlockReleased()
     {
         if (isNetworkControlled) return netBlockUp;
         if (GamepadMovementActive())
-            return GetGamepad().rightTrigger.wasReleasedThisFrame;
-        return Input.GetKeyUp(keyBlock) || Input.GetMouseButtonUp(1);
+            return Bindings.WasActionReleasedThisFrame(ControlProfileId.Controller, ControlActionId.Block, gamepadIndex);
+        return Bindings.WasActionReleasedThisFrame(GetGameplayProfile(), ControlActionId.Block);
     }
 
     private bool WasDodgePressed()
     {
         if (isNetworkControlled) return netDodge;
         if (GamepadMovementActive())
-            return GetGamepad().buttonEast.wasPressedThisFrame;
-        return Input.GetKeyDown(keyDodge);
+            return Bindings.WasActionPressedThisFrame(ControlProfileId.Controller, ControlActionId.Dodge, gamepadIndex);
+        return Bindings.WasActionPressedThisFrame(GetGameplayProfile(), ControlActionId.Dodge);
     }
 
     private bool WasSkillPressed(int index)
     {
         if (isNetworkControlled) return index >= 0 && index < 8 ? netSkills[index] : false;
-        if (GamepadMovementActive())
+        ControlActionId action = index switch
         {
-            Gamepad pad = GetGamepad();
-            if (index == 0) return pad.leftShoulder.wasPressedThisFrame;
-            if (index == 1) return pad.rightShoulder.wasPressedThisFrame;
+            0 => ControlActionId.SpecialLight,
+            1 => ControlActionId.SpecialHeavy,
+            _ => (ControlActionId)(-1)
+        };
+
+        if (index < 0 || index > 1)
             return false;
-        }
-        KeyCode[] keys = { skill1, skill2, skill3, skill4, skill5, skill6, skill7, skill8 };
-        return index >= 0 && index < keys.Length && Input.GetKeyDown(keys[index]);
+
+        if (GamepadMovementActive())
+            return Bindings.WasActionPressedThisFrame(ControlProfileId.Controller, action, gamepadIndex);
+
+        return Bindings.WasActionPressedThisFrame(GetGameplayProfile(), action);
     }
 
     /// <summary>
@@ -266,7 +289,11 @@ public class PlayerController_Platform : MonoBehaviour
     /// </summary>
     public void ConfigureForPlayer(int playerNumber, int padIndex)
     {
+        configuredPlayerNumber = playerNumber;
         gamepadIndex = padIndex;
+        int p1Device = LobbyContext.Instance != null ? LobbyContext.Instance.p1InputDevice : CharacterSelectData.finalP1ControllerIndex;
+        int p2Device = LobbyContext.Instance != null ? LobbyContext.Instance.p2InputDevice : CharacterSelectData.finalP2ControllerIndex;
+        dualKeyboardMode = LobbyContext.IsDualKeyboardMode(p1Device, p2Device);
 
         if (playerNumber == 2 && padIndex < 0)
         {

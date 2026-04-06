@@ -138,13 +138,17 @@ namespace Adaptabrawl.UI
             if (targetPlayer == 1 || (targetPlayer == 0 && clientId == NetworkManager.ServerClientId))
             {
                 if (p1ControllerReady.Value) return;
-                p1ControllerIndex.Value = (p1ControllerIndex.Value + 1) % 2;
+                int next = (p1ControllerIndex.Value + 1) % 2;
+                if (CanApplyControllerChoice(next, p2ControllerIndex.Value))
+                    p1ControllerIndex.Value = next;
             }
 
             if (targetPlayer == 2 || (targetPlayer == 0 && clientId != NetworkManager.ServerClientId))
             {
                 if (p2ControllerReady.Value) return;
-                p2ControllerIndex.Value = (p2ControllerIndex.Value + 1) % 2;
+                int next = (p2ControllerIndex.Value + 1) % 2;
+                if (CanApplyControllerChoice(p1ControllerIndex.Value, next))
+                    p2ControllerIndex.Value = next;
             }
         }
 
@@ -204,11 +208,15 @@ namespace Adaptabrawl.UI
         {
             if (targetPlayer == 1 && !_localP1ControllerReady)
             {
-                _localP1ControllerIndex = (_localP1ControllerIndex + 1) % 2;
+                int next = (_localP1ControllerIndex + 1) % 2;
+                if (CanApplyControllerChoice(next, _localP2ControllerIndex))
+                    _localP1ControllerIndex = next;
             }
             else if (targetPlayer == 2 && !_localP2ControllerReady)
             {
-                _localP2ControllerIndex = (_localP2ControllerIndex + 1) % 2;
+                int next = (_localP2ControllerIndex + 1) % 2;
+                if (CanApplyControllerChoice(_localP1ControllerIndex, next))
+                    _localP2ControllerIndex = next;
             }
             OnControllerConfigChanged?.Invoke();
         }
@@ -250,6 +258,19 @@ namespace Adaptabrawl.UI
         public int LocalP2ControllerIndex => _localP2ControllerIndex;
         public bool LocalP1ControllerReady => _localP1ControllerReady;
         public bool LocalP2ControllerReady => _localP2ControllerReady;
+
+        public bool CanToggleControllerChoice(int playerNumber, bool networked)
+        {
+            int p1 = networked ? p1ControllerIndex.Value : _localP1ControllerIndex;
+            int p2 = networked ? p2ControllerIndex.Value : _localP2ControllerIndex;
+
+            if (playerNumber == 1)
+                return CanApplyControllerChoice((p1 + 1) % 2, p2);
+            if (playerNumber == 2)
+                return CanApplyControllerChoice(p1, (p2 + 1) % 2);
+
+            return false;
+        }
 
         // Mirror fields for character phase when NetworkManager is not running
         private int _localP1FighterIndex;
@@ -624,6 +645,11 @@ namespace Adaptabrawl.UI
             if (controllerConfigPanel != null) controllerConfigPanel.SetActive(controller);
             if (characterSelectPanel != null) characterSelectPanel.SetActive(character);
             if (arenaSelectPanel != null) arenaSelectPanel.SetActive(arena);
+        }
+
+        private static bool CanApplyControllerChoice(int p1Device, int p2Device)
+        {
+            return LobbyContext.IsControllerConfigurationValid(p1Device, p2Device);
         }
 
         public bool IsLocalJoinPanelActive => localJoinPanel != null && localJoinPanel.activeInHierarchy;

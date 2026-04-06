@@ -1,5 +1,7 @@
 namespace Adaptabrawl.Gameplay
 {
+    using Adaptabrawl.Settings;
+
     /// <summary>
     /// Consistent setup UI copy from lobby device choice (keyboard vs controller).
     /// </summary>
@@ -9,14 +11,22 @@ namespace Adaptabrawl.Gameplay
 
         public static string ControllerReadyConfirmLine(int device01)
         {
-            return device01 == 1 ? "Triangle — ready up" : "Space — ready up";
+            var bindings = ControlBindingsContext.EnsureExists();
+            string label = device01 == 1
+                ? bindings.GetDefaultBindingsLabel(ControlProfileId.GlobalController, ControlActionId.ReadyUp)
+                : bindings.GetDefaultBindingsLabel(ControlProfileId.GlobalKeyboardPlayer1, ControlActionId.ReadyUp);
+            return $"{label} — ready up";
         }
 
         public static string ControllerReadyCancelLine(int device01, bool isPlayer1)
         {
-            if (device01 == 1)
-                return "Circle — not ready";
-            return isPlayer1 ? "Esc — not ready" : "Backspace — not ready";
+            var bindings = ControlBindingsContext.EnsureExists();
+            string label = device01 == 1
+                ? bindings.GetDefaultBindingsLabel(ControlProfileId.GlobalController, ControlActionId.BackCancel)
+                : bindings.GetDefaultBindingsLabel(
+                    isPlayer1 ? ControlProfileId.GlobalKeyboardPlayer1 : ControlProfileId.GlobalKeyboardPlayer2,
+                    ControlActionId.BackCancel);
+            return $"{label} — not ready";
         }
 
         public static string CharacterBrowseLine(int device01, bool isPlayer1)
@@ -35,9 +45,13 @@ namespace Adaptabrawl.Gameplay
 
         public static string CharacterCancelLine(int device01, bool isPlayer1)
         {
-            if (device01 == 1)
-                return "Circle — change pick";
-            return isPlayer1 ? "Esc — change pick" : "Backspace — change pick";
+            var bindings = ControlBindingsContext.EnsureExists();
+            string label = device01 == 1
+                ? bindings.GetDefaultBindingsLabel(ControlProfileId.GlobalController, ControlActionId.BackCancel)
+                : bindings.GetDefaultBindingsLabel(
+                    isPlayer1 ? ControlProfileId.GlobalKeyboardPlayer1 : ControlProfileId.GlobalKeyboardPlayer2,
+                    ControlActionId.BackCancel);
+            return $"{label} — change pick";
         }
 
         public static string CharacterReadyStatusLine(int device01, bool lockedIn)
@@ -50,16 +64,24 @@ namespace Adaptabrawl.Gameplay
 
         public static string ArenaReadyLine(int device01, bool isPlayer1)
         {
-            if (device01 == 1)
-                return "Triangle — ready";
-            return isPlayer1 ? "Space — ready" : "Enter — ready";
+            var bindings = ControlBindingsContext.EnsureExists();
+            string label = device01 == 1
+                ? bindings.GetDefaultBindingsLabel(ControlProfileId.GlobalController, ControlActionId.ReadyUp)
+                : bindings.GetDefaultBindingsLabel(
+                    isPlayer1 ? ControlProfileId.GlobalKeyboardPlayer1 : ControlProfileId.GlobalKeyboardPlayer2,
+                    ControlActionId.ReadyUp);
+            return $"{label} — ready";
         }
 
         public static string ArenaUnreadyLine(int device01, bool isPlayer1)
         {
-            if (device01 == 1)
-                return "Circle — undo ready";
-            return isPlayer1 ? "Esc — undo ready" : "Backspace — undo ready";
+            var bindings = ControlBindingsContext.EnsureExists();
+            string label = device01 == 1
+                ? bindings.GetDefaultBindingsLabel(ControlProfileId.GlobalController, ControlActionId.BackCancel)
+                : bindings.GetDefaultBindingsLabel(
+                    isPlayer1 ? ControlProfileId.GlobalKeyboardPlayer1 : ControlProfileId.GlobalKeyboardPlayer2,
+                    ControlActionId.BackCancel);
+            return $"{label} — undo ready";
         }
 
         public static string CharacterConfirmButtonRich(int device01, bool lockedIn, bool isPlayer1)

@@ -54,6 +54,12 @@ namespace Adaptabrawl.UI
         [SerializeField] private Selectable[] menuFocusOrder;
         
         private Resolution[] resolutions;
+        private ControlsConfigurationPanel controlsConfigurationPanel;
+
+        private void Awake()
+        {
+            EnsureControlsPanel();
+        }
         
         private void Start()
         {
@@ -63,6 +69,7 @@ namespace Adaptabrawl.UI
             SetupButtonListeners();
             LoadCurrentSettings();
             WireMenuControllerNavigation();
+            EnsureControlsPanel();
         }
 
         private void OnDestroy()
@@ -74,7 +81,23 @@ namespace Adaptabrawl.UI
         {
             if (!BackInputUtility.WasBackOrCancelPressedThisFrame()) return;
             if (BackInputUtility.IsTextInputFocused()) return;
+
+            if (controlsConfigurationPanel != null && controlsConfigurationPanel.IsOpen)
+            {
+                if (controlsConfigurationPanel.IsCapturing)
+                    return;
+
+                if (controlsConfigurationPanel.HandleBackRequested())
+                    return;
+            }
+
             GoBack();
+        }
+
+        public void OpenControlsConfiguration()
+        {
+            EnsureControlsPanel();
+            controlsConfigurationPanel?.Show();
         }
 
         private void WireMenuControllerNavigation()
@@ -856,6 +879,29 @@ namespace Adaptabrawl.UI
                 SceneManager.LoadScene(prev);
             else
                 SceneManager.LoadScene("StartScene");
+        }
+
+        private void EnsureControlsPanel()
+        {
+            if (controlsConfigurationPanel != null)
+                return;
+
+            Canvas canvas = GetComponentInParent<Canvas>();
+            if (canvas == null)
+                canvas = FindFirstObjectByType<Canvas>(FindObjectsInactive.Include);
+            if (canvas == null)
+                return;
+
+            Transform existing = canvas.transform.Find("ControlsConfigurationPanelHost");
+            if (existing != null && existing.TryGetComponent(out ControlsConfigurationPanel existingPanel))
+            {
+                controlsConfigurationPanel = existingPanel;
+                return;
+            }
+
+            var host = new GameObject("ControlsConfigurationPanelHost", typeof(RectTransform));
+            host.transform.SetParent(canvas.transform, false);
+            controlsConfigurationPanel = host.AddComponent<ControlsConfigurationPanel>();
         }
     }
 }

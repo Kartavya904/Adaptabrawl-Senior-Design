@@ -3,6 +3,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using TMPro;
 using UnityEngine.UI;
+using Adaptabrawl.Settings;
 
 namespace Adaptabrawl.UI
 {
@@ -14,12 +15,19 @@ namespace Adaptabrawl.UI
         /// <summary>True if Escape was pressed this frame or any connected gamepad pressed Circle/B.</summary>
         public static bool WasBackOrCancelPressedThisFrame()
         {
-            if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+            var bindings = ControlBindingsContext.EnsureExists();
+            if (bindings.WasActionPressedThisFrame(ControlProfileId.GlobalKeyboardPlayer1, ControlActionId.BackCancel))
                 return true;
 
-            foreach (var pad in Gamepad.all)
+            var lobby = Adaptabrawl.Gameplay.LobbyContext.Instance;
+            if (lobby != null
+                && Adaptabrawl.Gameplay.LobbyContext.IsDualKeyboardMode(lobby.p1InputDevice, lobby.p2InputDevice)
+                && bindings.WasActionPressedThisFrame(ControlProfileId.GlobalKeyboardPlayer2, ControlActionId.BackCancel))
+                return true;
+
+            for (int i = 0; i < Gamepad.all.Count; i++)
             {
-                if (pad != null && pad.buttonEast.wasPressedThisFrame)
+                if (Gamepad.all[i] != null && bindings.WasActionPressedThisFrame(ControlProfileId.GlobalController, ControlActionId.BackCancel, i))
                     return true;
             }
 

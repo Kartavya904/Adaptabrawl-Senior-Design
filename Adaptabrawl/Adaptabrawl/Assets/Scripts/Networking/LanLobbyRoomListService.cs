@@ -29,13 +29,10 @@ namespace Adaptabrawl.Networking
     /// <summary>
     /// Lives on <see cref="Gameplay.PublicRoomLobbyContext"/> (DontDestroyOnLoad). Listens for LAN room beacons and
     /// every few seconds publishes an updated list of advertised room codes on the same Wi‑Fi.
+    /// Listens on both <see cref="LanUdpPorts.AllServicePorts"/> because hosts send beacons on the companion of their game port.
     /// </summary>
     public class LanLobbyRoomListService : MonoBehaviour
     {
-        [Tooltip("Must match <see cref=\"LanRoomDiscovery.DefaultBeaconPort\"/> and host beacon sends.")]
-        [SerializeField]
-        private int beaconListenPort = LanRoomDiscovery.DefaultBeaconPort;
-
         [Tooltip("How often the public room list is published (prune stale + notify listeners).")]
         [SerializeField]
         private float refreshIntervalSeconds = 5f;
@@ -47,9 +44,10 @@ namespace Adaptabrawl.Networking
         [SerializeField]
         private float staleRoomSeconds = 14f;
 
-        private Thread _thread;
+        private readonly List<Thread> _threads = new List<Thread>();
+        private readonly List<UdpClient> _udpClients = new List<UdpClient>();
+        private readonly object _udpLock = new object();
         private volatile bool _running;
-        private UdpClient _udp;
 
         private readonly object _lock = new object();
         private readonly Dictionary<string, (LanAdvertisedRoom entry, DateTime lastSeenUtc)> _byCode =
@@ -69,12 +67,17 @@ namespace Adaptabrawl.Networking
                 return;
 
             _running = true;
-            _thread = new Thread(ReceiveLoop)
+            foreach (var port in LanUdpPorts.AllServicePorts)
             {
-                IsBackground = true,
-                Name = "LanLobbyRoomList"
-            };
-            _thread.Start();
+                var listenPort = port;
+                var t = new Thread(() => ReceiveLoop(listenPort))
+                {
+                    IsBackground = true,
+                    Name = $"LanLobbyRoomList-{listenPort}"
+                };
+                _threads.Add(t);
+                t.Start();
+            }
 
             if (refreshIntervalSeconds > 0.15f)
                 InvokeRepeating(nameof(PublishIfChanged), refreshIntervalSeconds, refreshIntervalSeconds);
@@ -87,19 +90,30 @@ namespace Adaptabrawl.Networking
             _running = false;
             CancelInvoke(nameof(PublishIfChanged));
 
-            try
+            lock (_udpLock)
             {
-                _udp?.Close();
-            }
-            catch
-            {
-                // ignored
+                foreach (var c in _udpClients)
+                {
+                    try
+                    {
+                        c?.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+
+                _udpClients.Clear();
             }
 
-            _udp = null;
-            if (_thread != null && _thread.IsAlive)
-                _thread.Join(1200);
-            _thread = null;
+            foreach (var t in _threads)
+            {
+                if (t != null && t.IsAlive)
+                    t.Join(1200);
+            }
+
+            _threads.Clear();
 
             lock (_lock)
                 _byCode.Clear();
@@ -123,18 +137,20 @@ namespace Adaptabrawl.Networking
             PublishIfChanged();
         }
 
-        private void ReceiveLoop()
+        private void ReceiveLoop(int listenPort)
         {
+            UdpClient client = null;
             try
             {
-                var client = new UdpClient();
+                client = new UdpClient();
                 client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                client.Client.Bind(new IPEndPoint(IPAddress.Any, beaconListenPort));
+                client.Client.Bind(new IPEndPoint(IPAddress.Any, listenPort));
                 client.Client.ReceiveTimeout = 750;
 
                 LanRoomDiscovery.TryJoinMulticastListen(client);
 
-                _udp = client;
+                lock (_udpLock)
+                    _udpClients.Add(client);
 
                 while (_running)
                 {
@@ -173,7 +189,7 @@ namespace Adaptabrawl.Networking
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"[LanLobbyRoomListService] Receive loop stopped: {ex.Message}");
+                Debug.LogWarning($"[LanLobbyRoomListService] Receive loop {listenPort} stopped: {ex.Message}");
             }
         }
 

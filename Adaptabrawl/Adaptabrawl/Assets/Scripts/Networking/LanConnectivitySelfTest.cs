@@ -57,7 +57,6 @@ namespace Adaptabrawl.Networking
     /// </summary>
     public static class LanConnectivitySelfTest
     {
-        private const int DiscoveryProbePort = 7788;
         private const int TcpPromptPort = LobbyManager.DefaultLanGamePort;
         private const string UdpRuleNamePrefix = "Adaptabrawl LAN UDP";
         private const string TcpRuleNamePrefix = "Adaptabrawl LAN TCP";
@@ -104,17 +103,14 @@ namespace Adaptabrawl.Networking
                 TryGetWindowsFirewallAccess(out firewallCheckSupported, out privateAllowed, out publicAllowed);
 
             UdpClient gameUdp = null;
-            UdpClient discoveryUdp = null;
-            UdpClient beaconUdp = null;
+            UdpClient serviceUdp = null;
             TcpListener firewallPromptListener = null;
 
             try
             {
-                if (!TryBindUdpPort(LobbyManager.DefaultLanGamePort, out gameUdp, out string bindError))
+                if (!TryBindUdpPort(LanUdpPorts.GamePrimary, out gameUdp, out string bindError))
                     return BuildBindFailure(primaryIpv4, bindError);
-                if (!TryBindUdpPort(DiscoveryProbePort, out discoveryUdp, out bindError))
-                    return BuildBindFailure(primaryIpv4, bindError);
-                if (!TryBindUdpPort(LanRoomDiscovery.DefaultBeaconPort, out beaconUdp, out bindError))
+                if (!TryBindUdpPort(LanUdpPorts.GameCompanion, out serviceUdp, out bindError))
                     return BuildBindFailure(primaryIpv4, bindError);
                 if (!TryBindTcpPort(TcpPromptPort, out firewallPromptListener, out bindError))
                     return BuildBindFailure(primaryIpv4, bindError);
@@ -164,7 +160,8 @@ namespace Adaptabrawl.Networking
                         : "LAN access ready. Windows Firewall allows this app on private networks."
                     : "LAN access ready. The local socket probe completed successfully.";
 
-                string details = $"Host IPv4 {primaryIpv4} is reachable locally. Online play should be able to host on UDP {LobbyManager.DefaultLanGamePort} and discovery UDP {DiscoveryProbePort}/{LanRoomDiscovery.DefaultBeaconPort}.";
+                string details =
+                    $"Host IPv4 {primaryIpv4} is reachable locally. Online play uses only UDP {LanUdpPorts.GamePrimary} and {LanUdpPorts.GameCompanion} (game + discovery/beacons).";
 
                 return CacheResult(
                     new LanConnectivityTestResult(
@@ -180,8 +177,7 @@ namespace Adaptabrawl.Networking
             finally
             {
                 try { gameUdp?.Close(); } catch { }
-                try { discoveryUdp?.Close(); } catch { }
-                try { beaconUdp?.Close(); } catch { }
+                try { serviceUdp?.Close(); } catch { }
                 try { firewallPromptListener?.Stop(); } catch { }
             }
         }
@@ -469,7 +465,7 @@ namespace Adaptabrawl.Networking
                 "$ErrorActionPreference='Stop'; " +
                 $"& netsh advfirewall firewall delete rule name='{escapedUdpRuleName}' | Out-Null; " +
                 $"& netsh advfirewall firewall delete rule name='{escapedTcpRuleName}' | Out-Null; " +
-                $"& netsh advfirewall firewall add rule name='{escapedUdpRuleName}' dir=in action=allow program='{escapedPath}' enable=yes profile=any protocol=UDP localport={LobbyManager.DefaultLanGamePort},{DiscoveryProbePort},{LanRoomDiscovery.DefaultBeaconPort} remoteip=localsubnet | Out-Null; " +
+                $"& netsh advfirewall firewall add rule name='{escapedUdpRuleName}' dir=in action=allow program='{escapedPath}' enable=yes profile=any protocol=UDP localport={LanUdpPorts.GamePrimary},{LanUdpPorts.GameCompanion} remoteip=localsubnet | Out-Null; " +
                 $"& netsh advfirewall firewall add rule name='{escapedTcpRuleName}' dir=in action=allow program='{escapedPath}' enable=yes profile=any protocol=TCP localport={TcpPromptPort} remoteip=localsubnet | Out-Null;";
 
             try

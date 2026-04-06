@@ -82,7 +82,7 @@ namespace Adaptabrawl.Gameplay
                 var primary = LanAddressHints.GetPrimaryLanIpv4();
                 if (_currentPublicRooms.Count == 0)
                     Debug.Log($"[PublicRoomLobbyContext] LAN list: 0 rooms (primary IPv4: {primary}). " +
-                              $"Beacon UDP {LanRoomDiscovery.DefaultBeaconPort}, multicast {LanRoomDiscovery.LanMulticastGroup}. " +
+                              $"Beacon UDP {LanUdpPorts.GamePrimary}/{LanUdpPorts.GameCompanion}, multicast {LanRoomDiscovery.LanMulticastGroup}. " +
                               "If this stays empty on another PC, check Windows firewall (UDP inbound on host) and router client isolation.");
                 else
                 {
@@ -109,7 +109,7 @@ namespace Adaptabrawl.Gameplay
             var sb = new StringBuilder();
             sb.AppendLine($"Rooms heard: {_currentPublicRooms.Count}  (last tick {LastPublicRoomScanUtc:HH:mm:ss} UTC)");
             sb.AppendLine($"Primary IPv4: {LanAddressHints.GetPrimaryLanIpv4()}");
-            sb.AppendLine($"Multicast: {LanRoomDiscovery.LanMulticastGroup}  beacon port: {LanRoomDiscovery.DefaultBeaconPort}");
+            sb.AppendLine($"Multicast: {LanRoomDiscovery.LanMulticastGroup}  beacon ports: {LanUdpPorts.GamePrimary} & {LanUdpPorts.GameCompanion}");
             sb.AppendLine("Local IPv4s:");
             var listed = 0;
             foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())

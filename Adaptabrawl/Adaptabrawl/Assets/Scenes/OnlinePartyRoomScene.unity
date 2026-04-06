@@ -613,9 +613,7 @@ MonoBehaviour:
   sameMachineFallbackGamePort: 7778
   trySameMachineFallbackPort: 1
   secondsToWaitAfterShutdownBeforeBind: 0.25
-  discoveryPort: 7788
   joinDiscoveryTimeoutMs: 15000
-  beaconPort: 7790
   autoStartWhenBothPlayersConnected: 1
 --- !u!4 &75336107
 Transform:

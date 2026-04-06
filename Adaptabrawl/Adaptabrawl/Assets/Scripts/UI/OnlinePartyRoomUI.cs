@@ -171,8 +171,8 @@ namespace Adaptabrawl.UI
                 titleText.text = "ONLINE PARTY";
             if (subtitleText != null)
                 subtitleText.text =
-                    "Host on this device, share the room code, and let a friend join from the same Wi-Fi or LAN. " +
-                    "If automatic discovery is blocked, they can still connect with the direct IPv4 address shown below.";
+                    "This screen starts a host on each PC. Only one person is the host — everyone else must tap Join and enter the host’s 6-digit code or the direct IP:port below. " +
+                    "Same Wi‑Fi does not auto-merge two hosts; discovery can also fail if the router blocks device-to-device traffic.";
             if (statusBannerText != null)
                 statusBannerText.text = "Creating your room…";
         }

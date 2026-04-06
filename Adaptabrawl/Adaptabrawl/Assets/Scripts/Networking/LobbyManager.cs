@@ -17,10 +17,10 @@ namespace Adaptabrawl.Networking
     public class LobbyManager : MonoBehaviour
     {
         /// <summary>Preferred NGO / Unity Transport UDP listen port for LAN hosts. Direct IP join without :port assumes this.</summary>
-        public const ushort DefaultLanGamePort = 7777;
+        public const ushort DefaultLanGamePort = LanUdpPorts.GamePrimary;
 
         /// <summary>Second listen port when <see cref="DefaultLanGamePort"/> is already taken on the same PC (two Editor/build windows).</summary>
-        public const ushort SameMachineFallbackLanGamePort = 7778;
+        public const ushort SameMachineFallbackLanGamePort = LanUdpPorts.GameCompanion;
 
         [Header("Lobby Settings")]
 #pragma warning disable CS0414
@@ -46,14 +46,8 @@ namespace Adaptabrawl.Networking
         private float secondsToWaitAfterShutdownBeforeBind = 0.25f;
 
         [Header("LAN discovery")]
-        [Tooltip("UDP port for room lookup (broadcast). Must match on all devices; allow through firewall if needed.")]
-        [SerializeField] private int discoveryPort = 7788;
-
         [Tooltip("How long the joining device waits for a host reply on the LAN.")]
         [SerializeField] private int joinDiscoveryTimeoutMs = 15000;
-
-        [Tooltip("UDP port for LAN room-list beacons (must match LanLobbyRoomListService on PublicRoomLobbyContext).")]
-        [SerializeField] private int beaconPort = LanRoomDiscovery.DefaultBeaconPort;
 
         [Header("Room Code")]
         private string currentRoomCode = "";
@@ -141,9 +135,9 @@ namespace Adaptabrawl.Networking
                 yield break;
             }
 
-            if (gameListenPort == 0 || gameListenPort == discoveryPort)
+            if (gameListenPort == 0 || gameListenPort == sameMachineFallbackGamePort)
             {
-                FailHostSetup("Invalid game port configuration.");
+                FailHostSetup("Invalid game port configuration (primary and fallback must differ).");
                 _createRoomRoutine = null;
                 yield break;
             }
@@ -210,11 +204,12 @@ namespace Adaptabrawl.Networking
             LastHostGamePort = chosenPort;
             LastHostLanIpv4 = LanAddressHints.GetPrimaryLanIpv4();
 
+            var companionUdp = GetCompanionLanServicePort(chosenPort);
             Debug.Log(
-                $"[LobbyManager] LAN host 0.0.0.0:{chosenPort}, discovery {discoveryPort}, room {currentRoomCode}. " +
+                $"[LobbyManager] LAN host game UDP 0.0.0.0:{chosenPort}, discovery/beacon UDP *:{companionUdp}, room {currentRoomCode}. " +
                 $"Guest can join with code or {LastHostLanIpv4}:{chosenPort}");
 
-            LanRoomDiscovery.StartHostResponder(currentRoomCode, chosenPort, discoveryPort, beaconPort);
+            LanRoomDiscovery.StartHostResponder(currentRoomCode, chosenPort, companionUdp);
 
             nm.OnClientConnectedCallback -= OnClientConnected;
             nm.OnClientConnectedCallback += OnClientConnected;
@@ -235,12 +230,13 @@ namespace Adaptabrawl.Networking
             if (sameMachineFallbackGamePort == 0 || sameMachineFallbackGamePort == gameListenPort)
                 return list;
 
-            if (sameMachineFallbackGamePort == discoveryPort || sameMachineFallbackGamePort == beaconPort)
-                return list;
-
             list.Add(sameMachineFallbackGamePort);
             return list;
         }
+
+        /// <summary>UDP port for FIND/beacons: the game port’s companion (7777 ↔ 7778).</summary>
+        private int GetCompanionLanServicePort(ushort chosenGamePort) =>
+            chosenGamePort == gameListenPort ? sameMachineFallbackGamePort : gameListenPort;
 
         private void FailHostSetup(string message)
         {
@@ -371,10 +367,8 @@ namespace Adaptabrawl.Networking
             {
                 var (ok, hostIp, hostPort) = await LanRoomDiscovery.DiscoverHostAsync(
                     roomCode,
-                    discoveryPort,
                     joinDiscoveryTimeoutMs,
-                    ct,
-                    beaconPort);
+                    ct);
 
                 if (ct.IsCancellationRequested)
                     return;

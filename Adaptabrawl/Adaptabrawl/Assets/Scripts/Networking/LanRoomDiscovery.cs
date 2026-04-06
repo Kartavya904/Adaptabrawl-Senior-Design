@@ -25,18 +25,13 @@ namespace Adaptabrawl.Networking
         private static volatile bool s_HostRunning;
         private static UdpClient s_HostUdp;
 
-        /// <summary>UDP port for periodic room beacons (LAN room list). Separate from discovery answer port.</summary>
-        public const int DefaultBeaconPort = 7790;
-
-        /// <summary>How many consecutive UDP ports to try for FIND/answer (base = discoveryPort). Skips <see cref="DefaultBeaconPort"/> offset collisions.</summary>
-        public const int DiscoveryPortAttemptCount = 8;
-
-        public static void StartHostResponder(string roomCode, ushort gamePort, int discoveryPort, int beaconPort = DefaultBeaconPort)
+        /// <summary>Host listens for FIND and sends beacons on the companion of <paramref name="gamePort"/> (7777 ↔ 7778 only).</summary>
+        public static void StartHostResponder(string roomCode, ushort gamePort, int companionServiceUdpPort)
         {
             StopHostResponder();
             s_HostRunning = true;
             var normalizedCode = NormalizeCode(roomCode);
-            s_HostThread = new Thread(() => HostThreadProc(normalizedCode, gamePort, discoveryPort, beaconPort))
+            s_HostThread = new Thread(() => HostThreadProc(normalizedCode, gamePort, companionServiceUdpPort))
             {
                 IsBackground = true,
                 Name = "LanRoomDiscovery-Host"
@@ -62,51 +57,39 @@ namespace Adaptabrawl.Networking
             s_HostThread = null;
         }
 
-        private static void HostThreadProc(string roomCode, ushort gamePort, int discoveryPort, int beaconPort)
+        private static void HostThreadProc(string roomCode, ushort gamePort, int companionServiceUdpPort)
         {
             try
             {
-                var boundDiscoveryPort = -1;
-                for (var i = 0; i < DiscoveryPortAttemptCount; i++)
+                UdpClient tryClient = null;
+                try
                 {
-                    var candidate = discoveryPort + i;
-                    if (candidate > 65535)
-                        break;
-                    if (candidate == beaconPort)
-                        continue;
-
-                    UdpClient tryClient = null;
+                    tryClient = new UdpClient();
+                    tryClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                    tryClient.Client.Bind(new IPEndPoint(IPAddress.Any, companionServiceUdpPort));
+                    tryClient.Client.ReceiveTimeout = 500;
+                    s_HostUdp = tryClient;
+                    tryClient = null;
+                }
+                catch (SocketException ex)
+                {
                     try
                     {
-                        tryClient = new UdpClient();
-                        tryClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                        tryClient.Client.Bind(new IPEndPoint(IPAddress.Any, candidate));
-                        tryClient.Client.ReceiveTimeout = 500;
-                        s_HostUdp = tryClient;
-                        boundDiscoveryPort = candidate;
-                        tryClient = null;
-                        break;
+                        tryClient?.Close();
                     }
-                    catch (SocketException)
+                    catch
                     {
-                        try
-                        {
-                            tryClient?.Close();
-                        }
-                        catch
-                        {
-                            // ignored
-                        }
+                        // ignored
                     }
-                }
 
-                if (boundDiscoveryPort < 0 || s_HostUdp == null)
-                {
                     Debug.LogError(
-                        $"[LanRoomDiscovery] Could not bind any discovery port in range {discoveryPort}..{discoveryPort + DiscoveryPortAttemptCount - 1} " +
-                        $"(skipping beacon {beaconPort}). Another Adaptabrawl window may be using them on this PC.");
+                        $"[LanRoomDiscovery] Could not bind discovery/beacon UDP *:{companionServiceUdpPort} ({ex.SocketErrorCode}). " +
+                        "Another Adaptabrawl window may be using that port, or the companion port is still held by the OS.");
                     return;
                 }
+
+                if (s_HostUdp == null)
+                    return;
 
                 TryJoinMulticastListen(s_HostUdp);
 
@@ -117,9 +100,8 @@ namespace Adaptabrawl.Networking
                     advertisedIp = "127.0.0.1";
 
                 Debug.Log(
-                    $"[LanRoomDiscovery] Host listening UDP *:{boundDiscoveryPort} + multicast {LanMulticastGroup} (room {roomCode}). " +
-                    $"Beacons to LAN on port {beaconPort} every {beaconInterval.TotalSeconds:0}s. " +
-                    "Same-PC testing: FIND is also sent to 127.0.0.1 on these ports. If joins fail, allow UDP in Windows Firewall.");
+                    $"[LanRoomDiscovery] Host listening UDP *:{companionServiceUdpPort} (FIND + beacons; game {gamePort}) + multicast {LanMulticastGroup} (room {roomCode}). " +
+                    "Clients send FIND to both 7777 and 7778. If joins fail, allow UDP in Windows Firewall.");
 
                 while (s_HostRunning)
                 {
@@ -127,7 +109,7 @@ namespace Adaptabrawl.Networking
                     {
                         if (DateTime.UtcNow - lastBeaconUtc >= beaconInterval)
                         {
-                            SendLanRoomBeaconPayload(roomCode, advertisedIp, gamePort, beaconPort);
+                            SendLanRoomBeaconPayload(roomCode, advertisedIp, gamePort, companionServiceUdpPort);
                             lastBeaconUtc = DateTime.UtcNow;
                         }
 
@@ -256,12 +238,11 @@ namespace Adaptabrawl.Networking
             return code.Length > 0 && IPAddress.TryParse(ip, out _);
         }
 
+        /// <summary>Sends FIND to UDP <see cref="LanUdpPorts.AllServicePorts"/> (7777 and 7778) so every host is reached.</summary>
         public static Task<(bool ok, string hostIp, ushort hostPort)> DiscoverHostAsync(
             string roomCode,
-            int discoveryPort,
             int timeoutMs,
-            CancellationToken cancellationToken = default,
-            int beaconPort = DefaultBeaconPort)
+            CancellationToken cancellationToken = default)
         {
             var normalized = NormalizeCode(roomCode);
             return Task.Run(
@@ -292,15 +273,8 @@ namespace Adaptabrawl.Networking
                         {
                             if (DateTime.UtcNow >= nextFindUtc)
                             {
-                                for (var i = 0; i < DiscoveryPortAttemptCount; i++)
-                                {
-                                    var p = discoveryPort + i;
-                                    if (p > 65535)
-                                        break;
-                                    if (p == beaconPort)
-                                        continue;
+                                foreach (var p in LanUdpPorts.AllServicePorts)
                                     SendPayloadToAllLanEndpoints(udp, req, p);
-                                }
 
                                 nextFindUtc = DateTime.UtcNow.AddMilliseconds(findIntervalMs);
                             }

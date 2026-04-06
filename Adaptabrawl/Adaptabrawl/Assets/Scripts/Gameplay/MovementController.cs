@@ -25,11 +25,6 @@ namespace Adaptabrawl.Gameplay
         private float dashTimer;
         private Vector2 dashDirection;
         
-        [Header("Physics")]
-        [SerializeField] private float friction = 0.8f;
-        [SerializeField] private float airControl = 0.5f;
-        [SerializeField] private float maxFallSpeed = 20f;
-        
         private void Awake()
         {
             fighterController = GetComponent<FighterController>();
@@ -151,4 +146,3 @@ namespace Adaptabrawl.Gameplay
         public Vector2 MoveInput => moveInput;
     }
 }
-

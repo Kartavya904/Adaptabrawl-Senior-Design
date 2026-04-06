@@ -23,6 +23,9 @@ namespace Adaptabrawl.Editor
         
         private void OnEnable()
         {
+            if (target == null)
+                return;
+
             fighterPrefabProp = serializedObject.FindProperty("fighterPrefab");
             fighterNameProp = serializedObject.FindProperty("fighterName");
             descriptionProp = serializedObject.FindProperty("description");
@@ -40,6 +43,12 @@ namespace Adaptabrawl.Editor
         
         public override void OnInspectorGUI()
         {
+            if (target == null)
+            {
+                EditorGUILayout.HelpBox("FighterDef target is missing.", MessageType.Warning);
+                return;
+            }
+
             serializedObject.Update();
             
             // Title
@@ -137,6 +146,7 @@ namespace Adaptabrawl.Editor
             EditorGUILayout.PropertyField(baseDamageMultiplierProp, new GUIContent("Base Damage Multiplier", "Multiplier for all damage dealt"));
             EditorGUILayout.PropertyField(baseDefenseMultiplierProp, new GUIContent("Base Defense Multiplier", "Multiplier for damage received"));
             EditorGUILayout.PropertyField(armorBreakThresholdProp);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("playStyle"));
             EditorGUILayout.EndVertical();
             EditorGUILayout.Space();
             
@@ -196,6 +206,7 @@ namespace Adaptabrawl.Editor
                 "baseDamageMultiplier",
                 "baseDefenseMultiplier",
                 "armorBreakThreshold",
+                "playStyle",
                 "hurtboxes"
             });
             

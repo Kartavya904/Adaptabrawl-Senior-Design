@@ -26,6 +26,10 @@ namespace Adaptabrawl.Data
         public float baseDamageMultiplier = 1f;
         public float baseDefenseMultiplier = 1f;
         public int armorBreakThreshold = 3; // Hits needed to break armor
+
+        [Header("Play Style")]
+        [Tooltip("Used for dynamic impact feel, VFX intensity, and other style-driven presentation.")]
+        public FighterPlayStyle playStyle = FighterPlayStyle.Balanced;
         
         [Header("Hurtbox Configuration")]
         [Tooltip("Default hurtboxes for this fighter - automatically created on spawn")]
@@ -104,6 +108,14 @@ namespace Adaptabrawl.Data
         Spear        // Small tip far forward (Stinger)
     }
 
+    public enum FighterPlayStyle
+    {
+        Balanced,
+        Strength,
+        Defense,
+        Invasion
+    }
+
     /// <summary>
     /// Shape of a single hurtbox so it can match body parts (box for torso/head, capsule for limbs).
     /// </summary>
@@ -142,4 +154,3 @@ namespace Adaptabrawl.Data
         public Color gizmoColor = new Color(1f, 0f, 0f, 0.3f);
     }
 }
-

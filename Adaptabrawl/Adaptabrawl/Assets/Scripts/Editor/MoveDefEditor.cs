@@ -15,6 +15,12 @@ namespace Adaptabrawl.Editor
         
         public override void OnInspectorGUI()
         {
+            if (target == null)
+            {
+                EditorGUILayout.HelpBox("MoveDef target is missing.", MessageType.Warning);
+                return;
+            }
+
             serializedObject.Update();
             
             MoveDef move = (MoveDef)target;

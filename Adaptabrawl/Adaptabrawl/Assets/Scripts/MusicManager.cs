@@ -1,4 +1,6 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Adaptabrawl.Settings;
 
 namespace Adaptabrawl
@@ -14,6 +16,8 @@ namespace Adaptabrawl
 
         [Header("Music")]
         [SerializeField] private AudioClip backgroundMusic;
+        [SerializeField] private AudioClip battleMusic;
+        [SerializeField] private float battleStartPauseDuration = 0.1f;
 
         [Header("Settings")]
         [Range(0f, 1f)]
@@ -21,6 +25,16 @@ namespace Adaptabrawl
 
         private AudioSource audioSource;
         private SettingsContext settingsContext;
+        private Coroutine pendingTrackSwitch;
+
+        private enum MusicTrack
+        {
+            None,
+            Background,
+            Battle
+        }
+
+        private MusicTrack currentTrack = MusicTrack.None;
 
         private void Awake()
         {
@@ -35,8 +49,6 @@ namespace Adaptabrawl
             DontDestroyOnLoad(gameObject);
 
             audioSource = GetComponent<AudioSource>();
-            audioSource.loop = true;
-            audioSource.volume = volume;
             audioSource.playOnAwake = false;
             ApplySavedMusicVolume();
 
@@ -46,18 +58,14 @@ namespace Adaptabrawl
                 return;
             }
 
-            audioSource.clip = backgroundMusic;
-            audioSource.Play();
+            PlayClip(backgroundMusic, loop: true);
+            currentTrack = MusicTrack.Background;
         }
 
         private void Start()
         {
             // Fallback: if Awake ran but Play didn't take (e.g. audio system not ready yet)
-            if (audioSource != null && backgroundMusic != null && !audioSource.isPlaying)
-            {
-                audioSource.clip = backgroundMusic;
-                audioSource.Play();
-            }
+            RefreshTrackForScene(SceneManager.GetActiveScene());
         }
 
         private void OnEnable()
@@ -65,6 +73,8 @@ namespace Adaptabrawl
             settingsContext = SettingsContext.EnsureExists();
             if (settingsContext != null)
                 settingsContext.SettingsChanged += HandleSettingsChanged;
+
+            SceneManager.sceneLoaded += HandleSceneLoaded;
         }
 
         private void OnDisable()
@@ -72,6 +82,8 @@ namespace Adaptabrawl
             if (settingsContext != null)
                 settingsContext.SettingsChanged -= HandleSettingsChanged;
             settingsContext = null;
+
+            SceneManager.sceneLoaded -= HandleSceneLoaded;
         }
 
         private void HandleSettingsChanged()
@@ -86,6 +98,96 @@ namespace Adaptabrawl
         {
             float savedMusicVolume = PlayerPrefs.GetFloat("MusicVolume", volume);
             SetVolume(savedMusicVolume);
+        }
+
+        private void HandleSceneLoaded(Scene scene, LoadSceneMode loadSceneMode)
+        {
+            RefreshTrackForScene(scene);
+        }
+
+        private void RefreshTrackForScene(Scene scene)
+        {
+            if (IsGameplayScene(scene.name))
+            {
+                QueueBattleMusicStart();
+                return;
+            }
+
+            SwitchToBackgroundMusicImmediate();
+        }
+
+        private static bool IsGameplayScene(string sceneName)
+        {
+            return sceneName == "GameScene"
+                || sceneName == "OnlineGameScene"
+                || sceneName == "TestCharacter";
+        }
+
+        private void QueueBattleMusicStart()
+        {
+            if (battleMusic == null)
+            {
+                Debug.LogWarning("[MusicManager] Battle music is not assigned. Keeping background music active.", this);
+                SwitchToBackgroundMusicImmediate();
+                return;
+            }
+
+            if (currentTrack == MusicTrack.Battle && audioSource != null && audioSource.isPlaying && audioSource.clip == battleMusic)
+                return;
+
+            CancelPendingTrackSwitch();
+            pendingTrackSwitch = StartCoroutine(StartBattleMusicAfterPause());
+        }
+
+        private IEnumerator StartBattleMusicAfterPause()
+        {
+            if (audioSource == null)
+                yield break;
+
+            if (audioSource.isPlaying)
+                audioSource.Pause();
+
+            if (battleStartPauseDuration > 0f)
+                yield return new WaitForSecondsRealtime(battleStartPauseDuration);
+
+            PlayClip(battleMusic, loop: true);
+            currentTrack = MusicTrack.Battle;
+            pendingTrackSwitch = null;
+        }
+
+        private void SwitchToBackgroundMusicImmediate()
+        {
+            CancelPendingTrackSwitch();
+
+            if (backgroundMusic == null || audioSource == null)
+                return;
+
+            if (currentTrack == MusicTrack.Background && audioSource.isPlaying && audioSource.clip == backgroundMusic)
+                return;
+
+            PlayClip(backgroundMusic, loop: true);
+            currentTrack = MusicTrack.Background;
+        }
+
+        private void CancelPendingTrackSwitch()
+        {
+            if (pendingTrackSwitch == null)
+                return;
+
+            StopCoroutine(pendingTrackSwitch);
+            pendingTrackSwitch = null;
+        }
+
+        private void PlayClip(AudioClip clip, bool loop)
+        {
+            if (audioSource == null || clip == null)
+                return;
+
+            audioSource.Stop();
+            audioSource.clip = clip;
+            audioSource.loop = loop;
+            audioSource.volume = volume;
+            audioSource.Play();
         }
 
         /// <summary>Pause the music (e.g., on pause screen).</summary>

@@ -167,7 +167,15 @@ namespace Adaptabrawl.Combat
             //     $"used '{currentMove.moveName}' and hit P{target.PlayerNumber} " +
             //     $"({(target.FighterDef != null ? target.FighterDef.fighterName : target.gameObject.name)}) " +
             //     $"on {hurtboxPart.BodyPart} via '{transform.parent?.name ?? gameObject.name}'.");
-            damageSystem.DealDamage(target, currentMove, hurtboxPart.DamageMultiplier);
+            Vector3 hitPosition = hurtboxPart.HurtboxCollider != null
+                ? hurtboxPart.HurtboxCollider.bounds.center
+                : hurtboxPart.transform.position;
+
+            Vector3 hitDirection = (target.transform.position - owner.transform.position).normalized;
+            if (hitDirection.sqrMagnitude < 0.0001f)
+                hitDirection = owner.FacingRight ? Vector3.right : Vector3.left;
+
+            damageSystem.DealDamage(target, currentMove, hurtboxPart.DamageMultiplier, hitPosition, hitDirection);
         }
 
         private bool CanDealDamage(MoveDef move)

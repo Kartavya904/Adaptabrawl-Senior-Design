@@ -791,6 +791,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Adaptabrawl.MusicManager
   backgroundMusic: {fileID: 8300000, guid: cd1be188df07b2a4abffc574c36a2f17, type: 3}
+  battleMusic: {fileID: 8300000, guid: b74e93ef118642b46b6eaf6fa1bbe0bb, type: 3}
+  battleStartPauseDuration: 0.5
   volume: 0.1
 --- !u!82 &327146792
 AudioSource:

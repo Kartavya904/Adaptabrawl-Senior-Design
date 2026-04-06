@@ -676,7 +676,7 @@ namespace Adaptabrawl.UI
             var rb = obj.GetComponent<Rigidbody2D>();
             if (rb != null)
             {
-                rb.isKinematic = true;
+                rb.bodyType = RigidbodyType2D.Kinematic;
                 rb.linearVelocity = Vector2.zero;
             }
 

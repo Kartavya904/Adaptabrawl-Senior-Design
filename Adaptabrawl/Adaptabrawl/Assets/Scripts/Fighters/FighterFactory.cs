@@ -102,6 +102,7 @@ namespace Adaptabrawl.Fighters
             striker.weight = 1.2f;
             striker.baseDamageMultiplier = 1.1f;
             striker.baseDefenseMultiplier = 0.9f;
+            striker.playStyle = FighterPlayStyle.Strength;
             
             // Create moves
             striker.lightAttack = CreateStrikerLightAttack();
@@ -123,6 +124,7 @@ namespace Adaptabrawl.Fighters
             elusive.weight = 0.8f;
             elusive.baseDamageMultiplier = 0.9f;
             elusive.baseDefenseMultiplier = 1.0f;
+            elusive.playStyle = FighterPlayStyle.Invasion;
             
             // Create moves
             elusive.lightAttack = CreateElusiveLightAttack();

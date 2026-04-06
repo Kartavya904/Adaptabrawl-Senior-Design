@@ -62,8 +62,8 @@ namespace Adaptabrawl.Networking
             RequestResumeServerRpc();
         }
 
-        [ServerRpc(RequireOwnership = false)]
-        private void TogglePauseIntentServerRpc(ServerRpcParams rpcParams = default)
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+        private void TogglePauseIntentServerRpc(RpcParams rpcParams = default)
         {
             if (_menuOpen.Value)
                 return;
@@ -84,7 +84,7 @@ namespace Adaptabrawl.Networking
             }
         }
 
-        [ServerRpc(RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         private void RequestResumeServerRpc()
         {
             _menuOpen.Value = false;

@@ -143,7 +143,9 @@ namespace Adaptabrawl.UI
         private const float PanelWidth = 316f;
         private const float PanelHeight = 214f;
         private const float SideMargin = 28f;
-        private const float TopMargin = 74f;
+        /// <summary>Design-time top inset (canvas units). Combined with UI scale twice in <see cref="BuildPanel"/> so the panel
+        /// moves down when accessibility UI scale &gt; 1 — the health bars above grow and need extra clearance.</summary>
+        private const float TopMarginBase = 74f;
 
         private static readonly Color PanelColor = new Color(0.44f, 0.44f, 0.47f, 0.88f);
         private static readonly Color ShadowColor = new Color(0f, 0f, 0f, 0.22f);
@@ -204,15 +206,26 @@ namespace Adaptabrawl.UI
             };
         }
 
+        private static float ResolveUiScale()
+        {
+            SettingsManager sm = SettingsManager.Instance;
+            if (sm == null)
+                return 1f;
+            return Mathf.Clamp(sm.UIScale, SettingsManager.MinUIScale, SettingsManager.MaxUIScale);
+        }
+
         private LegendPanelView BuildPanel(Transform parent, string headerLabel, bool isRightAligned)
         {
             RectTransform cardRect = CreateRect($"{headerLabel.Replace(" ", string.Empty)}Legend", parent);
             cardRect.anchorMin = isRightAligned ? new Vector2(1f, 1f) : new Vector2(0f, 1f);
             cardRect.anchorMax = isRightAligned ? new Vector2(1f, 1f) : new Vector2(0f, 1f);
             cardRect.pivot = isRightAligned ? new Vector2(1f, 1f) : new Vector2(0f, 1f);
+            float s = ResolveUiScale();
+            // s²: first factor tracks settings UI scale; second offsets the taller health HUD sitting above this legend when scale > 1.
+            float topMargin = TopMarginBase * s * s;
             cardRect.anchoredPosition = isRightAligned
-                ? new Vector2(-SideMargin, -TopMargin)
-                : new Vector2(SideMargin, -TopMargin);
+                ? new Vector2(-SideMargin, -topMargin)
+                : new Vector2(SideMargin, -topMargin);
             cardRect.sizeDelta = new Vector2(PanelWidth, PanelHeight);
 
             Image panelImage = cardRect.gameObject.AddComponent<Image>();

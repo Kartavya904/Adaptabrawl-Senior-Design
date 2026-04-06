@@ -48,7 +48,6 @@ namespace Adaptabrawl.UI
         [Header("Presentation")]
         [Tooltip("If set, these objects are shown one after another. If empty, a default order is built from the fields above.")]
         [SerializeField] private GameObject[] revealSequence;
-        [SerializeField] private float revealStaggerSeconds = 0.12f;
         [SerializeField] private Animator resultsAnimator;
 
         [Header("Auto main menu")]
@@ -56,7 +55,6 @@ namespace Adaptabrawl.UI
         [SerializeField] private float autoMainMenuSeconds = 30f;
 
         private bool _resultsShown;
-        private Coroutine _showRoutine;
         private Coroutine _autoMenuRoutine;
 
         private void Start()
@@ -79,8 +77,6 @@ namespace Adaptabrawl.UI
         private void OnDestroy()
         {
             CancelAutoMainMenuTimer();
-            if (_showRoutine != null)
-                StopCoroutine(_showRoutine);
         }
 
         private void LoadMatchResults()
@@ -88,7 +84,7 @@ namespace Adaptabrawl.UI
             bool fromStatic = MatchResultsData.hasResults;
             bool fromContext = GameContext.Instance != null && GameContext.Instance.TryGetLatestFinishedMatch(out _);
             if (fromStatic || fromContext)
-                _showRoutine = StartCoroutine(ShowResultsRoutine());
+                ShowResultsRoutine();
             else
             {
                 Debug.LogWarning("[MatchResultsUI] No MatchResultsData and no GameContext match history.");
@@ -96,7 +92,7 @@ namespace Adaptabrawl.UI
             }
         }
 
-        private IEnumerator ShowResultsRoutine()
+        private void ShowResultsRoutine()
         {
             var steps = BuildRevealList();
             foreach (var go in steps)
@@ -114,8 +110,6 @@ namespace Adaptabrawl.UI
             {
                 if (go == null || ShouldSkipReveal(go)) continue;
                 go.SetActive(true);
-                if (revealStaggerSeconds > 0f)
-                    yield return new WaitForSeconds(revealStaggerSeconds);
             }
 
             SetupResultsMenuNavigation();

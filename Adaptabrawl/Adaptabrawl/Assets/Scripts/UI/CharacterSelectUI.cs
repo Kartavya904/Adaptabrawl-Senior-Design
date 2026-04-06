@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 using TMPro;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using Adaptabrawl.Attack;
 using Adaptabrawl.Data;
@@ -352,7 +353,7 @@ namespace Adaptabrawl.UI
             if (loaded != null && loaded.Length > 0)
             {
                 availableFighters.Clear();
-                availableFighters.AddRange(loaded);
+                availableFighters.AddRange(OrderFightersForSelection(loaded));
                 Debug.Log($"[CharacterSelectUI] Loaded {loaded.Length} FighterDef(s) from Resources/Fighters/.");
                 return;
             }
@@ -363,6 +364,48 @@ namespace Adaptabrawl.UI
                 "or place them in Assets/Resources/Fighters/.");
             availableFighters.Add(FighterFactory.CreateStrikerFighter());
             availableFighters.Add(FighterFactory.CreateElusiveFighter());
+            availableFighters.Sort(CompareFightersForSelection);
+        }
+
+        private static IEnumerable<FighterDef> OrderFightersForSelection(IEnumerable<FighterDef> fighters)
+        {
+            return fighters
+                .Where(fighter => fighter != null)
+                .OrderBy(GetSelectionOrderRank)
+                .ThenBy(fighter => fighter.fighterName);
+        }
+
+        private static int CompareFightersForSelection(FighterDef left, FighterDef right)
+        {
+            if (left == right)
+                return 0;
+
+            if (left == null)
+                return 1;
+
+            if (right == null)
+                return -1;
+
+            int rankComparison = GetSelectionOrderRank(left).CompareTo(GetSelectionOrderRank(right));
+            if (rankComparison != 0)
+                return rankComparison;
+
+            return string.Compare(left.fighterName, right.fighterName, System.StringComparison.Ordinal);
+        }
+
+        private static int GetSelectionOrderRank(FighterDef fighter)
+        {
+            if (fighter == null)
+                return int.MaxValue;
+
+            return fighter.playStyle switch
+            {
+                FighterPlayStyle.Balanced => 0,
+                FighterPlayStyle.Strength => 1,
+                FighterPlayStyle.Defense => 2,
+                FighterPlayStyle.Invasion => 3,
+                _ => 4
+            };
         }
 
         private void RequestChangeSelection(int direction, int targetPlayer)

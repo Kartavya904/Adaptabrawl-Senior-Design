@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Adaptabrawl.Gameplay;
 using Adaptabrawl.UI;
 using TMPro;
 using UnityEditor;
@@ -17,20 +18,25 @@ namespace Adaptabrawl.Editor
     {
         private const string ScenePath = "Assets/Scenes/QuickMatchScene.unity";
         private const string StartScenePath = "Assets/Scenes/StartScene.unity";
+        private const string SetupScenePath = "Assets/Scenes/SetupScene.unity";
         private const string ThemeFontAssetPath = "Assets/UniNeue-Trial-Heavy SDF.asset";
         private const string MenuBackgroundSpritePath = "Assets/Images/Adaptabrawl_Menu_BG.png";
-        private const string ArenaBackgroundOnePath = "Assets/Images/Adaptabrawl_Game_BG.png";
-        private const string ArenaBackgroundTwoPath = "Assets/Images/Adaptabrawl_Game_BG_2.png";
-        private const string ArenaBackgroundThreePath = "Assets/Images/Adaptabrawl_Game_BG_3.png";
 
-        private static readonly Color BackgroundColor = new Color(0.07f, 0.08f, 0.11f, 1f);
-        private static readonly Color CardColor = new Color(0.11f, 0.12f, 0.16f, 0.94f);
-        private static readonly Color AccentColor = new Color(0.86f, 0.19f, 0.17f, 1f);
-        private static readonly Color SoftAccent = new Color(0.98f, 0.71f, 0.31f, 1f);
-        private static readonly Color TextPrimary = new Color(0.96f, 0.97f, 0.98f, 1f);
-        private static readonly Color TextSecondary = new Color(0.75f, 0.79f, 0.84f, 1f);
-        private static readonly Color ButtonColor = new Color(0.17f, 0.19f, 0.24f, 1f);
-        private static readonly Color PositiveButtonColor = new Color(0.18f, 0.48f, 0.26f, 1f);
+        private static readonly Color BackgroundColor = new Color(0.05f, 0.05f, 0.06f, 1f);
+        private static readonly Color CardColor = new Color(0.08f, 0.08f, 0.10f, 0.97f);
+        private static readonly Color AccentColor = new Color(0.92f, 0.92f, 0.92f, 1f);
+        private static readonly Color SoftAccent = new Color(0.73f, 0.73f, 0.76f, 1f);
+        private static readonly Color TextPrimary = new Color(0.97f, 0.97f, 0.97f, 1f);
+        private static readonly Color TextSecondary = new Color(0.76f, 0.76f, 0.78f, 1f);
+        private static readonly Color ButtonColor = new Color(0.13f, 0.13f, 0.15f, 1f);
+        private static readonly Color PositiveButtonColor = new Color(0.94f, 0.94f, 0.94f, 1f);
+        private static readonly Color OutlineColor = new Color(0.70f, 0.70f, 0.70f, 0.78f);
+
+        private sealed class ArenaPresentationData
+        {
+            public readonly List<string> Names = new List<string>();
+            public readonly List<Sprite> Backgrounds = new List<Sprite>();
+        }
 
         [MenuItem("Tools/Adaptabrawl/Quick Match/Build Quick Match Scene")]
         public static void BuildOrUpdateQuickMatchScene()
@@ -131,6 +137,8 @@ namespace Adaptabrawl.Editor
 
         private static GameObject BuildQuickMatchCanvas(QuickMatchSetupUI quickMatchUi)
         {
+            ArenaPresentationData arenaPresentation = LoadArenaPresentationData();
+
             var canvasGo = new GameObject("QuickMatchCanvas");
             var canvas = canvasGo.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -152,7 +160,7 @@ namespace Adaptabrawl.Editor
             }
 
             var overlay = CreateUiRect("Overlay", root.transform, stretch: true);
-            overlay.GetComponent<Image>().color = new Color(0.03f, 0.04f, 0.06f, 0.72f);
+            overlay.GetComponent<Image>().color = new Color(0.02f, 0.02f, 0.03f, 0.78f);
 
             var title = CreateText("Title", root.transform, "QUICK MATCH", 42f, FontStyles.Bold, TextAlignmentOptions.Center, TextPrimary);
             SetAnchors(title.rectTransform, 0.5f, 1f, 0.5f, 1f, new Vector2(0f, -52f), new Vector2(960f, 64f));
@@ -188,7 +196,7 @@ namespace Adaptabrawl.Editor
             SetAnchors(inputCard.GetComponent<RectTransform>(), 0f, 0.36f, 1f, 0.63f, Vector2.zero, new Vector2(0f, -12f));
             var inputModeValue = CreateText("InputModeValueText", inputCard.transform, "Keyboard", 28f, FontStyles.Bold, TextAlignmentOptions.Center, TextPrimary);
             var inputModeHint = CreateText("InputModeHintText", inputCard.transform, "", 15f, FontStyles.Normal, TextAlignmentOptions.Center, TextSecondary);
-            var toggleInputButton = CreateButton("ToggleInputModeButton", inputCard.transform, "Switch Input", AccentColor, 18f);
+            var toggleInputButton = CreateButton("ToggleInputModeButton", inputCard.transform, "Change Input", PositiveButtonColor, 18f, darkText: true);
             SetAnchors(inputModeValue.rectTransform, 0.5f, 0.68f, 0.5f, 0.68f, Vector2.zero, new Vector2(420f, 40f));
             SetAnchors(inputModeHint.rectTransform, 0.5f, 0.4f, 0.5f, 0.4f, Vector2.zero, new Vector2(560f, 78f));
             SetAnchors(toggleInputButton.GetComponent<RectTransform>(), 0.5f, 0.12f, 0.5f, 0.12f, Vector2.zero, new Vector2(260f, 48f));
@@ -196,9 +204,10 @@ namespace Adaptabrawl.Editor
             GameObject arenaCard = CreateCard("ArenaCard", leftColumn.transform, "Arena");
             SetAnchors(arenaCard.GetComponent<RectTransform>(), 0f, 0f, 1f, 0.33f, Vector2.zero, Vector2.zero);
             var arenaPreview = CreateUiRect("ArenaPreviewImage", arenaCard.transform, stretch: false);
-            arenaPreview.GetComponent<Image>().color = new Color(0.14f, 0.17f, 0.22f, 1f);
+            arenaPreview.GetComponent<Image>().color = new Color(0.14f, 0.14f, 0.16f, 1f);
+            ApplyOutline(arenaPreview, OutlineColor, 1f);
             SetAnchors(arenaPreview.GetComponent<RectTransform>(), 0.5f, 0.62f, 0.5f, 0.62f, Vector2.zero, new Vector2(540f, 154f));
-            var arenaValue = CreateText("ArenaValueText", arenaCard.transform, "Cascade Sanctum", 24f, FontStyles.Bold, TextAlignmentOptions.Center, TextPrimary);
+            var arenaValue = CreateText("ArenaValueText", arenaCard.transform, arenaPresentation.Names.Count > 0 ? arenaPresentation.Names[0] : "Arena", 24f, FontStyles.Bold, TextAlignmentOptions.Center, TextPrimary);
             var arenaPrev = CreateButton("PreviousArenaButton", arenaCard.transform, "<", ButtonColor, 22f);
             var arenaNext = CreateButton("NextArenaButton", arenaCard.transform, ">", ButtonColor, 22f);
             SetAnchors(arenaValue.rectTransform, 0.5f, 0.18f, 0.5f, 0.18f, new Vector2(0f, 6f), new Vector2(420f, 34f));
@@ -207,22 +216,20 @@ namespace Adaptabrawl.Editor
 
             GameObject playerCard = CreateCard("PlayerCard", rightColumn.transform, "Player 1");
             SetAnchors(playerCard.GetComponent<RectTransform>(), 0f, 0.53f, 1f, 1f, Vector2.zero, new Vector2(0f, -12f));
-            var playerPortrait = CreateUiRect("PlayerPortraitImage", playerCard.transform, stretch: false);
-            playerPortrait.GetComponent<Image>().color = new Color(0.15f, 0.18f, 0.23f, 1f);
             var playerName = CreateText("PlayerNameText", playerCard.transform, "Fighter", 26f, FontStyles.Bold, TextAlignmentOptions.Center, TextPrimary);
             var playerSummary = CreateText("PlayerSummaryText", playerCard.transform, "", 15f, FontStyles.Normal, TextAlignmentOptions.Center, TextSecondary);
             var playerPrev = CreateButton("PreviousPlayerButton", playerCard.transform, "<", ButtonColor, 22f);
             var playerNext = CreateButton("NextPlayerButton", playerCard.transform, ">", ButtonColor, 22f);
-            SetAnchors(playerPortrait.GetComponent<RectTransform>(), 0.5f, 0.62f, 0.5f, 0.62f, Vector2.zero, new Vector2(200f, 200f));
-            SetAnchors(playerName.rectTransform, 0.5f, 0.3f, 0.5f, 0.3f, Vector2.zero, new Vector2(420f, 38f));
-            SetAnchors(playerSummary.rectTransform, 0.5f, 0.12f, 0.5f, 0.12f, Vector2.zero, new Vector2(520f, 64f));
-            SetAnchors(playerPrev.GetComponent<RectTransform>(), 0f, 0.3f, 0f, 0.3f, new Vector2(54f, -2f), new Vector2(74f, 50f));
-            SetAnchors(playerNext.GetComponent<RectTransform>(), 1f, 0.3f, 1f, 0.3f, new Vector2(-54f, -2f), new Vector2(74f, 50f));
+            SetAnchors(playerName.rectTransform, 0.5f, 0.60f, 0.5f, 0.60f, Vector2.zero, new Vector2(420f, 42f));
+            SetAnchors(playerSummary.rectTransform, 0.5f, 0.38f, 0.5f, 0.38f, Vector2.zero, new Vector2(560f, 78f));
+            SetAnchors(playerPrev.GetComponent<RectTransform>(), 0f, 0.60f, 0f, 0.60f, new Vector2(54f, -4f), new Vector2(74f, 52f));
+            SetAnchors(playerNext.GetComponent<RectTransform>(), 1f, 0.60f, 1f, 0.60f, new Vector2(-54f, -4f), new Vector2(74f, 52f));
 
             GameObject opponentCard = CreateCard("OpponentCard", rightColumn.transform, "Opponent Preview");
             SetAnchors(opponentCard.GetComponent<RectTransform>(), 0f, 0.19f, 1f, 0.5f, Vector2.zero, new Vector2(0f, -12f));
             var opponentPortrait = CreateUiRect("OpponentPortraitImage", opponentCard.transform, stretch: false);
-            opponentPortrait.GetComponent<Image>().color = new Color(0.15f, 0.18f, 0.23f, 1f);
+            opponentPortrait.GetComponent<Image>().color = new Color(0.14f, 0.14f, 0.16f, 1f);
+            ApplyOutline(opponentPortrait, OutlineColor, 1f);
             var opponentName = CreateText("OpponentNameText", opponentCard.transform, "Random Preview", 24f, FontStyles.Bold, TextAlignmentOptions.Center, TextPrimary);
             var opponentSummary = CreateText("OpponentSummaryText", opponentCard.transform, "", 15f, FontStyles.Normal, TextAlignmentOptions.Center, TextSecondary);
             var opponentPrev = CreateButton("PreviousOpponentButton", opponentCard.transform, "<", ButtonColor, 22f);
@@ -245,8 +252,8 @@ namespace Adaptabrawl.Editor
             var actionsRow = CreateUiRect("ActionsRow", root.transform, stretch: false);
             actionsRow.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
             SetAnchors(actionsRow.GetComponent<RectTransform>(), 0.5f, 0f, 0.5f, 0f, new Vector2(0f, 74f), new Vector2(900f, 56f));
-            var retrainButton = CreateButton("RetrainModelsButton", actionsRow.transform, "Retrain Models", SoftAccent, 18f, darkText: true);
-            var startButton = CreateButton("StartMatchButton", actionsRow.transform, "Start Match", PositiveButtonColor, 18f);
+            var retrainButton = CreateButton("RetrainModelsButton", actionsRow.transform, "Retrain Models", ButtonColor, 18f);
+            var startButton = CreateButton("StartMatchButton", actionsRow.transform, "Start Match", PositiveButtonColor, 18f, darkText: true);
             var backButton = CreateButton("BackButton", actionsRow.transform, "Back To Menu", ButtonColor, 18f);
             SetAnchors(retrainButton.GetComponent<RectTransform>(), 0f, 0.5f, 0f, 0.5f, new Vector2(0f, 0f), new Vector2(250f, 52f));
             SetAnchors(startButton.GetComponent<RectTransform>(), 0.5f, 0.5f, 0.5f, 0.5f, Vector2.zero, new Vector2(250f, 52f));
@@ -269,7 +276,7 @@ namespace Adaptabrawl.Editor
             AssignReference(uiSo, "arenaNextButton", arenaNext);
             AssignReference(uiSo, "playerNameText", playerName);
             AssignReference(uiSo, "playerSummaryText", playerSummary);
-            AssignReference(uiSo, "playerPortraitImage", playerPortrait.GetComponent<Image>());
+            AssignReference(uiSo, "playerPortraitImage", null);
             AssignReference(uiSo, "playerPreviousButton", playerPrev);
             AssignReference(uiSo, "playerNextButton", playerNext);
             AssignReference(uiSo, "opponentNameText", opponentName);
@@ -284,12 +291,8 @@ namespace Adaptabrawl.Editor
             AssignReference(uiSo, "startMatchButton", startButton);
             AssignReference(uiSo, "retrainModelsButton", retrainButton);
             AssignReference(uiSo, "backButton", backButton);
-            AssignSpriteList(uiSo, "arenaBackgrounds", new[]
-            {
-                LoadSprite(ArenaBackgroundOnePath),
-                LoadSprite(ArenaBackgroundTwoPath),
-                LoadSprite(ArenaBackgroundThreePath)
-            });
+            AssignStringList(uiSo, "availableArenas", arenaPresentation.Names);
+            AssignSpriteList(uiSo, "arenaBackgrounds", arenaPresentation.Backgrounds);
             uiSo.ApplyModifiedPropertiesWithoutUndo();
 
             return canvasGo;
@@ -387,9 +390,9 @@ namespace Adaptabrawl.Editor
             var card = CreateUiRect(name, parent, stretch: false);
             var cardImage = card.GetComponent<Image>();
             cardImage.color = CardColor;
-            ApplyOutline(card, AccentColor, 1f);
+            ApplyOutline(card, OutlineColor, 1f);
 
-            var titleText = CreateText($"{name}_Title", card.transform, title, 18f, FontStyles.Bold, TextAlignmentOptions.Left, SoftAccent);
+            var titleText = CreateText($"{name}_Title", card.transform, title, 18f, FontStyles.Bold, TextAlignmentOptions.Left, TextPrimary);
             SetAnchors(titleText.rectTransform, 0f, 1f, 1f, 1f, new Vector2(0f, -26f), new Vector2(-44f, 26f));
             titleText.margin = new Vector4(20f, 0f, 0f, 0f);
             return card;
@@ -444,7 +447,7 @@ namespace Adaptabrawl.Editor
             var buttonGo = CreateUiRect(name, parent, stretch: false);
             var image = buttonGo.GetComponent<Image>();
             image.color = backgroundColor;
-            ApplyOutline(buttonGo, Color.black, 1f);
+            ApplyOutline(buttonGo, OutlineColor, 1f);
 
             var button = buttonGo.AddComponent<Button>();
             button.targetGraphic = image;
@@ -501,6 +504,69 @@ namespace Adaptabrawl.Editor
             property.arraySize = sprites.Count;
             for (int i = 0; i < sprites.Count; i++)
                 property.GetArrayElementAtIndex(i).objectReferenceValue = sprites[i];
+        }
+
+        private static void AssignStringList(SerializedObject so, string propertyName, IReadOnlyList<string> values)
+        {
+            SerializedProperty property = so.FindProperty(propertyName);
+            if (property == null)
+                return;
+
+            property.arraySize = values.Count;
+            for (int i = 0; i < values.Count; i++)
+                property.GetArrayElementAtIndex(i).stringValue = values[i];
+        }
+
+        private static ArenaPresentationData LoadArenaPresentationData()
+        {
+            var arenaPresentation = new ArenaPresentationData();
+
+            if (!File.Exists(SetupScenePath))
+                return arenaPresentation;
+
+            Scene setupScene = EditorSceneManager.OpenScene(SetupScenePath, OpenSceneMode.Additive);
+            try
+            {
+                ArenaSelectUI arenaUi = Object.FindObjectsByType<ArenaSelectUI>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                    .FirstOrDefault(candidate => candidate.gameObject.scene == setupScene);
+                if (arenaUi == null)
+                    return arenaPresentation;
+
+                SerializedObject arenaUiSo = new SerializedObject(arenaUi);
+                ReadStringList(arenaUiSo.FindProperty("availableArenas"), arenaPresentation.Names);
+                ReadSpriteList(arenaUiSo.FindProperty("arenaBackgrounds"), arenaPresentation.Backgrounds);
+            }
+            finally
+            {
+                EditorSceneManager.CloseScene(setupScene, true);
+            }
+
+            return arenaPresentation;
+        }
+
+        private static void ReadStringList(SerializedProperty property, ICollection<string> destination)
+        {
+            if (property == null || !property.isArray)
+                return;
+
+            for (int i = 0; i < property.arraySize; i++)
+            {
+                string value = property.GetArrayElementAtIndex(i).stringValue;
+                if (!string.IsNullOrWhiteSpace(value))
+                    destination.Add(value);
+            }
+        }
+
+        private static void ReadSpriteList(SerializedProperty property, ICollection<Sprite> destination)
+        {
+            if (property == null || !property.isArray)
+                return;
+
+            for (int i = 0; i < property.arraySize; i++)
+            {
+                if (property.GetArrayElementAtIndex(i).objectReferenceValue is Sprite sprite)
+                    destination.Add(sprite);
+            }
         }
     }
 }

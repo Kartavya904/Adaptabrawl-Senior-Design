@@ -18,6 +18,7 @@ namespace Adaptabrawl.AI
         private CombatFSM opponentCombat;
         private EvadeSystem evadeSystem;
         private QuickMatchHeuristicModel model;
+        private int controlledPlayerNumber = 2;
 
         private bool initialized;
         private bool previousBlockHeld;
@@ -42,6 +43,7 @@ namespace Adaptabrawl.AI
             self = controlledFighter;
             opponent = opposingFighter;
             tier = difficultyTier;
+            controlledPlayerNumber = controlledFighter != null ? controlledFighter.PlayerNumber : 2;
             model = overrideModel != null ? overrideModel.Clone() : LoadModelForTier(difficultyTier);
             model.Clamp();
 
@@ -276,8 +278,20 @@ namespace Adaptabrawl.AI
 
         private void ResolveReferences()
         {
-            if (self != null && platformController == null)
-                platformController = self.GetPlayerController();
+            if (self != null)
+            {
+                var resolvedPlatformController = self.GetPlayerController();
+                if (resolvedPlatformController != platformController)
+                {
+                    platformController = resolvedPlatformController;
+                    if (platformController != null)
+                    {
+                        platformController.ConfigureForPlayer(controlledPlayerNumber, -1);
+                        platformController.isNetworkControlled = true;
+                        ClearNetworkState();
+                    }
+                }
+            }
 
             if (self != null && selfCombat == null)
                 selfCombat = self.GetComponent<CombatFSM>();

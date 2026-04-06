@@ -43,6 +43,7 @@ namespace Adaptabrawl.Gameplay
         private ClassificationSwitcher classificationSwitcher;
         private GameSceneFighterCoordinator sceneCoordinator;
         private Adaptabrawl.UI.MatchResults matchResults;
+        private QuickMatchMatchConfig activeQuickMatchConfig;
 
         /// <summary>Fired once both fighters are spawned. Subscribe in Start() or later.</summary>
         public System.Action<FighterController, FighterController> OnFightersSpawned;
@@ -60,6 +61,7 @@ namespace Adaptabrawl.Gameplay
             QuickMatchMatchConfig quickMatchConfig = null;
             if (QuickMatchSession.Instance != null)
                 QuickMatchSession.Instance.TryGetCurrentConfig(out quickMatchConfig);
+            activeQuickMatchConfig = quickMatchConfig;
 
             // CharacterSelectData takes priority (set by the character select screen).
             // Test overrides are only used when CharacterSelectData is null (direct scene testing).
@@ -95,6 +97,7 @@ namespace Adaptabrawl.Gameplay
             // Spawn fighters first so GameManager.InitializeMatch() can find them.
             SpawnFighters(fighter1Def, fighter2Def);
             ConfigureInputSources(quickMatchConfig);
+            SubscribeToFighterRebindEvents();
 
             GameContext.EnsureExists().BeginLocalMatch(player1, player2);
 
@@ -204,6 +207,39 @@ namespace Adaptabrawl.Gameplay
         {
             ConfigureInputSourceForPlayer(player1, player2, 1, quickMatchConfig);
             ConfigureInputSourceForPlayer(player2, player1, 2, quickMatchConfig);
+        }
+
+        private void SubscribeToFighterRebindEvents()
+        {
+            if (player1 != null)
+                player1.OnFighterDefinitionChanged += OnPlayerFighterDefinitionChanged;
+
+            if (player2 != null)
+                player2.OnFighterDefinitionChanged += OnPlayerFighterDefinitionChanged;
+        }
+
+        private void UnsubscribeFromFighterRebindEvents()
+        {
+            if (player1 != null)
+                player1.OnFighterDefinitionChanged -= OnPlayerFighterDefinitionChanged;
+
+            if (player2 != null)
+                player2.OnFighterDefinitionChanged -= OnPlayerFighterDefinitionChanged;
+        }
+
+        private void OnPlayerFighterDefinitionChanged(FighterController changedFighter, FighterDef _)
+        {
+            if (changedFighter == null)
+                return;
+
+            if (changedFighter == player1)
+            {
+                ConfigureInputSourceForPlayer(player1, player2, 1, activeQuickMatchConfig);
+                return;
+            }
+
+            if (changedFighter == player2)
+                ConfigureInputSourceForPlayer(player2, player1, 2, activeQuickMatchConfig);
         }
 
         private void ConfigureInputSourceForPlayer(FighterController fighter, FighterController opponent, int playerNumber, QuickMatchMatchConfig quickMatchConfig)
@@ -316,6 +352,8 @@ namespace Adaptabrawl.Gameplay
 
         private void OnDestroy()
         {
+            UnsubscribeFromFighterRebindEvents();
+
             if (gameManager != null)
             {
                 gameManager.OnRoundEnd -= OnRoundEnd;

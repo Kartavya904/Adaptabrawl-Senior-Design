@@ -38,6 +38,7 @@ namespace Adaptabrawl.Gameplay
         public System.Action<float, float> OnHealthChanged; // current, max
         public System.Action OnDeath;
         public System.Action<bool> OnFacingChanged;
+        public System.Action<FighterController, FighterDef> OnFighterDefinitionChanged;
         
         public FighterDef FighterDef => fighterDef;
         public float CurrentHealth => currentHealth;
@@ -108,6 +109,7 @@ namespace Adaptabrawl.Gameplay
             }
             
             OnHealthChanged?.Invoke(currentHealth, maxHealth);
+            OnFighterDefinitionChanged?.Invoke(this, fighterDef);
         }
         
         /// <summary>
@@ -416,6 +418,7 @@ namespace Adaptabrawl.Gameplay
 
             // 8. Notify systems
             OnHealthChanged?.Invoke(currentHealth, maxHealth);
+            OnFighterDefinitionChanged?.Invoke(this, fighterDef);
             Debug.Log($"[FighterController] P{_playerNumber} SWAPPED to '{newDef.fighterName}' (full visual swap)");
 
             // Phase 1: Swap Invincibility & VFX

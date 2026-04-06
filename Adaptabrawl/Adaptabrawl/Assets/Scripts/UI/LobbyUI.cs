@@ -195,6 +195,7 @@ namespace Adaptabrawl.UI
         {
             if (lobbyManager != null)
             {
+                PublicRoomLobbyContext.EnsureExists().SetLanRoomListActive(false);
                 lobbyManager.CreateRoom();
             }
         }

@@ -106,9 +106,8 @@ namespace Adaptabrawl.UI
             RefreshStaticCopy();
             ApplyPlayerSlots(waitingForGuest: true);
 
-            var ctx = PublicRoomLobbyContext.EnsureExists();
-            ctx.SetLanRoomListActive(true);
-            ctx.RequestRoomListRefresh();
+            // Must not scan LAN room list (binds UDP 7777+7778) until after host binds game + discovery on those ports.
+            PublicRoomLobbyContext.EnsureExists().SetLanRoomListActive(false);
 
             StartCoroutine(CoStartHostingWhenReady());
         }
@@ -260,6 +259,21 @@ namespace Adaptabrawl.UI
             if (joinModalErrorText != null)
                 joinModalErrorText.text = "";
 
+            StartCoroutine(CoEnableLanRoomListAfterLeavingHostIfNeeded());
+        }
+
+        /// <summary>
+        /// Room list listens on 7777/7778; if we are still hosting, release those ports before scanning.
+        /// </summary>
+        private IEnumerator CoEnableLanRoomListAfterLeavingHostIfNeeded()
+        {
+            var nm = NetworkManager.Singleton;
+            if (nm != null && nm.IsListening && nm.IsServer && lobbyManager != null)
+            {
+                lobbyManager.Disconnect();
+                yield return new WaitForSecondsRealtime(0.35f);
+            }
+
             var ctx = PublicRoomLobbyContext.EnsureExists();
             ctx.SetLanRoomListActive(true);
             ctx.RequestRoomListRefresh();
@@ -275,6 +289,7 @@ namespace Adaptabrawl.UI
         {
             SetModalVisible(false);
             lobbyManager?.CancelPendingJoin();
+            PublicRoomLobbyContext.EnsureExists().SetLanRoomListActive(false);
             TryRehostIfIdleAfterClosingJoin();
         }
 

@@ -193,16 +193,22 @@ namespace Adaptabrawl.UI
 
             QuickMatchSession.Instance?.ClearSession();
             LobbyContext.EnsureExists().Init(false);
-            PublicRoomLobbyContext.EnsureExists().SetLanRoomListActive(true);
             CharacterSelectData.isLocalMatch = false;
 
+            // Online party auto-hosts on UDP 7777/7778; LanLobbyRoomListService also binds those ports when scanning.
+            // Keep room-list scanning off until Join (or classic Lobby join panel) so hosting can bind first.
+            var publicCtx = PublicRoomLobbyContext.EnsureExists();
             if (TryGetBuildIndexBySceneName(OnlinePartyRoomSceneName) >= 0)
+            {
+                publicCtx.SetLanRoomListActive(false);
                 SceneManager.LoadScene(OnlinePartyRoomSceneName);
+            }
             else
             {
                 Debug.LogWarning(
                     "[MainMenu] OnlinePartyRoomScene is not in Build Settings — falling back to LobbyScene. " +
                     "Run Tools → Adaptabrawl → Setup Online Party Room Scene.");
+                publicCtx.SetLanRoomListActive(true);
                 SceneManager.LoadScene("LobbyScene");
             }
         }

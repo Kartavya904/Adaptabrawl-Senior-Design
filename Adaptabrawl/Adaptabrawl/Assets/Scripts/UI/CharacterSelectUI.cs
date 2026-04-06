@@ -682,7 +682,7 @@ namespace Adaptabrawl.UI
             var attackSystem = obj.GetComponent<AttackSystem>();
             if (attackSystem != null) attackSystem.enabled = false;
             // Disable Shinabro platform controller so mouse clicks and legacy input don't drive attacks in previews.
-            var shinabroController = obj.GetComponent<PlayerController_Platform>();
+            var shinabroController = obj.GetComponentInChildren<PlayerController_Platform>();
             if (shinabroController != null) shinabroController.enabled = false;
             foreach (var pi in obj.GetComponentsInChildren<UnityEngine.InputSystem.PlayerInput>(true))
             {
@@ -693,6 +693,20 @@ namespace Adaptabrawl.UI
             {
                 rb.bodyType = RigidbodyType2D.Kinematic;
                 rb.linearVelocity = Vector2.zero;
+            }
+
+            var rb3ds = obj.GetComponentsInChildren<Rigidbody>(true);
+            foreach (var r3d in rb3ds)
+            {
+                r3d.constraints = RigidbodyConstraints.FreezeAll;
+                r3d.linearVelocity = Vector3.zero;
+                r3d.angularVelocity = Vector3.zero;
+            }
+
+            var animators = obj.GetComponentsInChildren<Animator>(true);
+            foreach (var anim in animators)
+            {
+                anim.applyRootMotion = false;
             }
 
             currentPreview = obj;

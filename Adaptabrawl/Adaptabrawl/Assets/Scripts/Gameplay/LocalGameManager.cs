@@ -135,7 +135,7 @@ namespace Adaptabrawl.Gameplay
         {
             if (player1SpawnPoint != null && fighter1Def != null)
             {
-                GameObject p1Obj = CreateFighter(fighter1Def, player1SpawnPoint.position);
+                GameObject p1Obj = CreateFighter(fighter1Def, player1SpawnPoint.position, true);
                 player1 = p1Obj.GetComponent<FighterController>();
                 player1?.SetPlayerNumber(1);
                 ApplySpawnSetup(p1Obj);
@@ -145,7 +145,7 @@ namespace Adaptabrawl.Gameplay
 
             if (player2SpawnPoint != null && fighter2Def != null)
             {
-                GameObject p2Obj = CreateFighter(fighter2Def, player2SpawnPoint.position);
+                GameObject p2Obj = CreateFighter(fighter2Def, player2SpawnPoint.position, false);
                 player2 = p2Obj.GetComponent<FighterController>();
                 player2?.SetPlayerNumber(2);
                 ApplySpawnSetup(p2Obj);
@@ -168,10 +168,10 @@ namespace Adaptabrawl.Gameplay
                 child.gameObject.layer = 3;
         }
 
-        private GameObject CreateFighter(FighterDef fighterDef, Vector3 position)
+        private GameObject CreateFighter(FighterDef fighterDef, Vector3 position, bool facingRight)
         {
             // Use FighterFactory to create fighter
-            FighterController controller = FighterFactory.CreateFighter(fighterDef, position);
+            FighterController controller = FighterFactory.CreateFighter(fighterDef, position, facingRight);
             return controller != null ? controller.gameObject : null;
         }
 

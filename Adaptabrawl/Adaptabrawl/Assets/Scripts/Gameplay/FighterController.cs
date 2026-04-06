@@ -335,6 +335,11 @@ namespace Adaptabrawl.Gameplay
                 standerAnim.SetBool("Walk", false);
             }
 
+            // Force character to face the center of the arena for the next round
+            bool faceRight = targetX < 0f;
+            pcp.transform.rotation = Quaternion.LookRotation(faceRight ? Vector3.right : Vector3.left);
+            facingRight = faceRight;
+
             onComplete?.Invoke();
         }
 
@@ -343,7 +348,16 @@ namespace Adaptabrawl.Gameplay
             if (facingRight != right)
             {
                 facingRight = right;
-                transform.localScale = new Vector3(right ? 1f : -1f, 1f, 1f);
+                var pcp = GetComponentInChildren<PlayerController_Platform>();
+                if (pcp != null)
+                {
+                    pcp.transform.rotation = Quaternion.LookRotation(right ? Vector3.right : Vector3.left);
+                }
+                else
+                {
+                    // Fallback for missing PCP
+                    transform.localScale = new Vector3(right ? 1f : -1f, 1f, 1f);
+                }
                 OnFacingChanged?.Invoke(right);
             }
         }

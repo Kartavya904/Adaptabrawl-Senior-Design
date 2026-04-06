@@ -17,6 +17,11 @@ namespace Adaptabrawl.UI
         private static ButtonHoverInstaller instance;
         private float nextScanTime;
 
+        [Header("Global UI Audio")]
+        [SerializeField] private AudioClip uiMoveClip;
+        [SerializeField] private AudioClip uiReadyClip;
+        private AudioSource audioSource;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
         {
@@ -37,6 +42,23 @@ namespace Adaptabrawl.UI
 
             instance = this;
             DontDestroyOnLoad(gameObject);
+
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+            uiMoveClip = Resources.Load<AudioClip>("SFX/ui_move");
+            uiReadyClip = Resources.Load<AudioClip>("SFX/ui_ready");
+        }
+
+        public static void PlayMoveSound()
+        {
+            if (instance != null && instance.audioSource != null && instance.uiMoveClip != null)
+                instance.audioSource.PlayOneShot(instance.uiMoveClip, 0.45f);
+        }
+
+        public static void PlayClickSound()
+        {
+            if (instance != null && instance.audioSource != null && instance.uiReadyClip != null)
+                instance.audioSource.PlayOneShot(instance.uiReadyClip, 0.6f);
         }
 
         private void OnEnable()
@@ -204,6 +226,9 @@ namespace Adaptabrawl.UI
             pointerInside = true;
             if (button != null)
                 MenuNavigationGroup.NotifyPointerHover(button);
+            
+            if (button != null && button.IsInteractable())
+                ButtonHoverInstaller.PlayMoveSound();
         }
 
         public void OnPointerExit(PointerEventData _)
@@ -215,6 +240,8 @@ namespace Adaptabrawl.UI
         public void OnSelect(BaseEventData _)
         {
             isSelected = true;
+            if (button != null && button.IsInteractable())
+                ButtonHoverInstaller.PlayMoveSound();
         }
 
         public void OnDeselect(BaseEventData _)
@@ -249,6 +276,13 @@ namespace Adaptabrawl.UI
             button = GetComponent<Button>();
             rectTransform = transform as RectTransform;
             targetGraphic = button != null ? button.targetGraphic : null;
+
+            if (button != null)
+            {
+                // Register global click sound without blowing away existing listeners
+                button.onClick.RemoveListener(ButtonHoverInstaller.PlayClickSound);
+                button.onClick.AddListener(ButtonHoverInstaller.PlayClickSound);
+            }
 
             if (rectTransform == null)
                 return;

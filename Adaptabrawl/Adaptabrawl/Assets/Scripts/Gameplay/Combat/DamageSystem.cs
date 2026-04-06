@@ -75,7 +75,7 @@ namespace Adaptabrawl.Combat
             
             // Apply damage to target
             target.TakeDamage(finalDamage);
-            ApplyKnockback(target, move);
+
 
             Vector3 resolvedHitPosition = hitPosition ?? target.transform.position;
             Vector3 resolvedHitDirection = hitDirection ?? GetHitDirection(target);
@@ -121,21 +121,7 @@ namespace Adaptabrawl.Combat
             OnDamageDealt?.Invoke(finalDamage, target);
         }
 
-        private void ApplyKnockback(FighterController target, MoveDef move)
-        {
-            if (target == null || target.IsDead) return;
-            var rb = target.GetComponent<Rigidbody2D>();
-            if (rb == null) return;
 
-            Vector3 dir = GetHitDirection(target);
-            float strength = move.moveType switch
-            {
-                MoveType.HeavyAttack => 5.5f,
-                MoveType.Special     => 4.5f,
-                _                   => 2.5f
-            };
-            rb.AddForce(new Vector2(dir.x, 0.3f) * strength, ForceMode2D.Impulse);
-        }
 
         private Vector3 GetHitDirection(FighterController target)
         {

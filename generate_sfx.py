@@ -81,4 +81,27 @@ def matchover_func(t, total_samps, i):
     return math.sin(2 * math.pi * freq * t) * env * 0.75
 generate_wav('Adaptabrawl/Adaptabrawl/Assets/Resources/SFX/matchover.wav', 2.0, S_RATE, matchover_func)
 
-print("Generated 8 SFX files in Resources/SFX!")
+# 9. UI Move / Navigate (soft blip)
+def ui_move_func(t, total_samps, i):
+    freq = 600
+    env = math.exp(-t * 30)
+    return math.sin(2 * math.pi * freq * t) * env * 0.3
+generate_wav('Adaptabrawl/Adaptabrawl/Assets/Resources/SFX/ui_move.wav', 0.1, S_RATE, ui_move_func)
+
+# 10. UI Ready / Lock-in (chime)
+def ui_ready_func(t, total_samps, i):
+    freq = 880 + (t * 400)
+    env = math.exp(-t * 8)
+    return math.sin(2 * math.pi * freq * t) * env * 0.4
+generate_wav('Adaptabrawl/Adaptabrawl/Assets/Resources/SFX/ui_ready.wav', 0.4, S_RATE, ui_ready_func)
+
+# 11. Pre-swap Warning (urgent rhythmic beeping)
+def preswap_func(t, total_samps, i):
+    freq = 1200
+    # Oscillating envelope to sound like an alarm beep
+    env = math.sin(2 * math.pi * 5 * t)
+    env = max(0, env) * math.exp(-t * 1.5)
+    return math.sin(2 * math.pi * freq * t) * env * 0.45
+generate_wav('Adaptabrawl/Adaptabrawl/Assets/Resources/SFX/preswap_warning.wav', 1.5, S_RATE, preswap_func)
+
+print("Generated 11 SFX files in Resources/SFX!")

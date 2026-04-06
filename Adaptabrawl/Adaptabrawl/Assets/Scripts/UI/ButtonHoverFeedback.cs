@@ -234,6 +234,16 @@ namespace Adaptabrawl.UI
             isPressed = false;
         }
 
+        public void RecaptureBasePosition()
+        {
+            if (rectTransform != null)
+            {
+                baseAnchoredPosition = rectTransform.anchoredPosition;
+                baseScale = rectTransform.localScale;
+                baseRotation = rectTransform.localRotation;
+            }
+        }
+
         private void CacheReferences()
         {
             button = GetComponent<Button>();
@@ -345,15 +355,7 @@ namespace Adaptabrawl.UI
             if (button == null)
                 return fallback;
 
-            Color highlighted = button.colors.highlightedColor;
-            return IsNeutralTint(highlighted) ? fallback : highlighted;
-        }
-
-        private static bool IsNeutralTint(Color color)
-        {
-            float max = Mathf.Max(color.r, Mathf.Max(color.g, color.b));
-            float min = Mathf.Min(color.r, Mathf.Min(color.g, color.b));
-            return max - min < 0.04f;
+            return button.colors.highlightedColor;
         }
 
         private Color ResolveTint(Color baseColor)

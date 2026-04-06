@@ -408,7 +408,7 @@ namespace Adaptabrawl.UI
             PushCurrentArenaToLobbyContext();
 
             // Host (or local instance) actually triggers the scene load.
-            string gameSceneName = LobbyContext.CurrentMatchIsLocal() ? "GameScene" : "OnlineGameScene";
+            const string gameSceneName = "GameScene";
             if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
             {
                 if (NetworkManager.Singleton.IsServer)

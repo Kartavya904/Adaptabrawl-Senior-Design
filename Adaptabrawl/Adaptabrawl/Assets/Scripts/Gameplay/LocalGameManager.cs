@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Netcode;
 using Adaptabrawl.Data;
 using Adaptabrawl.Fighters;
 using Adaptabrawl.UI;
@@ -50,10 +51,10 @@ namespace Adaptabrawl.Gameplay
 
         private void Start()
         {
-            InitializeLocalMatch();
+            InitializeMatchSession();
         }
 
-        private void InitializeLocalMatch()
+        private void InitializeMatchSession()
         {
             // CharacterSelectData takes priority (set by the character select screen).
             // Test overrides are only used when CharacterSelectData is null (direct scene testing).
@@ -110,12 +111,22 @@ namespace Adaptabrawl.Gameplay
             gameManager.OnRoundEnd += OnRoundEnd;
             gameManager.InitializeMatch();
 
-            // Setup classification switcher for adaptive mid-match swapping
-            classificationSwitcher = GetComponent<ClassificationSwitcher>();
-            if (classificationSwitcher == null)
-                classificationSwitcher = gameObject.AddComponent<ClassificationSwitcher>();
-            classificationSwitcher.Initialize(new FighterController[] { player1, player2 });
-            // Switcher starts paused — GameManager will resume it after the pre-round buffer
+            // Online matches previously used a separate scene without the local-only random swap flow.
+            // Keep that behaviour by leaving classification switching disabled for networked online fights.
+            if (!IsOnlineNetworkMatch())
+            {
+                classificationSwitcher = GetComponent<ClassificationSwitcher>();
+                if (classificationSwitcher == null)
+                    classificationSwitcher = gameObject.AddComponent<ClassificationSwitcher>();
+                classificationSwitcher.Initialize(new FighterController[] { player1, player2 });
+                // Switcher starts paused — GameManager will resume it after the pre-round buffer
+            }
+            else
+            {
+                classificationSwitcher = GetComponent<ClassificationSwitcher>();
+                if (classificationSwitcher != null)
+                    classificationSwitcher.enabled = false;
+            }
 
             sceneCoordinator = GetComponent<GameSceneFighterCoordinator>();
             if (sceneCoordinator == null)
@@ -254,6 +265,13 @@ namespace Adaptabrawl.Gameplay
             // Reset match
             if (gameManager != null)
                 gameManager.Rematch();
+        }
+
+        private static bool IsOnlineNetworkMatch()
+        {
+            return NetworkManager.Singleton != null
+                && NetworkManager.Singleton.IsListening
+                && !LobbyContext.CurrentMatchIsLocal();
         }
     }
 }

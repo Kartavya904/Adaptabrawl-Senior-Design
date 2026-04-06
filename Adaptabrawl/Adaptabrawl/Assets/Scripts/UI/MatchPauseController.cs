@@ -40,7 +40,7 @@ namespace Adaptabrawl.UI
         [Tooltip("Vertical focus order. If empty: Resume → Restart → Change Characters → Settings → Main Menu.")]
         [SerializeField] private Selectable[] pauseMenuFocusOrder;
 
-        [Header("Networking (optional — OnlineGameScene)")]
+        [Header("Networking (optional — online matches)")]
         [SerializeField] private OnlineMutualPauseCoordinator netCoordinator;
 
         private float _previousTimeScale = 1f;
@@ -167,9 +167,10 @@ namespace Adaptabrawl.UI
 
         private static bool IsOnlineGameListening()
         {
-            if (SceneManager.GetActiveScene().name != "OnlineGameScene")
-                return false;
-            return NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+            return IsGameplayScene()
+                && NetworkManager.Singleton != null
+                && NetworkManager.Singleton.IsListening
+                && !LobbyContext.CurrentMatchIsLocal();
         }
 
         private bool IsOnlineMutualReady()

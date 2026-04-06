@@ -376,7 +376,7 @@ namespace Adaptabrawl.UI
         {
             CancelAutoMainMenuTimer();
             MatchResultsData.Clear();
-            string gameScene = CharacterSelectData.isLocalMatch ? "GameScene" : "OnlineGameScene";
+            const string gameScene = "GameScene";
             TransitionTo(gameScene);
         }
 

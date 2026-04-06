@@ -26,26 +26,27 @@ namespace Adaptabrawl.Input
         private Quaternion targetP2Rotation;
 
         private bool rolesApplied = false;
+        private bool localInputHandlersRemoved;
 
         void Start()
         {
-            // Destroy offline conflicting input handlers
-            PlayerInputHandler[] localInputs = FindObjectsByType<PlayerInputHandler>(FindObjectsSortMode.None);
-            foreach (var input in localInputs)
-                Destroy(input);
+            if (!ShouldRunOnlineSync())
+            {
+                enabled = false;
+                return;
+            }
 
-            TwoPlayerInputHandler[] dualInputs = FindObjectsByType<TwoPlayerInputHandler>(FindObjectsSortMode.None);
-            foreach (var input in dualInputs)
-                Destroy(input);
-
+            RemoveConflictingLocalInputHandlers();
             InitializePlayers();
 
-            if (IsSpawned && !rolesApplied)
+            if (IsSpawned)
                 ApplyNetworkRoles();
         }
 
         public void InitializePlayers()
         {
+            ResolvePlayerObjectsFromScene();
+
             if (player1Object != null)
             {
                 p1Controller = player1Object.GetComponentInChildren<PlayerController_Platform>();
@@ -70,8 +71,18 @@ namespace Adaptabrawl.Input
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+
+            if (!ShouldRunOnlineSync())
+            {
+                enabled = false;
+                return;
+            }
+
+            RemoveConflictingLocalInputHandlers();
+
             if (p1Controller == null || p2Controller == null)
                 InitializePlayers();
+
             ApplyNetworkRoles();
         }
 
@@ -95,7 +106,17 @@ namespace Adaptabrawl.Input
 
         void Update()
         {
-            if (!IsSpawned || p1Controller == null || p2Controller == null) return;
+            if (!ShouldRunOnlineSync() || !IsSpawned)
+                return;
+
+            if (p1Controller == null || p2Controller == null)
+            {
+                InitializePlayers();
+                if (!rolesApplied)
+                    ApplyNetworkRoles();
+                if (p1Controller == null || p2Controller == null)
+                    return;
+            }
 
             if (IsServer)
             {
@@ -193,6 +214,47 @@ namespace Adaptabrawl.Input
                     new Vector3(targetPos.x, targetPos.y, controller.transform.position.z),
                     Time.deltaTime * positionLerpSpeed
                 );
+            }
+        }
+
+        private bool ShouldRunOnlineSync()
+        {
+            return NetworkManager.Singleton != null
+                && NetworkManager.Singleton.IsListening
+                && !LobbyContext.CurrentMatchIsLocal();
+        }
+
+        private void RemoveConflictingLocalInputHandlers()
+        {
+            if (localInputHandlersRemoved)
+                return;
+
+            PlayerInputHandler[] localInputs = FindObjectsByType<PlayerInputHandler>(FindObjectsSortMode.None);
+            foreach (var input in localInputs)
+                Destroy(input);
+
+            TwoPlayerInputHandler[] dualInputs = FindObjectsByType<TwoPlayerInputHandler>(FindObjectsSortMode.None);
+            foreach (var input in dualInputs)
+                Destroy(input);
+
+            localInputHandlersRemoved = true;
+        }
+
+        private void ResolvePlayerObjectsFromScene()
+        {
+            if (player1Object != null && player2Object != null)
+                return;
+
+            FighterController[] fighters = FindObjectsByType<FighterController>(FindObjectsSortMode.None);
+            foreach (var fighter in fighters)
+            {
+                if (fighter == null)
+                    continue;
+
+                if (fighter.PlayerNumber == 1 && player1Object == null)
+                    player1Object = fighter.gameObject;
+                else if (fighter.PlayerNumber == 2 && player2Object == null)
+                    player2Object = fighter.gameObject;
             }
         }
 

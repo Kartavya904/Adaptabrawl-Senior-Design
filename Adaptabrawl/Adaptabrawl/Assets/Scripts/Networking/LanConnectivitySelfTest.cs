@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.Netcode;
 
 namespace Adaptabrawl.Networking
 {
@@ -69,6 +70,25 @@ namespace Adaptabrawl.Networking
         public static Task<LanConnectivityTestResult> RunAsync(bool waitForWindowsFirewallConfirmation)
         {
             bool isWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
+
+            // Test binds UDP 7777/7778 — same ports as online host/client. Running it while Netcode is listening always fails.
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+            {
+                string primary = LanAddressHints.GetPrimaryLanIpv4();
+                return Task.FromResult(
+                    CacheResult(
+                        new LanConnectivityTestResult(
+                            LanConnectivityTestState.Failure,
+                            "LAN test cannot run while a network session is active.",
+                            "Exit Play / stop hosting or disconnect from online play first so UDP 7777 and 7778 are free. " +
+                            "Then open Settings and run Test again (or run it from the main menu before Play Online).",
+                            primary ?? string.Empty,
+                            firewallCheckSupported: false,
+                            privateNetworkAllowed: false,
+                            publicNetworkAllowed: false,
+                            completedAtUtc: DateTime.UtcNow)));
+            }
+
             return Task.Run(() => Run(waitForWindowsFirewallConfirmation, isWindows));
         }
 
@@ -248,11 +268,13 @@ namespace Adaptabrawl.Networking
             return ex.SocketErrorCode switch
             {
                 SocketError.AddressAlreadyInUse =>
-                    $"{protocol} {port} is already in use. Close extra Unity Play windows or any other Adaptabrawl instance, then try again.",
+                    $"{protocol} {port} is already in use. Close every other Unity Editor Play session, ParrelSync clone, or built .exe of this game; " +
+                    "wait a few seconds, then try again. (Online host uses 7777/7778 — you cannot run this test at the same time.)",
                 SocketError.AccessDenied =>
-                    $"{protocol} {port} could not be opened because Windows denied access. Allow the app through Windows Firewall and try again.",
+                    $"{protocol} {port}: Windows denied the bind (firewall, policy, or another process holding the port). " +
+                    "Allow this app for Private networks in Windows Defender Firewall, pause aggressive antivirus, and ensure nothing else is using UDP 7777/7778.",
                 _ =>
-                    $"Could not open {protocol} {port}: {ex.Message}"
+                    $"Could not open {protocol} {port}: {ex.Message} ({ex.SocketErrorCode})"
             };
         }
 

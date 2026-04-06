@@ -341,6 +341,7 @@ namespace Adaptabrawl.Networking
             {
                 currentRoomCode = "DIRECT";
                 Debug.Log($"[LobbyManager] Direct client → {hostIpv4}:{port}");
+                nm.OnClientConnectedCallback -= OnClientConnected;
                 nm.OnClientConnectedCallback += OnClientConnected;
             }
             else
@@ -389,6 +390,7 @@ namespace Adaptabrawl.Networking
                 {
                     currentRoomCode = roomCode;
                     Debug.Log($"[LobbyManager] Client connecting to {hostIp}:{hostPort}...");
+                    nm.OnClientConnectedCallback -= OnClientConnected;
                     nm.OnClientConnectedCallback += OnClientConnected;
                 }
                 else

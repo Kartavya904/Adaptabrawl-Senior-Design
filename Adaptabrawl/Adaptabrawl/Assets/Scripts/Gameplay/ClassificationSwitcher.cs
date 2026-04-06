@@ -5,13 +5,17 @@ using System.Collections.Generic;
 namespace Adaptabrawl.Gameplay
 {
     /// <summary>
-    /// Manages mid-match classification switching. Every <see cref="switchInterval"/>
-    /// seconds each player's character is swapped to another FighterDef from the
-    /// roster (full visual prefab swap). The queue is rebuilt every round so players
-    /// start on their selected fighter, then rotate through other fighters.
+    /// Manages mid-match classification switching. Swaps are primarily driven by the
+    /// shared <see cref="switchInterval"/>, but the first two swaps can happen early
+    /// when match health thresholds are crossed. The queue is rebuilt every round so
+    /// players start on their selected fighter, then rotate through other fighters.
     /// </summary>
     public class ClassificationSwitcher : MonoBehaviour
     {
+        private const float FirstSwapHealthThreshold = 0.5f;
+        private const float SecondSwapSingleHealthThreshold = 0.25f;
+        private const float SecondSwapBothHealthThreshold = 0.5f;
+
         [Header("Roster")]
         [Tooltip("All fighters available for switching. Loaded from Resources/Fighters/ if empty.")]
         [SerializeField] private FighterDef[] fighterRoster;
@@ -19,10 +23,15 @@ namespace Adaptabrawl.Gameplay
         [Header("Timing")]
         [Tooltip("Seconds between classification switches.")]
         [SerializeField] private float switchInterval = 30f;
+        [Tooltip("Minimum time that must pass after a swap before another swap can happen.")]
+        [SerializeField] private float minimumSecondsBetweenSwaps = 10f;
         [Tooltip("Maximum swaps per player per round. 3 means a 2-minute round at 30s interval gives 4 total fighters including the selected starter.")]
         [SerializeField] private int maxSwitchesPerRound = 3;
 
-        private float[] playerTimers;
+        private float sharedTimer;
+        private float roundElapsedTime;
+        private float lastSwapTime;
+        private int swapEventsThisRound;
         private FighterController[] players;
         private FighterDef[] initialDefs; // What players selected in character select
         private int[] switchesThisRound;
@@ -42,7 +51,6 @@ namespace Adaptabrawl.Gameplay
         public void Initialize(FighterController[] fighters)
         {
             players = fighters;
-            playerTimers = new float[fighters.Length];
             initialDefs = new FighterDef[fighters.Length];
             switchesThisRound = new int[fighters.Length];
             plannedSwitchQueues = new Queue<FighterDef>[fighters.Length];
@@ -96,15 +104,17 @@ namespace Adaptabrawl.Gameplay
         /// </summary>
         public void ResetTimers()
         {
-            if (playerTimers == null || players == null) return;
+            if (players == null || switchesThisRound == null) return;
 
             BuildRoundSwitchPlans();
 
-            for (int i = 0; i < playerTimers.Length; i++)
-            {
-                playerTimers[i] = switchInterval;
+            for (int i = 0; i < switchesThisRound.Length; i++)
                 switchesThisRound[i] = 0;
-            }
+
+            sharedTimer = switchInterval;
+            roundElapsedTime = 0f;
+            lastSwapTime = -minimumSecondsBetweenSwaps;
+            swapEventsThisRound = 0;
         }
 
         /// <summary>
@@ -128,25 +138,36 @@ namespace Adaptabrawl.Gameplay
         /// <summary>Current remaining time for a given player index.</summary>
         public float GetTimerForPlayer(int index)
         {
-            if (playerTimers == null || index < 0 || index >= playerTimers.Length) return 0f;
-            return playerTimers[index];
+            if (players == null || index < 0 || index >= players.Length) return 0f;
+            return HasPendingSwitches(index) ? sharedTimer : 0f;
         }
 
         private void Update()
         {
-            if (paused || players == null || playerTimers == null) return;
+            if (paused || players == null || switchesThisRound == null) return;
+            if (!HasAnyPendingSwitches()) return;
 
-            for (int i = 0; i < players.Length; i++)
+            roundElapsedTime += Time.deltaTime;
+
+            if (HasDeadPlayer())
+                return;
+
+            sharedTimer = Mathf.Max(0f, sharedTimer - Time.deltaTime);
+
+            if (sharedTimer <= 0f)
             {
-                if (players[i] == null || players[i].IsDead || !HasPendingSwitches(i)) continue;
-
-                playerTimers[i] -= Time.deltaTime;
-                if (playerTimers[i] <= 0f)
-                {
-                    SwitchClassification(i);
-                    playerTimers[i] = switchInterval;
-                }
+                TriggerSwapEvent("timed");
+                return;
             }
+
+            if (ShouldTriggerFirstHealthSwap())
+            {
+                TriggerSwapEvent("early first swap health trigger");
+                return;
+            }
+
+            if (ShouldTriggerSecondHealthSwap())
+                TriggerSwapEvent("early second swap health trigger");
         }
 
         private bool HasPendingSwitches(int playerIndex)
@@ -158,6 +179,72 @@ namespace Adaptabrawl.Gameplay
                 return false;
 
             return plannedSwitchQueues[playerIndex] != null && plannedSwitchQueues[playerIndex].Count > 0;
+        }
+
+        private bool HasAnyPendingSwitches()
+        {
+            if (players == null)
+                return false;
+
+            for (int i = 0; i < players.Length; i++)
+            {
+                if (HasPendingSwitches(i))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private bool HasDeadPlayer()
+        {
+            if (players == null)
+                return false;
+
+            for (int i = 0; i < players.Length; i++)
+            {
+                if (players[i] != null && players[i].IsDead)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private bool CanTriggerSwapNow()
+        {
+            return roundElapsedTime - lastSwapTime >= minimumSecondsBetweenSwaps;
+        }
+
+        private bool ShouldTriggerFirstHealthSwap()
+        {
+            if (players == null || players.Length < 2 || swapEventsThisRound != 0 || !CanTriggerSwapNow())
+                return false;
+
+            return GetHealthRatio(players[0]) <= FirstSwapHealthThreshold ||
+                   GetHealthRatio(players[1]) <= FirstSwapHealthThreshold;
+        }
+
+        private bool ShouldTriggerSecondHealthSwap()
+        {
+            if (players == null || players.Length < 2 || swapEventsThisRound != 1 || !CanTriggerSwapNow())
+                return false;
+
+            float player1HealthRatio = GetHealthRatio(players[0]);
+            float player2HealthRatio = GetHealthRatio(players[1]);
+
+            bool eitherCritical = player1HealthRatio <= SecondSwapSingleHealthThreshold ||
+                                  player2HealthRatio <= SecondSwapSingleHealthThreshold;
+            bool bothBelowHalf = player1HealthRatio <= SecondSwapBothHealthThreshold &&
+                                 player2HealthRatio <= SecondSwapBothHealthThreshold;
+
+            return eitherCritical || bothBelowHalf;
+        }
+
+        private static float GetHealthRatio(FighterController player)
+        {
+            if (player == null || player.MaxHealth <= 0f)
+                return 1f;
+
+            return player.CurrentHealth / player.MaxHealth;
         }
 
         private void BuildRoundSwitchPlans()
@@ -271,15 +358,36 @@ namespace Adaptabrawl.Gameplay
             }
         }
 
-        private void SwitchClassification(int playerIndex)
+        private void TriggerSwapEvent(string reason)
         {
-            if (!HasPendingSwitches(playerIndex)) return;
+            bool swappedAtLeastOnePlayer = false;
+
+            for (int i = 0; i < players.Length; i++)
+            {
+                swappedAtLeastOnePlayer |= SwitchClassification(i);
+            }
+
+            if (!swappedAtLeastOnePlayer)
+                return;
+
+            swapEventsThisRound++;
+            lastSwapTime = roundElapsedTime;
+            sharedTimer = switchInterval;
+
+            Debug.Log($"[ClassificationSwitcher] Triggered {reason} at {roundElapsedTime:F1}s. " +
+                      $"Next timed swap scheduled in {switchInterval:F1}s.");
+        }
+
+        private bool SwitchClassification(int playerIndex)
+        {
+            if (!HasPendingSwitches(playerIndex)) return false;
+            if (players[playerIndex] == null || players[playerIndex].IsDead) return false;
 
             var oldDef = players[playerIndex].FighterDef;
             var queue = plannedSwitchQueues[playerIndex];
             FighterDef newDef = queue.Dequeue();
 
-            if (newDef == null || newDef == oldDef) return;
+            if (newDef == null || newDef == oldDef) return false;
 
             players[playerIndex].SwapClassification(newDef);
             switchesThisRound[playerIndex]++;
@@ -287,6 +395,8 @@ namespace Adaptabrawl.Gameplay
 
             Debug.Log($"[ClassificationSwitcher] P{playerIndex + 1}: " +
                       $"'{oldDef?.fighterName}' → '{newDef.fighterName}'");
+
+            return true;
         }
     }
 }

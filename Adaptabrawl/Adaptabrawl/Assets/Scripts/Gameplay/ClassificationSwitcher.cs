@@ -23,6 +23,8 @@ namespace Adaptabrawl.Gameplay
         [Header("Timing")]
         [Tooltip("Seconds between classification switches.")]
         [SerializeField] private float switchInterval = 30f;
+        [Tooltip("Seconds before swap to play warning cue.")]
+        [SerializeField] private float warningTime = 3.0f;
         [Tooltip("Minimum time that must pass after a swap before another swap can happen.")]
         [SerializeField] private float minimumSecondsBetweenSwaps = 10f;
         [Tooltip("Maximum swaps per player per round. 3 means a 2-minute round at 30s interval gives 4 total fighters including the selected starter.")]
@@ -37,6 +39,11 @@ namespace Adaptabrawl.Gameplay
         private int[] switchesThisRound;
         private Queue<FighterDef>[] plannedSwitchQueues;
         private bool paused = true;       // Starts paused until explicitly resumed
+        private bool hasPlayedWarning;
+
+        [Header("Audio")]
+        [SerializeField] private AudioClip preswapWarningClip;
+        private AudioSource _audioSource;
 
         /// <summary>
         /// Fires when a player's classification changes.
@@ -56,6 +63,11 @@ namespace Adaptabrawl.Gameplay
             plannedSwitchQueues = new Queue<FighterDef>[fighters.Length];
             for (int i = 0; i < fighters.Length; i++)
                 initialDefs[i] = fighters[i].FighterDef;
+
+            _audioSource = gameObject.AddComponent<AudioSource>();
+            _audioSource.playOnAwake = false;
+            if (preswapWarningClip == null)
+                preswapWarningClip = Resources.Load<AudioClip>("SFX/preswap_warning");
 
             // Load roster from Resources if not assigned
             if (fighterRoster == null || fighterRoster.Length == 0)
@@ -115,6 +127,7 @@ namespace Adaptabrawl.Gameplay
             roundElapsedTime = 0f;
             lastSwapTime = -minimumSecondsBetweenSwaps;
             swapEventsThisRound = 0;
+            hasPlayedWarning = false;
         }
 
         /// <summary>
@@ -153,6 +166,13 @@ namespace Adaptabrawl.Gameplay
                 return;
 
             sharedTimer = Mathf.Max(0f, sharedTimer - Time.deltaTime);
+
+            if (!hasPlayedWarning && sharedTimer > 0f && sharedTimer <= warningTime)
+            {
+                hasPlayedWarning = true;
+                if (_audioSource != null && preswapWarningClip != null)
+                    _audioSource.PlayOneShot(preswapWarningClip, 0.65f);
+            }
 
             if (sharedTimer <= 0f)
             {
@@ -373,6 +393,7 @@ namespace Adaptabrawl.Gameplay
             swapEventsThisRound++;
             lastSwapTime = roundElapsedTime;
             sharedTimer = switchInterval;
+            hasPlayedWarning = false;
 
             Debug.Log($"[ClassificationSwitcher] Triggered {reason} at {roundElapsedTime:F1}s. " +
                       $"Next timed swap scheduled in {switchInterval:F1}s.");

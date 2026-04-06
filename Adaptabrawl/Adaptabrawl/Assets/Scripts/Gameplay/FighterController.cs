@@ -62,6 +62,8 @@ namespace Adaptabrawl.Gameplay
             _audioSource.playOnAwake = false;
             if (swapSoundClip == null) swapSoundClip = Resources.Load<AudioClip>("SFX/swap");
         }
+
+
         
         private void Start()
         {
@@ -164,41 +166,20 @@ namespace Adaptabrawl.Gameplay
 
             OnDeath?.Invoke();
 
-            // Trigger the Shinabro death animation on the Stander child.
-            // pcp.Die() is private, so we replicate its key steps here.
-            var pcp = GetComponentInChildren<PlayerController_Platform>();
-            if (pcp != null && !pcp.isDead)
-            {
-                pcp.isDead = true;
-
-                var standerAnim = pcp.GetComponent<Animator>();
-                if (standerAnim != null)
-                {
-                    int deathHash = Animator.StringToHash(pcp.deathAnimationState);
-                    if (standerAnim.HasState(0, deathHash))
-                        standerAnim.CrossFadeInFixedTime(pcp.deathAnimationState, 0.15f);
-                    else
-                    {
-                        // No "Death" state found — freeze the animator in its current pose.
-                        standerAnim.speed = 0f;
-                        Debug.LogWarning($"[FighterController] Animator has no '{pcp.deathAnimationState}' state — freezing pose instead.");
-                    }
-                }
-
-                // Disable bone colliders so dead characters don't block attacks
-                foreach (var col in pcp.GetComponentsInChildren<Collider>())
-                    col.enabled = false;
-
-                // Freeze the Rigidbody so the corpse doesn't slide
-                var rb3d = pcp.GetComponent<Rigidbody>();
-                if (rb3d != null) rb3d.isKinematic = true;
-            }
-
             // Disable combat and movement
             if (combatFSM != null)
                 combatFSM.enabled = false;
             if (movementController != null)
                 movementController.enabled = false;
+
+            // Trigger character-specific death animation if available
+            var pcp = GetComponentInChildren<PlayerController_Platform>();
+            if (pcp != null)
+            {
+                pcp.isDead = true;
+                var anim = pcp.GetComponent<Animator>();
+                if (anim != null) anim.CrossFadeInFixedTime("Death", 0.15f);
+            }
         }
         
         /// <summary>

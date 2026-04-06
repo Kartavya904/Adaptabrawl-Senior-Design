@@ -227,7 +227,10 @@ namespace Adaptabrawl.UI
             if (pauseRequestPanel != null)
                 pauseRequestPanel.SetActive(false);
             if (pauseMenuPanel != null)
+            {
                 pauseMenuPanel.SetActive(true);
+                StartCoroutine(FixLayoutNextFrame(pauseMenuPanel));
+            }
 
             SetupPauseMenuFocus();
         }
@@ -237,6 +240,29 @@ namespace Adaptabrawl.UI
             Time.timeScale = Mathf.Approximately(_previousTimeScale, 0f) ? 1f : _previousTimeScale;
             _frozenLocally = false;
             HideAll();
+        }
+
+        private System.Collections.IEnumerator FixLayoutNextFrame(GameObject panel)
+        {
+            if (panel != null)
+            {
+                var rt = panel.GetComponent<RectTransform>();
+                if (rt != null) UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
+                
+                var hovers = panel.GetComponentsInChildren<ButtonHoverFeedback>(true);
+                foreach (var h in hovers) h.RecaptureBasePosition();
+            }
+
+            yield return new WaitForEndOfFrame();
+
+            if (panel != null)
+            {
+                var rt = panel.GetComponent<RectTransform>();
+                if (rt != null) UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
+                
+                var hovers = panel.GetComponentsInChildren<ButtonHoverFeedback>(true);
+                foreach (var h in hovers) h.RecaptureBasePosition();
+            }
         }
 
         private void OnResumeClicked()
@@ -262,7 +288,10 @@ namespace Adaptabrawl.UI
                 if (pauseRequestPanel != null)
                     pauseRequestPanel.SetActive(false);
                 if (pauseMenuPanel != null)
+                {
                     pauseMenuPanel.SetActive(true);
+                    StartCoroutine(FixLayoutNextFrame(pauseMenuPanel));
+                }
 
                 _previousTimeScale = Time.timeScale;
                 Time.timeScale = 0f;

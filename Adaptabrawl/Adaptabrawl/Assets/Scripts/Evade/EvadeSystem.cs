@@ -11,12 +11,14 @@ namespace Adaptabrawl.Evade
         private FighterController fighterController;
         private CombatFSM combatFSM;
         private MovementController movementController;
+        private Animator combatAnimator;
         
         [Header("Dodge")]
         [SerializeField] private MoveDef dodgeMove;
         [SerializeField] private float dodgeCooldown = 1f;
         private float dodgeCooldownTimer = 0f;
         private bool isDodging = false;
+        private Coroutine endDodgeRoutine;
         
         [Header("Events")]
         public System.Action<Vector2> OnDodgeStart;
@@ -27,6 +29,7 @@ namespace Adaptabrawl.Evade
             fighterController = GetComponent<FighterController>();
             combatFSM = GetComponent<CombatFSM>();
             movementController = GetComponent<MovementController>();
+            ResolveCombatAnimator();
             
             // Create dodge move if not assigned
             if (dodgeMove == null)
@@ -51,10 +54,13 @@ namespace Adaptabrawl.Evade
             }
         }
         
-        public void TryDodge(Vector2 direction = default)
+        public bool TryDodge(Vector2 direction = default)
         {
-            if (combatFSM == null || !combatFSM.CanAct) return;
-            if (dodgeCooldownTimer > 0f) return;
+            ResolveCombatAnimator();
+
+            if (combatFSM == null || !combatFSM.CanAct) return false;
+            if (dodgeCooldownTimer > 0f) return false;
+            if (isDodging || IsDodgeAnimationPlaying()) return false;
             
             // Use movement input direction if no direction specified
             if (direction.magnitude < 0.1f && movementController != null)
@@ -71,15 +77,13 @@ namespace Adaptabrawl.Evade
             
             // Normalize direction
             direction = direction.normalized;
-            
+
+            if (dodgeMove == null || !combatFSM.TryStartMove(dodgeMove))
+                return false;
+
             // Start dodge
             isDodging = true;
             dodgeCooldownTimer = dodgeCooldown;
-            
-            if (combatFSM != null && dodgeMove != null)
-            {
-                combatFSM.TryStartMove(dodgeMove);
-            }
             
             // Apply dodge movement
             if (movementController != null)
@@ -89,17 +93,59 @@ namespace Adaptabrawl.Evade
             
             OnDodgeStart?.Invoke(direction);
             
-            // End dodge after move completes
-            StartCoroutine(EndDodgeAfterMove());
+            // End dodge after the live dodge animation completes.
+            if (endDodgeRoutine != null)
+                StopCoroutine(endDodgeRoutine);
+            endDodgeRoutine = StartCoroutine(EndDodgeAfterMove());
+            return true;
         }
         
         private System.Collections.IEnumerator EndDodgeAfterMove()
         {
-            // Wait for dodge move to complete
-            yield return new WaitForSeconds(dodgeMove != null ? dodgeMove.totalFrames / 60f : 0.5f);
-            
+            float fallbackDuration = dodgeMove != null ? dodgeMove.totalFrames / 60f : 0.5f;
+            float elapsed = 0f;
+
+            while (elapsed < fallbackDuration)
+            {
+                elapsed += Time.deltaTime;
+                if (!IsDodgeAnimationPlaying())
+                    break;
+                yield return null;
+            }
+
             isDodging = false;
+            endDodgeRoutine = null;
             OnDodgeEnd?.Invoke();
+        }
+
+        private void ResolveCombatAnimator()
+        {
+            if (combatAnimator != null && combatAnimator.runtimeAnimatorController != null)
+                return;
+
+            var pcp = GetComponentInChildren<PlayerController_Platform>();
+            if (pcp != null)
+            {
+                combatAnimator = pcp.GetComponent<Animator>();
+                if (combatAnimator != null && combatAnimator.runtimeAnimatorController != null)
+                    return;
+            }
+
+            combatAnimator = GetComponentInChildren<Animator>();
+        }
+
+        private bool IsDodgeAnimationPlaying()
+        {
+            if (combatAnimator == null || !combatAnimator.isActiveAndEnabled)
+                return false;
+
+            AnimatorStateInfo stateInfo = combatAnimator.GetCurrentAnimatorStateInfo(0);
+            if (combatAnimator.IsInTransition(0))
+                return stateInfo.IsName("Dodge") || stateInfo.IsName("DodgeRoll") || stateInfo.IsTag("Dodge");
+
+            return stateInfo.IsName("Dodge")
+                || stateInfo.IsName("DodgeRoll")
+                || stateInfo.IsTag("Dodge");
         }
         
         private MoveDef CreateDodgeMove()
@@ -117,7 +163,6 @@ namespace Adaptabrawl.Evade
         }
         
         public bool IsDodging => isDodging;
-        public bool CanDodge => dodgeCooldownTimer <= 0f && !isDodging;
+        public bool CanDodge => dodgeCooldownTimer <= 0f && !isDodging && !IsDodgeAnimationPlaying();
     }
 }
-

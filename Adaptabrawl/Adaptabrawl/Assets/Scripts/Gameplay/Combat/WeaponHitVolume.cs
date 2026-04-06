@@ -4,6 +4,7 @@ using UnityEngine;
 
 using Adaptabrawl.Data;
 using Adaptabrawl.Gameplay;
+using Adaptabrawl.Settings;
 
 namespace Adaptabrawl.Combat
 {
@@ -20,6 +21,8 @@ namespace Adaptabrawl.Combat
         private readonly HashSet<int> hitTargets = new HashSet<int>();
         private CombatFSM combatFSM;
         private Mesh runtimeMesh;
+        private static Material lineMaterial;
+        private static readonly int ZTest = Shader.PropertyToID("_ZTest");
 
         private void Awake()
         {
@@ -159,11 +162,11 @@ namespace Adaptabrawl.Combat
                 return;
 
             hitTargets.Add(targetId);
-            Debug.Log(
-                $"[CombatHit] {(owner != null && owner.FighterDef != null ? owner.FighterDef.fighterName : gameObject.name)} " +
-                $"used '{currentMove.moveName}' and hit P{target.PlayerNumber} " +
-                $"({(target.FighterDef != null ? target.FighterDef.fighterName : target.gameObject.name)}) " +
-                $"on {hurtboxPart.BodyPart} via '{transform.parent?.name ?? gameObject.name}'.");
+            // Debug.Log(
+            //     $"[CombatHit] {(owner != null && owner.FighterDef != null ? owner.FighterDef.fighterName : gameObject.name)} " +
+            //     $"used '{currentMove.moveName}' and hit P{target.PlayerNumber} " +
+            //     $"({(target.FighterDef != null ? target.FighterDef.fighterName : target.gameObject.name)}) " +
+            //     $"on {hurtboxPart.BodyPart} via '{transform.parent?.name ?? gameObject.name}'.");
             damageSystem.DealDamage(target, currentMove, hurtboxPart.DamageMultiplier);
         }
 
@@ -246,5 +249,118 @@ namespace Adaptabrawl.Combat
         public FighterController Owner => owner;
         public MoveDef CurrentMove => currentMove;
         public bool IsActive => isActive;
+
+        private void OnRenderObject()
+        {
+            if (!ShouldRenderDebugVolume())
+                return;
+
+            EnsureLineMaterial();
+            lineMaterial.SetPass(0);
+
+            GL.PushMatrix();
+            GL.Begin(GL.LINES);
+            GL.Color(isActive ? new Color(0.1f, 1f, 0.35f, 1f) : new Color(0.1f, 0.8f, 1f, 0.65f));
+            DrawColliderWireframe(triggerCollider);
+            GL.End();
+            GL.PopMatrix();
+        }
+
+        private bool ShouldRenderDebugVolume()
+        {
+            if (!Application.isPlaying || triggerCollider == null)
+                return false;
+
+            UnityEngine.Camera currentCamera = UnityEngine.Camera.current;
+            if (currentCamera == null || !currentCamera.CompareTag("MainCamera"))
+                return false;
+
+            SettingsContext context = SettingsContext.Instance ?? SettingsContext.EnsureExists();
+            return context != null && context.showHitboxes;
+        }
+
+        private static void EnsureLineMaterial()
+        {
+            if (lineMaterial != null)
+                return;
+
+            Shader shader = Shader.Find("Hidden/Internal-Colored");
+            lineMaterial = new Material(shader)
+            {
+                hideFlags = HideFlags.HideAndDontSave
+            };
+
+            lineMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            lineMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            lineMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
+            lineMaterial.SetInt(ZTest, (int)UnityEngine.Rendering.CompareFunction.LessEqual);
+        }
+
+        private static void DrawColliderWireframe(Collider collider)
+        {
+            if (collider is MeshCollider meshCollider && meshCollider.sharedMesh != null && meshCollider.sharedMesh.isReadable)
+            {
+                DrawMeshWireframe(meshCollider.sharedMesh, meshCollider.transform.localToWorldMatrix);
+                return;
+            }
+
+            DrawBounds(collider.bounds);
+        }
+
+        private static void DrawMeshWireframe(Mesh mesh, Matrix4x4 matrix)
+        {
+            Vector3[] vertices = mesh.vertices;
+            int[] triangles = mesh.triangles;
+
+            for (int i = 0; i < triangles.Length; i += 3)
+            {
+                Vector3 a = matrix.MultiplyPoint3x4(vertices[triangles[i]]);
+                Vector3 b = matrix.MultiplyPoint3x4(vertices[triangles[i + 1]]);
+                Vector3 c = matrix.MultiplyPoint3x4(vertices[triangles[i + 2]]);
+
+                DrawLine(a, b);
+                DrawLine(b, c);
+                DrawLine(c, a);
+            }
+        }
+
+        private static void DrawBounds(Bounds bounds)
+        {
+            Vector3 center = bounds.center;
+            Vector3 extents = bounds.extents;
+
+            Vector3[] corners =
+            {
+                center + new Vector3(-extents.x, -extents.y, -extents.z),
+                center + new Vector3(extents.x, -extents.y, -extents.z),
+                center + new Vector3(extents.x, extents.y, -extents.z),
+                center + new Vector3(-extents.x, extents.y, -extents.z),
+                center + new Vector3(-extents.x, -extents.y, extents.z),
+                center + new Vector3(extents.x, -extents.y, extents.z),
+                center + new Vector3(extents.x, extents.y, extents.z),
+                center + new Vector3(-extents.x, extents.y, extents.z)
+            };
+
+            DrawLine(corners[0], corners[1]);
+            DrawLine(corners[1], corners[2]);
+            DrawLine(corners[2], corners[3]);
+            DrawLine(corners[3], corners[0]);
+
+            DrawLine(corners[4], corners[5]);
+            DrawLine(corners[5], corners[6]);
+            DrawLine(corners[6], corners[7]);
+            DrawLine(corners[7], corners[4]);
+
+            DrawLine(corners[0], corners[4]);
+            DrawLine(corners[1], corners[5]);
+            DrawLine(corners[2], corners[6]);
+            DrawLine(corners[3], corners[7]);
+        }
+
+        private static void DrawLine(Vector3 start, Vector3 end)
+        {
+            GL.Vertex(start);
+            GL.Vertex(end);
+        }
     }
 }

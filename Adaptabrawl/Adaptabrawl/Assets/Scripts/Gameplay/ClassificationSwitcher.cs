@@ -98,16 +98,12 @@ namespace Adaptabrawl.Gameplay
         {
             if (playerTimers == null || players == null) return;
 
+            BuildRoundSwitchPlans();
+
             for (int i = 0; i < playerTimers.Length; i++)
             {
                 playerTimers[i] = switchInterval;
                 switchesThisRound[i] = 0;
-
-                FighterDef roundStartDef = initialDefs != null && i < initialDefs.Length ? initialDefs[i] : null;
-                if (players[i] != null && players[i].FighterDef != null)
-                    roundStartDef = players[i].FighterDef;
-
-                plannedSwitchQueues[i] = BuildRoundSwitchQueue(roundStartDef);
             }
         }
 
@@ -164,28 +160,82 @@ namespace Adaptabrawl.Gameplay
             return plannedSwitchQueues[playerIndex] != null && plannedSwitchQueues[playerIndex].Count > 0;
         }
 
-        private Queue<FighterDef> BuildRoundSwitchQueue(FighterDef roundStartDef)
+        private void BuildRoundSwitchPlans()
+        {
+            if (plannedSwitchQueues == null || players == null)
+                return;
+
+            for (int i = 0; i < plannedSwitchQueues.Length; i++)
+                plannedSwitchQueues[i] = new Queue<FighterDef>();
+
+            if (fighterRoster == null || fighterRoster.Length == 0)
+                return;
+
+            if (players.Length != 2)
+            {
+                for (int i = 0; i < players.Length; i++)
+                {
+                    FighterDef roundStartDef = initialDefs != null && i < initialDefs.Length ? initialDefs[i] : null;
+                    if (players[i] != null && players[i].FighterDef != null)
+                        roundStartDef = players[i].FighterDef;
+                    plannedSwitchQueues[i] = BuildIndependentRoundSwitchQueue(roundStartDef);
+                }
+                return;
+            }
+
+            FighterDef p1Start = initialDefs != null && initialDefs.Length > 0 ? initialDefs[0] : null;
+            FighterDef p2Start = initialDefs != null && initialDefs.Length > 1 ? initialDefs[1] : null;
+            if (players[0] != null && players[0].FighterDef != null) p1Start = players[0].FighterDef;
+            if (players[1] != null && players[1].FighterDef != null) p2Start = players[1].FighterDef;
+
+            int switchCount = maxSwitchesPerRound > 0 ? maxSwitchesPerRound : Mathf.Max(0, fighterRoster.Length - 1);
+            FighterDef currentP1 = p1Start;
+            FighterDef currentP2 = p2Start;
+
+            for (int step = 0; step < switchCount; step++)
+            {
+                var p1Candidates = GetCandidatesForRoundStep(currentP1);
+                var p2Candidates = GetCandidatesForRoundStep(currentP2);
+
+                ShuffleInPlace(p1Candidates);
+                ShuffleInPlace(p2Candidates);
+
+                FighterDef chosenP1 = null;
+                FighterDef chosenP2 = null;
+
+                foreach (var candidate1 in p1Candidates)
+                {
+                    foreach (var candidate2 in p2Candidates)
+                    {
+                        if (candidate1 == null || candidate2 == null)
+                            continue;
+                        if (candidate1 == candidate2)
+                            continue;
+
+                        chosenP1 = candidate1;
+                        chosenP2 = candidate2;
+                        break;
+                    }
+
+                    if (chosenP1 != null && chosenP2 != null)
+                        break;
+                }
+
+                if (chosenP1 == null || chosenP2 == null)
+                    break;
+
+                plannedSwitchQueues[0].Enqueue(chosenP1);
+                plannedSwitchQueues[1].Enqueue(chosenP2);
+                currentP1 = chosenP1;
+                currentP2 = chosenP2;
+            }
+        }
+
+        private Queue<FighterDef> BuildIndependentRoundSwitchQueue(FighterDef roundStartDef)
         {
             var queue = new Queue<FighterDef>();
-            if (fighterRoster == null || fighterRoster.Length == 0)
-                return queue;
-
-            var candidates = new List<FighterDef>();
-            foreach (var fighter in fighterRoster)
-            {
-                if (fighter == null || fighter == roundStartDef || candidates.Contains(fighter))
-                    continue;
-                candidates.Add(fighter);
-            }
-
-            // Randomize order once per round so players see all available alternates without repeats.
-            for (int i = candidates.Count - 1; i > 0; i--)
-            {
-                int j = Random.Range(0, i + 1);
-                FighterDef temp = candidates[i];
-                candidates[i] = candidates[j];
-                candidates[j] = temp;
-            }
+            var candidates = GetCandidatesForRoundStep(roundStartDef);
+            ShuffleInPlace(candidates);
 
             int maxQueueLength = candidates.Count;
             if (maxSwitchesPerRound > 0)
@@ -195,6 +245,30 @@ namespace Adaptabrawl.Gameplay
                 queue.Enqueue(candidates[i]);
 
             return queue;
+        }
+
+        private List<FighterDef> GetCandidatesForRoundStep(FighterDef currentDef)
+        {
+            var candidates = new List<FighterDef>();
+            foreach (var fighter in fighterRoster)
+            {
+                if (fighter == null || fighter == currentDef || candidates.Contains(fighter))
+                    continue;
+                candidates.Add(fighter);
+            }
+
+            return candidates;
+        }
+
+        private static void ShuffleInPlace(List<FighterDef> fighters)
+        {
+            for (int i = fighters.Count - 1; i > 0; i--)
+            {
+                int j = Random.Range(0, i + 1);
+                FighterDef temp = fighters[i];
+                fighters[i] = fighters[j];
+                fighters[j] = temp;
+            }
         }
 
         private void SwitchClassification(int playerIndex)

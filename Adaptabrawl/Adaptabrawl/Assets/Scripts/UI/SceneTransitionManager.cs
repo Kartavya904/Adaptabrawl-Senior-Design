@@ -47,12 +47,13 @@ namespace Adaptabrawl.UI
         private IEnumerator TransitionCoroutine(string sceneName)
         {
             isTransitioning = true;
+            Time.timeScale = 1f;
             
             // Fade out
             if (transitionAnimator != null)
                 transitionAnimator.SetTrigger(fadeOutTrigger);
             
-            yield return new WaitForSeconds(transitionDuration);
+            yield return new WaitForSecondsRealtime(transitionDuration);
             
             // Load scene
             SceneManager.LoadScene(sceneName);
@@ -64,7 +65,7 @@ namespace Adaptabrawl.UI
             if (transitionAnimator != null)
                 transitionAnimator.SetTrigger(fadeInTrigger);
             
-            yield return new WaitForSeconds(transitionDuration);
+            yield return new WaitForSecondsRealtime(transitionDuration);
             
             isTransitioning = false;
         }
@@ -72,12 +73,13 @@ namespace Adaptabrawl.UI
         private IEnumerator TransitionCoroutine(int sceneIndex)
         {
             isTransitioning = true;
+            Time.timeScale = 1f;
             
             // Fade out
             if (transitionAnimator != null)
                 transitionAnimator.SetTrigger(fadeOutTrigger);
             
-            yield return new WaitForSeconds(transitionDuration);
+            yield return new WaitForSecondsRealtime(transitionDuration);
             
             // Load scene
             SceneManager.LoadScene(sceneIndex);
@@ -89,7 +91,7 @@ namespace Adaptabrawl.UI
             if (transitionAnimator != null)
                 transitionAnimator.SetTrigger(fadeInTrigger);
             
-            yield return new WaitForSeconds(transitionDuration);
+            yield return new WaitForSecondsRealtime(transitionDuration);
             
             isTransitioning = false;
         }
@@ -107,4 +109,3 @@ namespace Adaptabrawl.UI
         }
     }
 }
-

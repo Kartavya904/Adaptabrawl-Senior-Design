@@ -424,6 +424,8 @@ namespace Adaptabrawl.UI
 
         private void TransitionTo(string sceneName)
         {
+            Time.timeScale = 1f;
+
             if (SceneTransitionManager.Instance != null)
                 SceneTransitionManager.Instance.TransitionToScene(sceneName);
             else

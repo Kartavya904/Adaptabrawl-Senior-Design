@@ -311,6 +311,7 @@ namespace Adaptabrawl.Gameplay
 
         private void EndMatch(FighterController winner)
         {
+            Time.timeScale = 1f;
             OnMatchEnd?.Invoke(winner);
 
             // Create match results
@@ -375,4 +376,3 @@ namespace Adaptabrawl.Gameplay
         public Dictionary<FighterController, int> RoundWins => new Dictionary<FighterController, int>(roundWins);
     }
 }
-

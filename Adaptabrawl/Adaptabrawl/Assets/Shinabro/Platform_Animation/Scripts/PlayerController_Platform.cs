@@ -392,13 +392,19 @@ public class PlayerController_Platform : MonoBehaviour
 
         if (!isJump)
         {
+            Crouch();
+
             if (WasAttackPressed())
+            {
+                anim.SetBool("Crouch", false);
                 attackSystem?.OnLightAttackInput(true);
+            }
 
             for (int i = 0; i < 8; i++)
             {
                 if (WasSkillPressed(i))
                 {
+                    anim.SetBool("Crouch", false);
                     attackSystem?.TrySpecialAttack(i);
                     break;
                 }
@@ -409,7 +415,10 @@ public class PlayerController_Platform : MonoBehaviour
                 Dodge();
                 Jump();
                 Block();
-                Crouch();
+            }
+            else if (!IsCrouchPressed() && anim.GetBool("Crouch"))
+            {
+                anim.SetBool("Crouch", false);
             }
         }
 
@@ -458,8 +467,11 @@ public class PlayerController_Platform : MonoBehaviour
     {
         if (WasDodgePressed())
         {
-            evadeSystem?.TryDodge(GetMoveDirection());
-            anim.SetTrigger("Dodge");
+            if (evadeSystem != null && evadeSystem.TryDodge(GetMoveDirection()))
+            {
+                anim.SetBool("Crouch", false);
+                anim.SetTrigger("Dodge");
+            }
         }
     }
 
@@ -479,7 +491,7 @@ public class PlayerController_Platform : MonoBehaviour
 
     void Crouch()
     {
-        bool isCrouching = IsCrouchPressed();
+        bool isCrouching = IsCrouchPressed() && !isAttacking && !anim.GetBool("Block");
         anim.SetBool("Crouch", isCrouching);
     }
 

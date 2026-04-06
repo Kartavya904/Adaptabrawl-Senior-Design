@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 using Adaptabrawl.Gameplay;
 using Adaptabrawl.Data;
 using Adaptabrawl.Attack;
+using Adaptabrawl.Evade;
 
 /// <summary>
 /// Handles input for both players in a local 2-player match.
@@ -55,6 +56,8 @@ public class TwoPlayerInputHandler : MonoBehaviour
     private AnimationBridge p2AnimBridge;
     private AttackSystem p1AttackSystem;
     private AttackSystem p2AttackSystem;
+    private EvadeSystem p1EvadeSystem;
+    private EvadeSystem p2EvadeSystem;
     
     private MovementController p1Movement;
     private MovementController p2Movement;
@@ -70,6 +73,7 @@ public class TwoPlayerInputHandler : MonoBehaviour
         {
             p1AnimBridge = player1Controller.GetComponent<AnimationBridge>();
             p1AttackSystem = player1Controller.GetComponent<AttackSystem>();
+            p1EvadeSystem = player1Controller.GetComponent<EvadeSystem>();
             p1Movement = player1Controller.GetComponent<MovementController>();
             
             if (p1AnimBridge == null)
@@ -86,6 +90,7 @@ public class TwoPlayerInputHandler : MonoBehaviour
         {
             p2AnimBridge = player2Controller.GetComponent<AnimationBridge>();
             p2AttackSystem = player2Controller.GetComponent<AttackSystem>();
+            p2EvadeSystem = player2Controller.GetComponent<EvadeSystem>();
             p2Movement = player2Controller.GetComponent<MovementController>();
             
             if (p2AnimBridge == null)
@@ -165,7 +170,7 @@ public class TwoPlayerInputHandler : MonoBehaviour
             if (jumpPressed) p1Movement.Jump();
 
             bool dodgePressed = (keyboardAllowed && Input.GetKeyDown(p1Dodge)) || (pad != null && pad.buttonEast.wasPressedThisFrame);
-            if (dodgePressed) p1Movement.Dash(moveInput);
+            if (dodgePressed && p1EvadeSystem != null) p1EvadeSystem.TryDodge(moveInput);
         }
 
         // ---- Attack & Special Logic ----
@@ -233,7 +238,7 @@ public class TwoPlayerInputHandler : MonoBehaviour
             if (jumpPressed) p2Movement.Jump();
 
             bool dodgePressed = (keyboardAllowed && Input.GetKeyDown(p2Dodge)) || (pad != null && pad.buttonEast.wasPressedThisFrame);
-            if (dodgePressed) p2Movement.Dash(moveInput);
+            if (dodgePressed && p2EvadeSystem != null) p2EvadeSystem.TryDodge(moveInput);
         }
 
         // ---- Attack & Special Logic ----

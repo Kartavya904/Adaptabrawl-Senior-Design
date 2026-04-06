@@ -196,7 +196,7 @@ namespace Adaptabrawl.UI
         {
             if (setupManager == null) return;
             var lobby = LobbyContext.EnsureExists();
-            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+            bool networked = IsRemoteOnlineSetup();
             int p1 = networked ? setupManager.p1ControllerIndex.Value : setupManager.LocalP1ControllerIndex;
             int p2 = networked ? setupManager.p2ControllerIndex.Value : setupManager.LocalP2ControllerIndex;
             lobby.SetInputDevices(p1, p2);
@@ -232,9 +232,9 @@ namespace Adaptabrawl.UI
             if (!HasArrowButtonsForNavigation())
                 return;
 
-            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+            bool networked = IsRemoteOnlineSetup();
             bool isHost = networked && NetworkManager.Singleton.IsServer;
-            bool isLocal = CharacterSelectData.isLocalMatch;
+            bool isLocal = LobbyContext.CurrentMatchIsLocal();
 
             // Prefer LobbyContext for device type (set during controller config); fall back to setupManager
             int p1CtrlIdx = LobbyContext.Instance != null ? LobbyContext.Instance.p1InputDevice
@@ -420,7 +420,7 @@ namespace Adaptabrawl.UI
         private void RequestChangeSelection(int direction, int targetPlayer)
         {
             if (setupManager == null || availableFighters.Count == 0) return;
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+            if (IsRemoteOnlineSetup())
                 setupManager.ChangeCharacterServerRpc(NetworkManager.Singleton.LocalClientId, direction, availableFighters.Count, targetPlayer);
             else
                 setupManager.LocalChangeCharacter(direction, availableFighters.Count, targetPlayer);
@@ -429,7 +429,7 @@ namespace Adaptabrawl.UI
         private void RequestConfirmSelection(int targetPlayer)
         {
             if (setupManager == null) return;
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+            if (IsRemoteOnlineSetup())
                 setupManager.ToggleCharacterReadyServerRpc(NetworkManager.Singleton.LocalClientId, targetPlayer);
             else
                 setupManager.LocalToggleCharacterReady(targetPlayer);
@@ -438,7 +438,7 @@ namespace Adaptabrawl.UI
         private void RequestGoBack()
         {
             if (setupManager == null) return;
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+            if (IsRemoteOnlineSetup())
             {
                 if (NetworkManager.Singleton.IsServer)
                     setupManager.GoBackToControllerServerRpc();
@@ -453,10 +453,10 @@ namespace Adaptabrawl.UI
         {
             if (setupManager == null) return;
 
-            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+            bool networked = IsRemoteOnlineSetup();
             bool isHost = networked && NetworkManager.Singleton.IsServer;
             bool isClient = networked && !isHost;
-            bool isLocal = CharacterSelectData.isLocalMatch;
+            bool isLocal = LobbyContext.CurrentMatchIsLocal();
 
             // Indices and ready state: from network or local mirror
             int p1Idx = networked ? setupManager.p1FighterIndex.Value : setupManager.LocalP1FighterIndex;
@@ -531,6 +531,13 @@ namespace Adaptabrawl.UI
                 player1ConfirmButtonText.text = LobbySetupInputHints.CharacterConfirmButtonRich(p1CtrlIdx, r1, true);
             if (player2ConfirmButtonText != null)
                 player2ConfirmButtonText.text = LobbySetupInputHints.CharacterConfirmButtonRich(p2CtrlIdx, r2, false);
+        }
+
+        private static bool IsRemoteOnlineSetup()
+        {
+            return NetworkManager.Singleton != null
+                && NetworkManager.Singleton.IsListening
+                && !LobbyContext.CurrentMatchIsLocal();
         }
 
         /// <summary>

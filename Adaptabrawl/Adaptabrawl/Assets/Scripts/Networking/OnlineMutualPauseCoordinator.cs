@@ -1,6 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 using Adaptabrawl.UI;
+using UnityEngine.SceneManagement;
 
 namespace Adaptabrawl.Networking
 {
@@ -62,6 +63,18 @@ namespace Adaptabrawl.Networking
             RequestResumeServerRpc();
         }
 
+        public void RequestRestartFromLocalPlayer()
+        {
+            if (!IsSpawned) return;
+            RequestRestartServerRpc();
+        }
+
+        public void RequestChangeCharactersFromLocalPlayer()
+        {
+            if (!IsSpawned) return;
+            RequestChangeCharactersServerRpc();
+        }
+
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         private void TogglePauseIntentServerRpc(RpcParams rpcParams = default)
         {
@@ -89,6 +102,42 @@ namespace Adaptabrawl.Networking
         {
             _menuOpen.Value = false;
             _pauseRequests.Value = 0;
+        }
+
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+        private void RequestRestartServerRpc()
+        {
+            _menuOpen.Value = false;
+            _pauseRequests.Value = 0;
+            BroadcastRematchModeClientRpc(false);
+            LoadSceneForAll(SceneManager.GetActiveScene().name);
+        }
+
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+        private void RequestChangeCharactersServerRpc()
+        {
+            _menuOpen.Value = false;
+            _pauseRequests.Value = 0;
+            BroadcastRematchModeClientRpc(true);
+            LoadSceneForAll("SetupScene");
+        }
+
+        [ClientRpc]
+        private void BroadcastRematchModeClientRpc(bool skipToCharacterSelect)
+        {
+            MatchResultsData.rematchSkipToCharacterSelect = skipToCharacterSelect;
+        }
+
+        private void LoadSceneForAll(string sceneName)
+        {
+            if (NetworkManager == null)
+                return;
+
+            if (MatchPauseController.Instance != null)
+                MatchPauseController.Instance.ApplyOnlineCoordinatorState(false, 0);
+
+            Time.timeScale = 1f;
+            NetworkManager.SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
         }
     }
 }

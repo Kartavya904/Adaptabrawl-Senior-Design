@@ -31,11 +31,13 @@ namespace Adaptabrawl.UI
 
         [Header("Buttons")]
         [SerializeField] private Button resumeButton;
+        [SerializeField] private Button restartButton;
+        [SerializeField] private Button changeCharactersButton;
         [SerializeField] private Button settingsButton;
         [SerializeField] private Button mainMenuButton;
 
         [Header("Controller / keyboard menu")]
-        [Tooltip("Vertical focus order. If empty: Resume → Settings → Main Menu.")]
+        [Tooltip("Vertical focus order. If empty: Resume → Restart → Change Characters → Settings → Main Menu.")]
         [SerializeField] private Selectable[] pauseMenuFocusOrder;
 
         [Header("Networking (optional — OnlineGameScene)")]
@@ -112,7 +114,7 @@ namespace Adaptabrawl.UI
         {
             Selectable[] order = pauseMenuFocusOrder != null && pauseMenuFocusOrder.Length > 0
                 ? pauseMenuFocusOrder
-                : new Selectable[] { resumeButton, settingsButton, mainMenuButton };
+                : new Selectable[] { resumeButton, restartButton, changeCharactersButton, settingsButton, mainMenuButton };
 
             order = order.Where(s => s != null).ToArray();
             if (order.Length == 0) return;
@@ -126,6 +128,10 @@ namespace Adaptabrawl.UI
         {
             if (resumeButton != null)
                 resumeButton.onClick.AddListener(OnResumeClicked);
+            if (restartButton != null)
+                restartButton.onClick.AddListener(RestartMatch);
+            if (changeCharactersButton != null)
+                changeCharactersButton.onClick.AddListener(ChangeCharacters);
             if (settingsButton != null)
                 settingsButton.onClick.AddListener(OpenSettings);
             if (mainMenuButton != null)
@@ -287,6 +293,29 @@ namespace Adaptabrawl.UI
             ResumeLocalFreeze();
         }
 
+        private void RestartMatch()
+        {
+            if (IsOnlineMutualReady())
+            {
+                _coordinator.RequestRestartFromLocalPlayer();
+                return;
+            }
+
+            TransitionTo(SceneManager.GetActiveScene().name);
+        }
+
+        private void ChangeCharacters()
+        {
+            if (IsOnlineMutualReady())
+            {
+                _coordinator.RequestChangeCharactersFromLocalPlayer();
+                return;
+            }
+
+            MatchResultsData.rematchSkipToCharacterSelect = true;
+            TransitionTo("SetupScene");
+        }
+
         /// <summary>Called by <see cref="OnlineMutualPauseCoordinator"/> when mutual pause UI should update.</summary>
         public void ApplyOnlineCoordinatorState(bool menuOpen, byte pauseRequests)
         {
@@ -405,7 +434,19 @@ namespace Adaptabrawl.UI
                     NetworkManager.Singleton.Shutdown();
             }
 
-            SceneManager.LoadScene("StartScene");
+            TransitionTo("StartScene");
+        }
+
+        private void TransitionTo(string sceneName)
+        {
+            Time.timeScale = 1f;
+            _frozenLocally = false;
+            HideAll();
+
+            if (SceneTransitionManager.Instance != null)
+                SceneTransitionManager.Instance.TransitionToScene(sceneName);
+            else
+                SceneManager.LoadScene(sceneName);
         }
     }
 }

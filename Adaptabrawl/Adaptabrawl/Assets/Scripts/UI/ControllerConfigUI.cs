@@ -62,7 +62,7 @@ namespace Adaptabrawl.UI
             // Back button: only meaningful in local play (online session already committed)
             if (backButton != null)
             {
-                bool isLocal = CharacterSelectData.isLocalMatch;
+                bool isLocal = LobbyContext.CurrentMatchIsLocal();
                 backButton.gameObject.SetActive(isLocal);
                 if (isLocal)
                     backButton.onClick.AddListener(() => setupManager?.GoBackToLocalJoin());
@@ -112,9 +112,9 @@ namespace Adaptabrawl.UI
         {
             if (setupManager == null || setupManager.ControllerPhaseCountdownActive) return;
 
-            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+            bool isLocal = LobbyContext.CurrentMatchIsLocal();
+            bool networked = IsRemoteOnlineSetup();
             bool isHost = networked && NetworkManager.Singleton.IsServer;
-            bool isLocal = CharacterSelectData.isLocalMatch;
             bool isClient = networked && !isHost && !isLocal;
 
             int p1Idx = networked ? setupManager.p1ControllerIndex.Value : setupManager.LocalP1ControllerIndex;
@@ -160,7 +160,7 @@ namespace Adaptabrawl.UI
         private void RequestToggleController(int targetPlayer)
         {
             if (setupManager == null) return;
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+            if (IsRemoteOnlineSetup())
                 setupManager.ToggleControllerServerRpc(NetworkManager.Singleton.LocalClientId, targetPlayer);
             else
                 setupManager.LocalToggleController(targetPlayer);
@@ -169,7 +169,7 @@ namespace Adaptabrawl.UI
         private void RequestToggleReady(int targetPlayer)
         {
             if (setupManager == null) return;
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+            if (IsRemoteOnlineSetup())
                 setupManager.ToggleReadyServerRpc(NetworkManager.Singleton.LocalClientId, targetPlayer);
             else
                 setupManager.LocalToggleReady(targetPlayer);
@@ -179,10 +179,10 @@ namespace Adaptabrawl.UI
         {
             if (setupManager == null) return;
 
-            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+            bool networked = IsRemoteOnlineSetup();
             bool isHost = networked && NetworkManager.Singleton.IsServer;
-            bool isLocal = CharacterSelectData.isLocalMatch;
-            bool isClient = !isHost && !isLocal;
+            bool isLocal = LobbyContext.CurrentMatchIsLocal();
+            bool isClient = networked && !isHost;
 
             // Read state from the right source
             int p1Idx = networked ? setupManager.p1ControllerIndex.Value : setupManager.LocalP1ControllerIndex;
@@ -230,6 +230,13 @@ namespace Adaptabrawl.UI
                 p2ReadyText.text = r2 ? $"Ready ({p2Dev})" : $"Not ready ({p2Dev})";
                 p2ReadyText.color = r2 ? Color.green : Color.white;
             }
+        }
+
+        private static bool IsRemoteOnlineSetup()
+        {
+            return NetworkManager.Singleton != null
+                && NetworkManager.Singleton.IsListening
+                && !LobbyContext.CurrentMatchIsLocal();
         }
 
         private static bool WasReadyPressedForPlayer(int playerNumber, int p1Device, int p2Device)

@@ -107,13 +107,23 @@ namespace Adaptabrawl.UI
                 for (int j = 0; j < buttons.Length; j++)
                 {
                     Button button = buttons[j];
-                    if (button == null || button.GetComponent<ButtonHoverFeedback>() != null)
+                    if (button == null
+                        || button.GetComponent<ButtonHoverFeedback>() != null
+                        || button.GetComponent<DisableButtonHoverFeedback>() != null)
                         continue;
 
                     button.gameObject.AddComponent<ButtonHoverFeedback>();
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Opts a button out of the global runtime hover installer.
+    /// Useful for buttons whose RectTransform is tightly controlled by a layout group.
+    /// </summary>
+    public sealed class DisableButtonHoverFeedback : MonoBehaviour
+    {
     }
 
     [RequireComponent(typeof(Button))]

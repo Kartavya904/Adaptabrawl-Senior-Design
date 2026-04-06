@@ -190,6 +190,8 @@ namespace Adaptabrawl.Editor
             midRuleLe.preferredHeight = 1f;
 
             Button resume = CreateMenuButton(menuPanel, "ResumeButton", "Resume", destructive: false);
+            Button restart = CreateMenuButton(menuPanel, "RestartButton", "Restart", destructive: false);
+            Button changeCharacters = CreateMenuButton(menuPanel, "ChangeCharactersButton", "Change Characters", destructive: false);
             Button settings = CreateMenuButton(menuPanel, "SettingsButton", "Settings", destructive: false);
             Button mainMenu = CreateMenuButton(menuPanel, "MainMenuButton", "Main Menu", destructive: true);
 
@@ -200,13 +202,17 @@ namespace Adaptabrawl.Editor
             so.FindProperty("pauseRequestMessage").objectReferenceValue = reqTmp;
             so.FindProperty("pausedTitleText").objectReferenceValue = titleTmp;
             so.FindProperty("resumeButton").objectReferenceValue = resume;
+            so.FindProperty("restartButton").objectReferenceValue = restart;
+            so.FindProperty("changeCharactersButton").objectReferenceValue = changeCharacters;
             so.FindProperty("settingsButton").objectReferenceValue = settings;
             so.FindProperty("mainMenuButton").objectReferenceValue = mainMenu;
             var focusProp = so.FindProperty("pauseMenuFocusOrder");
-            focusProp.arraySize = 3;
+            focusProp.arraySize = 5;
             focusProp.GetArrayElementAtIndex(0).objectReferenceValue = resume;
-            focusProp.GetArrayElementAtIndex(1).objectReferenceValue = settings;
-            focusProp.GetArrayElementAtIndex(2).objectReferenceValue = mainMenu;
+            focusProp.GetArrayElementAtIndex(1).objectReferenceValue = restart;
+            focusProp.GetArrayElementAtIndex(2).objectReferenceValue = changeCharacters;
+            focusProp.GetArrayElementAtIndex(3).objectReferenceValue = settings;
+            focusProp.GetArrayElementAtIndex(4).objectReferenceValue = mainMenu;
             so.ApplyModifiedPropertiesWithoutUndo();
 
             if (scene.name == "OnlineGameScene")

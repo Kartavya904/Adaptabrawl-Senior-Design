@@ -110,9 +110,9 @@ namespace Adaptabrawl.UI
         {
             if (setupManager == null || _countdownRunning) return;
 
-            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+            bool isLocal = LobbyContext.CurrentMatchIsLocal();
+            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening && !isLocal;
             bool isHost = networked && NetworkManager.Singleton.IsServer;
-            bool isLocal = CharacterSelectData.isLocalMatch;
             bool p1Ready = networked ? setupManager.p1ArenaReady.Value : setupManager.LocalP1ArenaReady;
             bool p2Ready = networked ? setupManager.p2ArenaReady.Value : setupManager.LocalP2ArenaReady;
 
@@ -158,7 +158,9 @@ namespace Adaptabrawl.UI
         {
             if (setupManager == null) return;
             var lobby = LobbyContext.EnsureExists();
-            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+            bool networked = NetworkManager.Singleton != null
+                && NetworkManager.Singleton.IsListening
+                && !LobbyContext.CurrentMatchIsLocal();
             int p1 = networked ? setupManager.p1ControllerIndex.Value : setupManager.LocalP1ControllerIndex;
             int p2 = networked ? setupManager.p2ControllerIndex.Value : setupManager.LocalP2ControllerIndex;
             lobby.SetInputDevices(p1, p2);
@@ -177,7 +179,11 @@ namespace Adaptabrawl.UI
         {
             if (setupManager == null || availableArenas.Count == 0) return;
 
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+            bool networked = NetworkManager.Singleton != null
+                && NetworkManager.Singleton.IsListening
+                && !LobbyContext.CurrentMatchIsLocal();
+
+            if (networked)
             {
                 setupManager.ChangeArenaServerRpc(NetworkManager.Singleton.LocalClientId, direction, availableArenas.Count);
             }
@@ -191,7 +197,11 @@ namespace Adaptabrawl.UI
         {
             if (setupManager == null) return;
 
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+            bool networked = NetworkManager.Singleton != null
+                && NetworkManager.Singleton.IsListening
+                && !LobbyContext.CurrentMatchIsLocal();
+
+            if (networked)
             {
                 bool isHost = NetworkManager.Singleton.IsServer;
                 
@@ -212,7 +222,11 @@ namespace Adaptabrawl.UI
         {
             if (setupManager == null) return;
 
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+            bool networked = NetworkManager.Singleton != null
+                && NetworkManager.Singleton.IsListening
+                && !LobbyContext.CurrentMatchIsLocal();
+
+            if (networked)
             {
                 // Only Host has the authority to move everyone backward scenes
                 if (NetworkManager.Singleton.IsServer)
@@ -233,7 +247,9 @@ namespace Adaptabrawl.UI
         private void PushCurrentArenaToLobbyContext()
         {
             if (setupManager == null) return;
-            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+            bool networked = NetworkManager.Singleton != null
+                && NetworkManager.Singleton.IsListening
+                && !LobbyContext.CurrentMatchIsLocal();
             int aIdx = networked ? setupManager.arenaIndex.Value : setupManager.LocalArenaIndex;
             TryGetArenaSpriteForIndex(aIdx, out Sprite sprite);
             if (availableArenas.Count > 0 && aIdx >= 0 && aIdx < availableArenas.Count)
@@ -268,7 +284,8 @@ namespace Adaptabrawl.UI
         {
             if (setupManager == null) return;
 
-            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+            bool isLocal = LobbyContext.CurrentMatchIsLocal();
+            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening && !isLocal;
             bool isHost = networked && NetworkManager.Singleton.IsServer;
 
             int aIdx = networked ? setupManager.arenaIndex.Value : setupManager.LocalArenaIndex;
@@ -391,7 +408,7 @@ namespace Adaptabrawl.UI
             PushCurrentArenaToLobbyContext();
 
             // Host (or local instance) actually triggers the scene load.
-            string gameSceneName = CharacterSelectData.isLocalMatch ? "GameScene" : "OnlineGameScene";
+            string gameSceneName = LobbyContext.CurrentMatchIsLocal() ? "GameScene" : "OnlineGameScene";
             if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
             {
                 if (NetworkManager.Singleton.IsServer)

@@ -257,26 +257,24 @@ namespace Adaptabrawl.Editor
                     var rowLe = quickRow.AddComponent<LayoutElement>();
                     rowLe.preferredHeight = 52f;
                     rowLe.flexibleWidth = 1f;
-                    var hQuick = quickRow.AddComponent<HorizontalLayoutGroup>();
-                    hQuick.spacing = 12f;
-                    hQuick.childAlignment = TextAnchor.MiddleCenter;
-                    hQuick.childControlWidth = true;
-                    hQuick.childControlHeight = true;
-                    hQuick.childForceExpandHeight = true;
-                    hQuick.padding = new RectOffset(0, 0, 0, 0);
 
                     var hostBtnGo = CreateButtonChild(quickRow.transform, "QuickHost", "START HOST",
                         new Color(0.22f, 0.48f, 0.3f, 1f));
-                    var hostLe = hostBtnGo.GetComponent<LayoutElement>();
-                    hostLe.preferredWidth = 200f;
-                    hostLe.flexibleWidth = 0f;
-                    hostLe.preferredHeight = 52f;
+                    hostBtnGo.AddComponent<DisableButtonHoverFeedback>();
+                    Object.DestroyImmediate(hostBtnGo.GetComponent<LayoutElement>());
+                    var hostRt = hostBtnGo.GetComponent<RectTransform>();
+                    hostRt.anchorMin = new Vector2(0f, 0f);
+                    hostRt.anchorMax = new Vector2(0f, 1f);
+                    hostRt.pivot = new Vector2(0f, 0.5f);
+                    hostRt.sizeDelta = new Vector2(200f, 52f);
+                    hostRt.anchoredPosition = new Vector2(0f, 0f);
 
                     var inputWrap = CreateUiRect("QuickClientInputWrap", quickRow.transform, false);
-                    var inputWrapLe = inputWrap.AddComponent<LayoutElement>();
-                    inputWrapLe.flexibleWidth = 1f;
-                    inputWrapLe.minWidth = 220f;
-                    inputWrapLe.preferredHeight = 52f;
+                    var inputWrapRt = inputWrap.GetComponent<RectTransform>();
+                    inputWrapRt.anchorMin = new Vector2(0f, 0f);
+                    inputWrapRt.anchorMax = new Vector2(1f, 1f);
+                    inputWrapRt.offsetMin = new Vector2(212f, 0f);
+                    inputWrapRt.offsetMax = new Vector2(-248f, 0f);
                     SetImageColor(inputWrap, InputSurface);
                     AddOutline(inputWrap, SoftLine, 1f);
 
@@ -304,10 +302,20 @@ namespace Adaptabrawl.Editor
 
                     var joinClientGo = CreateButtonChild(quickRow.transform, "QuickJoinClient", "JOIN AS CLIENT",
                         ButtonSurface);
-                    var joinClientLe = joinClientGo.GetComponent<LayoutElement>();
-                    joinClientLe.preferredWidth = 210f;
-                    joinClientLe.flexibleWidth = 0f;
-                    joinClientLe.preferredHeight = 52f;
+                    joinClientGo.AddComponent<DisableButtonHoverFeedback>();
+                    Object.DestroyImmediate(joinClientGo.GetComponent<LayoutElement>());
+                    var joinClientRt = joinClientGo.GetComponent<RectTransform>();
+                    joinClientRt.anchorMin = new Vector2(1f, 0f);
+                    joinClientRt.anchorMax = new Vector2(1f, 1f);
+                    joinClientRt.pivot = new Vector2(1f, 0.5f);
+                    joinClientRt.sizeDelta = new Vector2(236f, 52f);
+                    joinClientRt.anchoredPosition = new Vector2(0f, 0f);
+                    var joinClientText = joinClientGo.GetComponentInChildren<TextMeshProUGUI>();
+                    if (joinClientText != null)
+                    {
+                        joinClientText.fontSize = 17f;
+                        joinClientText.enableWordWrapping = false;
+                    }
 
                     var statusTmp = CreateTmp("QuickConnectStatus", quickBlock.transform, "", 15, FontStyles.Normal,
                         TextAlignmentOptions.Center, TextDim);
@@ -486,7 +494,7 @@ namespace Adaptabrawl.Editor
             AddOutline(go, Accent, 1f);
             var btn = go.AddComponent<Button>();
             btn.targetGraphic = go.GetComponent<Image>();
-            var t = CreateTmp("Text", go.transform, label, 20, FontStyles.Bold, TextAlignmentOptions.Center,
+            var t = CreateTmp("Text", go.transform, label, 20f, FontStyles.Bold, TextAlignmentOptions.Center,
                 IsDarkColor(c) ? Panel : TextHi);
             StretchFull(t.gameObject);
             return go;

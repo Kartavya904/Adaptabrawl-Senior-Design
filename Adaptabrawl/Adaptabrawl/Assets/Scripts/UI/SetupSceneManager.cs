@@ -77,7 +77,7 @@ namespace Adaptabrawl.UI
                 return;
             }
 
-            if (Adaptabrawl.UI.CharacterSelectData.isLocalMatch)
+            if (LobbyContext.CurrentMatchIsLocal())
             {
                 ShowLocalJoin();
             }

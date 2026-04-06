@@ -55,7 +55,7 @@ namespace Adaptabrawl.UI
         {
             if (_setup.ControllerPhaseCountdownActive) return;
 
-            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+            bool networked = IsRemoteOnlineSetup();
             int p1Idx = networked ? _setup.p1ControllerIndex.Value : _setup.LocalP1ControllerIndex;
             int p2Idx = networked ? _setup.p2ControllerIndex.Value : _setup.LocalP2ControllerIndex;
             bool r1 = networked ? _setup.p1ControllerReady.Value : _setup.LocalP1ControllerReady;
@@ -73,7 +73,7 @@ namespace Adaptabrawl.UI
                 return;
             }
 
-            if (!r1 && !r2 && CharacterSelectData.isLocalMatch)
+            if (!r1 && !r2 && LobbyContext.CurrentMatchIsLocal())
                 _setup.GoBackToLocalJoin();
         }
 
@@ -97,8 +97,7 @@ namespace Adaptabrawl.UI
         {
             if (_setup.CharacterPhaseCountdownActive) return;
 
-            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
-            bool isLocal = CharacterSelectData.isLocalMatch;
+            bool networked = IsRemoteOnlineSetup();
             bool isServer = networked && NetworkManager.Singleton.IsServer;
             bool isClientOnly = networked && !isServer;
 
@@ -153,7 +152,7 @@ namespace Adaptabrawl.UI
             _arenaUi ??= FindFirstObjectByType<ArenaSelectUI>();
             if (_arenaUi != null && _arenaUi.IsCountdownActive) return;
 
-            bool networked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+            bool networked = IsRemoteOnlineSetup();
             bool isServer = networked && NetworkManager.Singleton.IsServer;
             bool isClientOnly = networked && !isServer;
 
@@ -217,6 +216,13 @@ namespace Adaptabrawl.UI
             bool dualKeyboard = LobbyContext.IsDualKeyboardMode(p1Device, p2Device);
             var profile = ControlBindingProfileResolver.ResolveGlobalKeyboardProfile(playerNumber, dualKeyboard);
             return bindings.WasActionPressedThisFrame(profile, ControlActionId.BackCancel);
+        }
+
+        private static bool IsRemoteOnlineSetup()
+        {
+            return NetworkManager.Singleton != null
+                && NetworkManager.Singleton.IsListening
+                && !LobbyContext.CurrentMatchIsLocal();
         }
     }
 }

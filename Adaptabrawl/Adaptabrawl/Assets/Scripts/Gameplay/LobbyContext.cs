@@ -69,6 +69,15 @@ namespace Adaptabrawl.Gameplay
             return go.AddComponent<LobbyContext>();
         }
 
+        /// <summary>
+        /// Authoritative match mode for the current session.
+        /// Prefer the persistent lobby state and only fall back to the legacy static bridge when needed.
+        /// </summary>
+        public static bool CurrentMatchIsLocal()
+        {
+            return Instance != null ? Instance.isLocalMatch : CharacterSelectData.isLocalMatch;
+        }
+
         // ── Initialisation ─────────────────────────────────────────────────────
 
         /// <summary>Call when a new match session starts (Play Local / Play Online).</summary>

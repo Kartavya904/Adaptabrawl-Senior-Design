@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Adaptabrawl.Fighters;
 using Adaptabrawl.Gameplay;
+using Adaptabrawl.Networking;
 
 namespace Adaptabrawl.UI
 {
@@ -89,6 +90,8 @@ namespace Adaptabrawl.UI
 
         public void PlayLocal()
         {
+            ShutdownAnyExistingOnlineSession();
+
             // Init persistent lobby context — carries player names, devices, fighters across scenes
             LobbyContext.EnsureExists().Init(true);
             if (PublicRoomLobbyContext.Instance != null)
@@ -106,6 +109,19 @@ namespace Adaptabrawl.UI
                 // Fallback if no network manager (unlikely)
                 SceneManager.LoadScene("SetupScene");
             }
+        }
+
+        private static void ShutdownAnyExistingOnlineSession()
+        {
+            var lobbyManager = FindFirstObjectByType<LobbyManager>();
+            if (lobbyManager != null)
+            {
+                lobbyManager.Disconnect();
+                return;
+            }
+
+            if (Unity.Netcode.NetworkManager.Singleton != null && Unity.Netcode.NetworkManager.Singleton.IsListening)
+                Unity.Netcode.NetworkManager.Singleton.Shutdown();
         }
 
         /// <summary>LAN / online party flow (auto-host + join-by-code). Must stay in Build Settings.</summary>

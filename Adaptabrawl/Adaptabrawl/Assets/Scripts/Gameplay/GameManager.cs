@@ -366,7 +366,7 @@ namespace Adaptabrawl.Gameplay
             };
 
             // Store results — pass isLocalMatch from CharacterSelectData so Rematch routes correctly
-            bool isLocal = Adaptabrawl.UI.CharacterSelectData.isLocalMatch;
+            bool isLocal = LobbyContext.CurrentMatchIsLocal();
             Adaptabrawl.UI.MatchResultsData.SetResults(matchResults, isLocal);
 
             if (Adaptabrawl.UI.SceneTransitionManager.Instance != null)

@@ -11,6 +11,10 @@
 - Fighters are data-driven (`FighterDef` in `Resources/Fighters/` with ordering rules in `CharacterSelectUI`).
 - **No** Unity ML-Agents, Sentis inference, or existing CPU-opponent controller is present in `Packages/manifest.json` or core gameplay scripts — any ML path is **additive**.
 
+### Project decision — training method
+
+**Heuristic-first is the chosen method** for Quick Match opponent behavior and for the training/evaluation pipeline in this milestone. Tuned rules, timers, and parameters (stored as JSON / ScriptableObjects per tier) are **primary**; reinforcement learning or ONNX policies remain **optional future work** and do not block shipping.
+
 ---
 
 ## 1. Executive summary
@@ -38,7 +42,7 @@
 | **Three separate models vs one model + scaling** | You can train **three policies** (one per folder) **or** one policy with **action noise / reward shaping / curriculum** for lower tiers. Both are valid; three folders still make sense as **deployment slots** even if training shares code.              |
 | **“Meta files” naming**                          | In Unity, `*.meta` files are **YAML sidecars for asset import** (GUIDs, import settings). **Do not** overload them for training metrics. Use **`training_metadata.json`** (or similar) **next to** the model file, or a single **registry JSON** per tier. |
 | **Repository size**                              | Neural checkpoints are **large**. Use **Git LFS** or keep **default shipped models** small and store heavy experiments elsewhere.                                                                                                                          |
-| **Scope for a shipping milestone**               | Full **reinforcement learning** for a fighting game is a **research-scale** effort unless observations/rewards are heavily simplified. A **phased** plan (§6) keeps the project shippable.                                                                 |
+| **Scope for a shipping milestone**               | **Heuristic-first** (committed) delivers playable tiers quickly; full **reinforcement learning** remains optional and is a **research-scale** effort if pursued later. A **phased** plan (§6) keeps the project shippable.                                 |
 
 ---
 
@@ -52,31 +56,26 @@
 
 **Design principle:** **One combat codebase**; **two input sources** (human device vs policy output). Avoid duplicating movement/combat logic for AI.
 
-### 2.2 Training: two viable approaches (choose explicitly)
+### 2.2 Training: committed approach and optional future path
 
-#### Approach A — Heuristic / utility AI (fastest path to “playable”)
+#### Approach A — Heuristic / utility AI (**committed for this project**)
 
-- **Dummy:** chase player, attack on cooldown, rarely defend.
-- **Trainer:** add spacing, occasional block/dodge, simple reactions.
-- **Extreme:** aggressive frame-chasing is **hard** without ML; “Extreme” may still be heuristic with **tighter timings** and **better move selection**, not necessarily a larger network.
+- **Dummy:** chase player, attack on cooldown, rarely defend — tuned to the **Dummy** score band (see §5.2).
+- **Trainer:** add spacing, occasional block/dodge, simple reactions — tuned to the **Trainer** anchor (half of the best normalized score).
+- **Extreme:** tightest timings and best move selection among heuristics — champions drawn from the **upper quartile** of normalized evaluation scores (see §5.2).
 
 **Pros:** Fits senior-design timelines; no Python stack; easy to tune by designers.  
-**Cons:** Will not generalize like a true RL policy; “Extreme” may feel artificial.
+**Cons:** Will not generalize like a true RL policy; “Extreme” is bounded by hand-tuned quality.
 
-#### Approach B — Unity ML-Agents (or custom RL) (strongest long-term)
+#### Approach B — Unity ML-Agents (or custom RL) (**optional / later**)
 
-- Add **`com.unity.ml-agents`** (training) and typically **`com.unity.ml-agents.extensions`** as needed; training uses **Python** outside the editor or via ML-Agents CLI.
-- Implement `Agent` with **observations** (positions, velocities, cooldowns, discrete combat phase if available) and **actions** (discrete or continuous stick + discrete buttons).
-- Export trained **behavior** → place under `Assets/AI trainings/models/{tier}/`.
+- Not required for the heuristic-first milestone. If added later: **`com.unity.ml-agents`**, Python training, observations/actions, export behaviors into the same `models/{tier}/` folders.
+- The **same normalized-score tier rules** in §5.2 can still govern which checkpoint occupies **Dummy** vs **Trainer** vs **Extreme** slots.
 
-**Pros:** Can discover non-obvious policies; scalable with compute.  
-**Cons:** High setup cost; reward design is tricky; long iteration loops; needs **fast headless simulation** for throughput.
+#### Practical sequencing
 
-#### Recommended **hybrid** strategy for this project
-
-1. **Ship v1** with **heuristics** for all three tiers (or Dummy heuristic + Trainer/Extreme heuristic) so Quick Match is **feature-complete**.
-2. **Parallel track:** Build the **observation/action bridge** and **evaluation harness** so ML-Agents can **replace** the policy for Trainer/Extreme later **without** rewriting combat.
-3. **Folder layout** stays the same: `Dummy/` might hold **JSON params** only; `Extreme/` might hold **`.onnx`** + metadata when ML lands.
+1. **Ship** Quick Match with **heuristics only** for all three tiers; evaluation and promotion use **§5.2** (normalized scores + percentile/anchors).
+2. **Optionally later:** swap in ML policies per tier **without** changing the tier-assignment rules, if evaluation shows benefit.
 
 ---
 
@@ -115,9 +114,9 @@ Assets/
 
 ---
 
-## 4. Training methodology (ML path) — end-to-end flow
+## 4. Training methodology (ML path) — optional future detail
 
-This section assumes **Approach B** for training; if you only ship heuristics, skip to §5 for metadata that tracks **tuned constants** instead of neural weights.
+**Primary development uses heuristics** (§2.2, §5.2). This section is retained for a **possible later** ML-Agents track; heuristic tuning does not require it.
 
 ### 4.1 Environment (simulation) requirements
 
@@ -209,17 +208,35 @@ Illustrative schema (adjust field names to implementation):
 
 **Why not Unity `.meta`?** Unity `.meta` files are **import pipelines**; hand-editing for metrics is fragile and merges badly. Keep metrics in **JSON** (or ScriptableObject assets if you prefer inspector-driven workflow).
 
-### 5.2 Metrics (“score threshold”)
+### 5.2 Metrics and tier assignment (**heuristic-first**, normalized scores)
 
-Define **one primary metric** plus **guardrails**:
+This project uses **batch evaluation** over many test runs (same protocol each time: e.g. **N** episodes per candidate, fixed maps/opponents where applicable). Each run produces a **raw score** (e.g. composite of damage ratio, win rate, or a single agreed primary metric — lock this in implementation).
 
-| Metric                              | Meaning                    | Failure modes                             |
-| ----------------------------------- | -------------------------- | ----------------------------------------- |
-| **Win rate** vs fixed baseline      | Simple                     | Can encourage timeouts if rounds are long |
-| **Damage ratio** (dealt / taken)    | Often stable               | Ignores win condition                     |
-| **ELO / TrueSkill** across policies | Good for relative strength | Needs many matches                        |
+#### Step 1 — Normalize
 
-**Recommendation:** **Primary:** average **damage ratio** over **N** episodes; **Guardrail:** win rate must exceed floor (e.g. not always losing by timer stall).
+After a round of testing, **normalize** all candidate scores to a common scale (e.g. min–max to \([0, 1]\) so the **best** run in that batch maps to the top of the range, or z-score + squash — **pick one normalization and document it** in `dummy_metadata.json` / registry). The formulas below assume you can refer to:
+
+- **`S_max`** = **maximum normalized score** in the batch (the “top scorer” after normalization).
+- Individual run scores **`s`** in the same normalized space.
+
+#### Step 2 — Map tiers to score bands (project rules)
+
+| Tier        | Rule                          | Meaning                                                                                                                                                                                                                                                                                                             |
+| ----------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Extreme** | **75th percentile and above** | Among normalized scores, the **strongest quartile** (top ~25% of runs). **Extreme** champions are chosen from this band — e.g. the **best** candidate at or above the **75th percentile** threshold, subject to guardrails.                                                                                         |
+| **Trainer** | **½ × `S_max`**               | The **medium** tier is anchored at **half of the top (highest) normalized score** — not the literal minimum of the dataset. Implementation: assign **Trainer** to the candidate whose score is **closest** to **`0.5 * S_max`**, or treat **`0.5 * S_max`** as the **target strength** when hand-tuning heuristics. |
+| **Dummy**   | **⅛ × `S_max`**               | **Half of a quarter** of the top normalized score: **`(1/2) × (1/4) × S_max = S_max / 8`**. This is **not** “pick the lowest raw scorer” unless it coincides with this anchor; it deliberately keeps Dummy **weak but non-zero** relative to the best in the batch.                                                 |
+
+**Example:** If normalization maps the batch so **`S_max = 1`**, then **Trainer** anchor = **0.5**, **Dummy** anchor = **0.125**. **Extreme** still selects from scores **≥ P75** in that batch.
+
+#### Step 3 — Guardrails
+
+Keep lightweight checks so bad runs do not promote (e.g. infinite stalling, illegal inputs): win rate floor, max match length, or manual disqualification flags — unchanged from earlier recommendations.
+
+#### Relationship to “promote if better”
+
+- **Within a tier folder**, you still **replace** the champion only if the new candidate **beats** the previous champion **and** lands in the correct **band** (or is the best eligible in the Extreme band).
+- If a training run does not beat the stored champion, **keep** the pre-trained / previous heuristic parameters.
 
 ### 5.3 Promotion algorithm (pseudocode)
 
@@ -237,12 +254,12 @@ else:
 
 **`margin_delta`** avoids churn from noise (e.g. require **statistically significant** improvement or **+2%** absolute on win rate).
 
-### 5.4 “Dynamic thresholds” between Dummy / Trainer / Extreme
+### 5.4 Ordering sanity check (optional)
 
-If you want **ordering constraints** (Dummy < Trainer < Extreme in measured strength):
+The rules in §5.2 should usually imply **Dummy < Trainer < Extreme** in mean strength. If not (e.g. small **N**, noisy scores), add:
 
-- Run a **ladder eval**: each tier must beat the previous tier at least **X%** of the time.
-- Store **pairwise** results in `evaluation/ladder_results.json`.
+- A **ladder eval** (each tier beats the previous **X%** of the time), and/or
+- Pairwise logs in `evaluation/ladder_results.json`.
 
 ---
 
@@ -252,7 +269,7 @@ If you want **ordering constraints** (Dummy < Trainer < Extreme in measured stre
 
 - Lock **input semantics** for Quick Match Setup (keyboard vs controller vs what “touchpad” means).
 - Lock **random opponent** behavior (pure random vs seeded random for rematch).
-- Choose **Approach A**, **B**, or **hybrid** for AI.
+- **AI:** **Heuristic-first** (§2.2); lock **normalization** and **tier rules** in §5.2 for evaluation tooling.
 
 ### Phase 1 — Quick Match Setup Scene (no ML)
 
@@ -342,8 +359,8 @@ If you want **ordering constraints** (Dummy < Trainer < Extreme in measured stre
 **Strengthen it by:**
 
 1. Separating **Unity asset `.meta`** files from **training metadata JSON**.
-2. Defining **evaluation protocols** and **one primary metric** with **guardrails**.
-3. Planning a **heuristic-first** milestone so gameplay ships even if ML runs long.
+2. Defining **evaluation protocols**, **normalization**, and **tier bands** (§5.2: **Extreme** from **≥ 75th percentile**, **Trainer** at **½ × top normalized score**, **Dummy** at **⅛ × top normalized score**).
+3. Committing to **heuristic-first** training (§2.2) so gameplay ships on schedule; ML remains optional.
 
 ---
 

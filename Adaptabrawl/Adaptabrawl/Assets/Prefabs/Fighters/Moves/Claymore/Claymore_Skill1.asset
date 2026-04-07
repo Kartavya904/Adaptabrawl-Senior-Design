@@ -18,17 +18,17 @@ MonoBehaviour:
   activeFrames: 3
   recoveryFrames: 10
   damage: 15
-  knockbackForce: 7.5
+  knockbackForce: 7.75
   knockbackDirection: {x: 1, y: 0}
   hitstopFrames: 4
-  blockstunFrames: 12
-  hitstunFrames: 18
-  hitboxOffset: {x: 0.7, y: 0}
-  hitboxSize: {x: 0.9, y: 1}
+  blockstunFrames: 14
+  hitstunFrames: 20
+  hitboxOffset: {x: 1.2, y: 0.25}
+  hitboxSize: {x: 1.6, y: 1.15}
   hitboxDefinitions:
   - name: Ground
-    offset: {x: 0.7, y: 0}
-    size: {x: 0.9, y: 1}
+    offset: {x: 1.2, y: 0.25}
+    size: {x: 1.6, y: 1.15}
     activeStartFrame: 0
     activeEndFrame: 5
     damageMultiplier: 1
@@ -37,8 +37,8 @@ MonoBehaviour:
     isSweetspot: 0
     gizmoColor: {r: 0, g: 1, b: 1, a: 0.3}
   - name: Upper
-    offset: {x: 0.8, y: 1.5}
-    size: {x: 1, y: 0.8}
+    offset: {x: 1.1, y: 1.5}
+    size: {x: 1.4, y: 1}
     activeStartFrame: 3
     activeEndFrame: -1
     damageMultiplier: 1.2

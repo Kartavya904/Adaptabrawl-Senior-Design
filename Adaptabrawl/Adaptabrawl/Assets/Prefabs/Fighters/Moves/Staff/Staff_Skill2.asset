@@ -17,18 +17,18 @@ MonoBehaviour:
   startupFrames: 5
   activeFrames: 3
   recoveryFrames: 10
-  damage: 12
-  knockbackForce: 6
+  damage: 16
+  knockbackForce: 8.25
   knockbackDirection: {x: 1, y: 0}
   hitstopFrames: 4
-  blockstunFrames: 10
-  hitstunFrames: 14
-  hitboxOffset: {x: 0.9, y: 0.5}
-  hitboxSize: {x: 1, y: 0.8}
+  blockstunFrames: 12
+  hitstunFrames: 18
+  hitboxOffset: {x: 1.35, y: 0.45}
+  hitboxSize: {x: 1.55, y: 1}
   hitboxDefinitions:
   - name: Stun
-    offset: {x: 0.9, y: 0.5}
-    size: {x: 1, y: 0.8}
+    offset: {x: 1.35, y: 0.45}
+    size: {x: 1.55, y: 1}
     activeStartFrame: 0
     activeEndFrame: -1
     damageMultiplier: 0.7

@@ -56,6 +56,7 @@ namespace Adaptabrawl.UI
         [SerializeField] private Selectable[] arenaFocusOrder;
 
         private bool _countdownRunning;
+        private GameplayControlsLegendOverlay countdownControlsOverlay;
 
         public bool IsCountdownActive => _countdownRunning;
 
@@ -382,6 +383,7 @@ namespace Adaptabrawl.UI
         private System.Collections.IEnumerator ArenaCountdownRoutine()
         {
             _countdownRunning = true;
+            ShowCountdownControlsOverlay(true);
 
             // Disable all buttons once countdown begins.
             if (leftArrowButton != null) leftArrowButton.interactable = false;
@@ -403,6 +405,8 @@ namespace Adaptabrawl.UI
             if (countdownText != null)
                 countdownText.gameObject.SetActive(false);
 
+            ShowCountdownControlsOverlay(false);
+
             // Ensure every machine has the final arena in LobbyContext before the game scene loads
             // (covers edge cases where UI did not run another UpdateUI pass).
             PushCurrentArenaToLobbyContext();
@@ -420,6 +424,34 @@ namespace Adaptabrawl.UI
             {
                 SceneManager.LoadScene(gameSceneName);
             }
+        }
+
+        private void ShowCountdownControlsOverlay(bool visible)
+        {
+            if (!visible)
+            {
+                if (countdownControlsOverlay != null)
+                    countdownControlsOverlay.gameObject.SetActive(false);
+                return;
+            }
+
+            if (countdownControlsOverlay == null)
+            {
+                Canvas hostCanvas = GetComponentInParent<Canvas>();
+                if (hostCanvas == null)
+                    hostCanvas = FindFirstObjectByType<Canvas>(FindObjectsInactive.Include);
+
+                if (hostCanvas == null)
+                    return;
+
+                GameObject overlayObject = new GameObject("ArenaCountdownControlsLegend");
+                overlayObject.transform.SetParent(hostCanvas.transform, false);
+                countdownControlsOverlay = overlayObject.AddComponent<GameplayControlsLegendOverlay>();
+                countdownControlsOverlay.Initialize(hostCanvas);
+            }
+
+            countdownControlsOverlay.gameObject.SetActive(true);
+            countdownControlsOverlay.RefreshLegend();
         }
 
         private static bool WasReadyPressedForPlayer(int playerNumber, int p1Device, int p2Device)

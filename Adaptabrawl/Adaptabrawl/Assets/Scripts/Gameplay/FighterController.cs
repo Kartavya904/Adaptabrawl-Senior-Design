@@ -30,6 +30,7 @@ namespace Adaptabrawl.Gameplay
 
         [Header("Facing")]
         [SerializeField] private bool facingRight = true;
+        [SerializeField] private bool isInvulnerable;
 
         [Header("Audio")]
         [SerializeField] private AudioClip swapSoundClip;
@@ -48,6 +49,7 @@ namespace Adaptabrawl.Gameplay
         public float MaxHealth => maxHealth;
         public bool FacingRight => facingRight;
         public bool IsDead => currentHealth <= 0f;
+        public bool IsInvulnerable => isInvulnerable;
         public int PlayerNumber => _playerNumber;
         public bool IsInputLocked
         {
@@ -173,6 +175,8 @@ namespace Adaptabrawl.Gameplay
         
         private void Die()
         {
+            isInvulnerable = false;
+
             // Force health to exactly 0 and push a final event so the slider clears immediately
             currentHealth = 0f;
             OnHealthChanged?.Invoke(0f, maxHealth);
@@ -386,6 +390,7 @@ namespace Adaptabrawl.Gameplay
 
         public void ClearGameplayState(bool snapToIdle = true)
         {
+            isInvulnerable = false;
             combatFSM?.ForceResetState();
             movementController?.SetMoveInput(Vector2.zero);
 
@@ -530,6 +535,7 @@ namespace Adaptabrawl.Gameplay
         /// </summary>
         public void ResetForNewRound()
         {
+            isInvulnerable = false;
             currentHealth = maxHealth;
             OnHealthChanged?.Invoke(currentHealth, maxHealth);
 
@@ -559,6 +565,11 @@ namespace Adaptabrawl.Gameplay
             }
 
             Debug.Log($"[FighterController] '{(fighterDef != null ? fighterDef.fighterName : gameObject.name)}' reset for new round.");
+        }
+
+        public void SetInvulnerable(bool value)
+        {
+            isInvulnerable = value;
         }
     }
 }

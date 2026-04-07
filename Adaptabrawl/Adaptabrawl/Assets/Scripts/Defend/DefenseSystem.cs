@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using Adaptabrawl.Data;
 using Adaptabrawl.Combat;
@@ -11,11 +12,14 @@ namespace Adaptabrawl.Defend
         private FighterController fighterController;
         private CombatFSM combatFSM;
         private MovementController movementController;
+        private Animator combatAnimator;
         
         [Header("Block")]
         [SerializeField] private MoveDef blockMove;
+        [SerializeField] private float blockAttackRecoveryDelay = 0.05f;
         private bool isBlocking = false;
         private bool blockInputHeld = false;
+        private Coroutine blockReleaseRoutine;
         
         [Header("Parry")]
         [SerializeField] private MoveDef parryMove;
@@ -33,6 +37,7 @@ namespace Adaptabrawl.Defend
             fighterController = GetComponent<FighterController>();
             combatFSM = GetComponent<CombatFSM>();
             movementController = GetComponent<MovementController>();
+            ResolveCombatAnimator();
             
             // Create block move if not assigned
             if (blockMove == null)
@@ -56,6 +61,13 @@ namespace Adaptabrawl.Defend
         public void OnBlockInput(bool held)
         {
             blockInputHeld = held;
+
+            if (held && blockReleaseRoutine != null)
+            {
+                StopCoroutine(blockReleaseRoutine);
+                blockReleaseRoutine = null;
+                combatFSM?.SetAttackSuppressed(false);
+            }
         }
         
         public void OnParryInput(bool pressed)
@@ -91,12 +103,11 @@ namespace Adaptabrawl.Defend
         {
             isBlocking = false;
             OnBlockEnd?.Invoke();
-            
-            // End block state if in blocking state
-            if (combatFSM != null && combatFSM.CurrentState == CombatState.Blocking)
-            {
-                // Will transition to idle when move ends
-            }
+
+            if (blockReleaseRoutine != null)
+                StopCoroutine(blockReleaseRoutine);
+
+            blockReleaseRoutine = StartCoroutine(FinishBlockRelease());
         }
         
         private void StartParry()
@@ -158,6 +169,56 @@ namespace Adaptabrawl.Defend
         
         public bool IsBlocking => isBlocking;
         public bool IsParrying => isParrying;
+
+        private IEnumerator FinishBlockRelease()
+        {
+            if (combatFSM == null)
+            {
+                blockReleaseRoutine = null;
+                yield break;
+            }
+
+            ResolveCombatAnimator();
+            combatFSM.SetAttackSuppressed(true);
+            combatFSM.EndCurrentMoveIf(blockMove);
+
+            while (IsBlockAnimationPlaying())
+                yield return null;
+
+            if (blockAttackRecoveryDelay > 0f)
+                yield return new WaitForSeconds(blockAttackRecoveryDelay);
+
+            combatFSM.SetAttackSuppressed(false);
+            combatFSM.TryConsumeBufferedMove();
+            blockReleaseRoutine = null;
+        }
+
+        private void ResolveCombatAnimator()
+        {
+            if (combatAnimator != null && combatAnimator.runtimeAnimatorController != null)
+                return;
+
+            PlayerController_Platform pcp = GetComponentInChildren<PlayerController_Platform>();
+            if (pcp != null)
+            {
+                combatAnimator = pcp.GetComponent<Animator>();
+                if (combatAnimator != null && combatAnimator.runtimeAnimatorController != null)
+                    return;
+            }
+
+            combatAnimator = GetComponentInChildren<Animator>();
+        }
+
+        private bool IsBlockAnimationPlaying()
+        {
+            if (combatAnimator == null || !combatAnimator.isActiveAndEnabled)
+                return false;
+
+            AnimatorStateInfo stateInfo = combatAnimator.GetCurrentAnimatorStateInfo(0);
+            if (combatAnimator.IsInTransition(0))
+                return stateInfo.IsName("Block") || stateInfo.IsTag("Block");
+
+            return stateInfo.IsName("Block") || stateInfo.IsTag("Block");
+        }
     }
 }
-

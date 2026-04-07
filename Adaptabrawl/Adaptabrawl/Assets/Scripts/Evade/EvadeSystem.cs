@@ -37,6 +37,12 @@ namespace Adaptabrawl.Evade
                 dodgeMove = CreateDodgeMove();
             }
         }
+
+        private void OnDisable()
+        {
+            if (fighterController != null)
+                fighterController.SetInvulnerable(false);
+        }
         
         private void Update()
         {
@@ -84,6 +90,7 @@ namespace Adaptabrawl.Evade
             // Start dodge
             isDodging = true;
             dodgeCooldownTimer = dodgeCooldown;
+            fighterController?.SetInvulnerable(true);
             
             // Apply dodge movement
             if (movementController != null)
@@ -114,6 +121,7 @@ namespace Adaptabrawl.Evade
             }
 
             isDodging = false;
+            fighterController?.SetInvulnerable(false);
             endDodgeRoutine = null;
             OnDodgeEnd?.Invoke();
         }

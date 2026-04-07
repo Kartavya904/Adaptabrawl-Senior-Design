@@ -13,7 +13,7 @@ EditorBuildSettings:
     guid: fbd716309fb86214b8409f19b6ca72cf
   - enabled: 1
     path: Assets/Scenes/QuickMatchScene.unity
-    guid: 00000000000000000000000000000000
+    guid: 56220eefbf36d344e8265cc3e77b1f69
   - enabled: 1
     path: Assets/Scenes/LobbyScene.unity
     guid: 2e74db638c093164d9c1cc3242dc00d7

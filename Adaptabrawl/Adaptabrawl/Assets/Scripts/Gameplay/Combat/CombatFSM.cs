@@ -20,8 +20,13 @@ namespace Adaptabrawl.Combat
         
         [Header("Input Buffer")]
         [SerializeField] private float inputBufferWindow = 0.16f;
-        private float lastInputTime = -1f;
+        [SerializeField] private float minimumSpecialInputBufferWindow = 0.2f;
         private MoveDef bufferedMove = null;
+        private float bufferedMoveExpiresAt = -1f;
+
+        [Header("Action Locks")]
+        private float attackSuppressedUntil = -1f;
+        private bool attacksForceSuppressed = false;
         
         [Header("Cancel Windows")]
         private bool inCancelWindow = false;
@@ -59,9 +64,10 @@ namespace Adaptabrawl.Combat
         private void UpdateInputBuffer()
         {
             // Clear old buffered inputs
-            if (bufferedMove != null && Time.time - lastInputTime > inputBufferWindow)
+            if (bufferedMove != null && Time.time > bufferedMoveExpiresAt)
             {
                 bufferedMove = null;
+                bufferedMoveExpiresAt = -1f;
             }
         }
         
@@ -143,6 +149,9 @@ namespace Adaptabrawl.Combat
                 return false;
             }
 
+            if (IsAttackMove(move) && (attacksForceSuppressed || Time.time < attackSuppressedUntil))
+                return false;
+
             // Do not allow attack spam while any current move is still running.
             // We buffer the latest requested attack and execute it after the move ends.
             if (currentMove != null && IsAttackMove(move))
@@ -164,8 +173,23 @@ namespace Adaptabrawl.Combat
         
         private void BufferInput(MoveDef move)
         {
+            if (move == null)
+                return;
+
+            if (IsAttackMove(move) && attacksForceSuppressed)
+                return;
+
+            // Specials should respect buffering from other states, but they should not
+            // re-queue themselves while a special animation is already playing.
+            if (currentMove != null
+                && currentMove.moveType == MoveType.Special
+                && move.moveType == MoveType.Special)
+            {
+                return;
+            }
+
             bufferedMove = move;
-            lastInputTime = Time.time;
+            bufferedMoveExpiresAt = Time.time + ResolveInputBufferWindow(move);
         }
         
         private void StartMove(MoveDef move)
@@ -176,7 +200,7 @@ namespace Adaptabrawl.Combat
             inCancelWindow = false;
             cancelWindowStart = move.cancelWindowStart;
             cancelWindowEnd = move.cancelWindowEnd;
-            inputBufferWindow = move.inputBufferWindow;
+            inputBufferWindow = ResolveInputBufferWindow(move);
             
             SetState(CombatState.Startup);
             OnMoveStarted?.Invoke(move);
@@ -204,6 +228,7 @@ namespace Adaptabrawl.Combat
             {
                 MoveDef buffered = bufferedMove;
                 bufferedMove = null;
+                bufferedMoveExpiresAt = -1f;
                 TryStartMove(buffered);
             }
         }
@@ -349,22 +374,75 @@ namespace Adaptabrawl.Combat
             if (combatAnimator == null || !combatAnimator.isActiveAndEnabled)
                 return false;
 
+            string expectedStateName = (currentMove as AnimatedMoveDef)?.animatorTrigger;
             AnimatorStateInfo stateInfo = combatAnimator.GetCurrentAnimatorStateInfo(0);
-            if (combatAnimator.IsInTransition(0))
+            if (IsMoveAnimationState(stateInfo, expectedStateName))
+                return true;
+
+            if (!combatAnimator.IsInTransition(0))
+                return false;
+
+            AnimatorStateInfo nextStateInfo = combatAnimator.GetNextAnimatorStateInfo(0);
+            return IsMoveAnimationState(nextStateInfo, expectedStateName);
+        }
+
+        private static bool IsMoveAnimationState(AnimatorStateInfo stateInfo, string expectedStateName)
+        {
+            if (MatchesShinabroAnimatorState(stateInfo, expectedStateName))
                 return true;
 
             return stateInfo.IsTag("Attack")
-                || stateInfo.IsName("Attack1")
-                || stateInfo.IsName("Attack2")
-                || stateInfo.IsName("Attack3")
-                || stateInfo.IsName("Skill1")
-                || stateInfo.IsName("Skill2")
-                || stateInfo.IsName("Skill3")
-                || stateInfo.IsName("Skill4")
-                || stateInfo.IsName("Skill5")
-                || stateInfo.IsName("Skill6")
-                || stateInfo.IsName("Skill7")
-                || stateInfo.IsName("Skill8");
+                || MatchesShinabroAnimatorState(stateInfo, "Attack1")
+                || MatchesShinabroAnimatorState(stateInfo, "Attack2")
+                || MatchesShinabroAnimatorState(stateInfo, "Attack3")
+                || MatchesShinabroAnimatorState(stateInfo, "Skill1")
+                || MatchesShinabroAnimatorState(stateInfo, "Skill2")
+                || MatchesShinabroAnimatorState(stateInfo, "Skill3")
+                || MatchesShinabroAnimatorState(stateInfo, "Skill4")
+                || MatchesShinabroAnimatorState(stateInfo, "Skill5")
+                || MatchesShinabroAnimatorState(stateInfo, "Skill6")
+                || MatchesShinabroAnimatorState(stateInfo, "Skill7")
+                || MatchesShinabroAnimatorState(stateInfo, "Skill8");
+        }
+
+        /// <summary>
+        /// Shinabro animators use trigger names (e.g. Skill1) but states are often suffixed
+        /// (Skill1_Float, Skill2_Slow, Attack3 0). Without this, CombatFSM ends moves while
+        /// the visible skill animation is still playing — hit volumes shut off early.
+        /// </summary>
+        public static bool MatchesShinabroAnimatorState(AnimatorStateInfo stateInfo, string baseName)
+        {
+            if (string.IsNullOrWhiteSpace(baseName))
+                return false;
+
+            if (StateMatches(stateInfo, baseName))
+                return true;
+
+            for (int i = 0; i < ShinabroAnimatorStateSuffixes.Length; i++)
+            {
+                if (StateMatches(stateInfo, baseName + ShinabroAnimatorStateSuffixes[i]))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static readonly string[] ShinabroAnimatorStateSuffixes =
+        {
+            "_Float", "_Slow", "_Stun", "_Push", "_Pull", "_Move", "_Around", "_Air",
+            " 0", "_Float 0", "_Slow 0"
+        };
+
+        private static bool StateMatches(AnimatorStateInfo stateInfo, string stateName)
+        {
+            if (string.IsNullOrWhiteSpace(stateName))
+                return false;
+
+            int shortNameHash = Animator.StringToHash(stateName);
+            if (stateInfo.shortNameHash == shortNameHash)
+                return true;
+
+            return stateInfo.IsName(stateName) || stateInfo.IsName($"Base Layer.{stateName}");
         }
 
         public void ForceResetState()
@@ -378,9 +456,42 @@ namespace Adaptabrawl.Combat
             cancelWindowStart = 0;
             cancelWindowEnd = 0;
             bufferedMove = null;
-            lastInputTime = -1f;
+            bufferedMoveExpiresAt = -1f;
+            attackSuppressedUntil = -1f;
+            attacksForceSuppressed = false;
 
             SetState(CombatState.Idle);
+        }
+
+        public void EndCurrentMoveIf(MoveDef move)
+        {
+            if (move == null || currentMove != move)
+                return;
+
+            EndMove();
+        }
+
+        public void SetAttackSuppressed(bool suppressed)
+        {
+            attacksForceSuppressed = suppressed;
+        }
+
+        public void SuppressAttacksFor(float durationSeconds)
+        {
+            attackSuppressedUntil = Mathf.Max(
+                attackSuppressedUntil,
+                Time.time + Mathf.Max(0f, durationSeconds));
+        }
+
+        public void TryConsumeBufferedMove()
+        {
+            if (currentMove != null || bufferedMove == null)
+                return;
+
+            MoveDef pendingMove = bufferedMove;
+            bufferedMove = null;
+            bufferedMoveExpiresAt = -1f;
+            TryStartMove(pendingMove);
         }
         
         // Public getters
@@ -388,8 +499,20 @@ namespace Adaptabrawl.Combat
         public MoveDef CurrentMove => currentMove;
         public int CurrentFrame => currentFrame;
         public bool InCancelWindow => inCancelWindow;
+        public bool AreAttacksSuppressed => attacksForceSuppressed || Time.time < attackSuppressedUntil;
         public bool CanAct => currentState == CombatState.Idle || 
                              currentState == CombatState.Recovery ||
                              (inCancelWindow && currentMove != null);
+
+        private float ResolveInputBufferWindow(MoveDef move)
+        {
+            if (move == null)
+                return inputBufferWindow;
+
+            if (move.moveType == MoveType.Special)
+                return Mathf.Max(move.inputBufferWindow, minimumSpecialInputBufferWindow);
+
+            return move.inputBufferWindow;
+        }
     }
 }

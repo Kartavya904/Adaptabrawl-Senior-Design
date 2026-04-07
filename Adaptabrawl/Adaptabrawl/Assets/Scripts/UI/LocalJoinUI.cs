@@ -31,7 +31,7 @@ namespace Adaptabrawl.UI
                 setupManager = FindFirstObjectByType<SetupSceneManager>();
 
             if (p2JoinButton != null)
-                p2JoinButton.onClick.AddListener(() => RequestPlayer2Join("Keyboard"));
+                p2JoinButton.onClick.AddListener(() => RequestPlayer2Join(GetDefaultP2JoinDeviceName()));
 
             if (p2JoinButton != null && EventSystem.current != null)
                 MenuNavigationGroup.SelectFirstAvailable(new Selectable[] { p2JoinButton });
@@ -53,6 +53,8 @@ namespace Adaptabrawl.UI
         private void OnAnyButtonPressed(InputControl control)
         {
             if (p2HasJoined) return;
+
+            UpdateUI(false);
 
             bool isGamepad = control.device is Gamepad;
             bool isKeyboard = control.device is Keyboard;
@@ -88,16 +90,14 @@ namespace Adaptabrawl.UI
 
             p2HasJoined = true;
 
-            // Map device name to controller index (0=Keyboard, 1=Controller)
+            int p1DeviceIndex = GetDefaultP1DeviceIndex();
             int p2DeviceIndex = deviceName == "Controller" ? 1 : 0;
 
-            // Persist input devices in LobbyContext — P1 is always keyboard at local join stage
             var lobby = LobbyContext.EnsureExists();
             lobby.SetPlayerDisplayNames(lobby.p1Name, lobby.p2Name);
-            lobby.SetInputDevices(0, p2DeviceIndex);
+            lobby.SetInputDevices(p1DeviceIndex, p2DeviceIndex);
 
-            // Tell SetupSceneManager what devices were detected so ControllerConfig is pre-filled correctly
-            setupManager.SetLocalDevices(0, p2DeviceIndex); // P1 is always Keyboard on host
+            setupManager.SetLocalDevices(p1DeviceIndex, p2DeviceIndex);
 
             // Update UI visually
             if (p2JoinButton != null) p2JoinButton.gameObject.SetActive(false);
@@ -147,7 +147,7 @@ namespace Adaptabrawl.UI
         {
             if (p1StatusText != null)
             {
-                p1StatusText.text = "Player 1: Joined (Keyboard)";
+                p1StatusText.text = $"Player 1: Joined ({GetDeviceLabel(GetDefaultP1DeviceIndex())})";
                 p1StatusText.color = Color.green;
             }
 
@@ -155,7 +155,7 @@ namespace Adaptabrawl.UI
             {
                 if (!p2Joined)
                 {
-                    // Default string before they press a generic button
+                    p2StatusText.text = GetDefaultP2Prompt();
                     p2StatusText.color = Color.yellow;
                 }
             }
@@ -169,6 +169,28 @@ namespace Adaptabrawl.UI
             {
                 countdownText.gameObject.SetActive(false);
             }
+        }
+
+        private int GetDefaultP1DeviceIndex()
+        {
+            return LobbyContext.ConnectedGamepadCount() >= 2 ? 1 : 0;
+        }
+
+        private string GetDefaultP2JoinDeviceName()
+        {
+            return LobbyContext.ConnectedGamepadCount() >= 2 ? "Controller" : "Keyboard";
+        }
+
+        private string GetDefaultP2Prompt()
+        {
+            return LobbyContext.ConnectedGamepadCount() >= 2
+                ? "Player 2: Press X to Join"
+                : "Player 2: Press Space to Join";
+        }
+
+        private static string GetDeviceLabel(int deviceIndex)
+        {
+            return deviceIndex == 1 ? "Controller" : "Keyboard";
         }
     }
 }

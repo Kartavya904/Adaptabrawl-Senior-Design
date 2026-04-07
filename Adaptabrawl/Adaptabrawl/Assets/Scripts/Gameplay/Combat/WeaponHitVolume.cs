@@ -157,6 +157,9 @@ namespace Adaptabrawl.Combat
             if (target == null || target == owner)
                 return;
 
+            if (target.IsInvulnerable)
+                return;
+
             int targetId = target.GetInstanceID();
             if (hitTargets.Contains(targetId))
                 return;
@@ -180,11 +183,12 @@ namespace Adaptabrawl.Combat
 
         private bool CanDealDamage(MoveDef move)
         {
+            // Specials use SpecialMoveHitVolume only. Including Special here double-applies
+            // damage (separate hitTargets per volume) for the same animation.
             return move != null
                 && move.damage > 0f
                 && (move.moveType == MoveType.LightAttack
-                    || move.moveType == MoveType.HeavyAttack
-                    || move.moveType == MoveType.Special);
+                    || move.moveType == MoveType.HeavyAttack);
         }
 
         private bool IsOverlapping(Collider other)

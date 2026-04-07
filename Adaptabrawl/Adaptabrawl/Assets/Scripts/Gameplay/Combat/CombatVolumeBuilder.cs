@@ -9,6 +9,7 @@ namespace Adaptabrawl.Combat
     public static class CombatVolumeBuilder
     {
         private const string RuntimeWeaponVolumeName = "CombatWeaponVolume";
+        private const string RuntimeSpecialVolumeName = "CombatSpecialMoveVolume";
         private const string RuntimeCoreHurtboxPrefix = "RuntimeCoreHurtbox_";
         private static readonly string[] WeaponStrikeKeywords = { "blade", "head", "tip", "spike", "sword", "hammer", "spear", "axe", "dualblade", "rapier", "staff", "bow" };
         private static readonly string[] WeaponIgnoreKeywords = { "shield", "handle", "hilt", "grip", "pommel", "guard" };
@@ -28,6 +29,7 @@ namespace Adaptabrawl.Combat
             hurtbox.ResetParts(parts);
 
             BuildWeaponVolumes(stander, owner);
+            BuildSpecialMoveVolume(stander, owner);
         }
 
         private static void CleanupLegacyVolumes(Transform stander)
@@ -36,6 +38,7 @@ namespace Adaptabrawl.Combat
             {
                 if (t.name == "WeaponHitbox"
                     || t.name == RuntimeWeaponVolumeName
+                    || t.name == RuntimeSpecialVolumeName
                     || t.name.StartsWith(RuntimeCoreHurtboxPrefix))
                     Object.Destroy(t.gameObject);
             }
@@ -115,6 +118,28 @@ namespace Adaptabrawl.Combat
                 WeaponHitVolume hitVolume = volumeObject.AddComponent<WeaponHitVolume>();
                 hitVolume.Initialize(owner, damageSystem, meshCollider, runtimeMesh);
             }
+        }
+
+        private static void BuildSpecialMoveVolume(Transform stander, FighterController owner)
+        {
+            if (stander == null || owner == null)
+                return;
+
+            DamageSystem damageSystem = owner.GetComponent<DamageSystem>();
+
+            GameObject volumeObject = new GameObject(RuntimeSpecialVolumeName);
+            volumeObject.transform.SetParent(stander, false);
+            volumeObject.transform.localPosition = Vector3.zero;
+            volumeObject.transform.localRotation = Quaternion.identity;
+            volumeObject.transform.localScale = Vector3.one;
+
+            BoxCollider boxCollider = volumeObject.AddComponent<BoxCollider>();
+            boxCollider.isTrigger = true;
+            boxCollider.size = new Vector3(0.1f, 0.1f, 0.8f);
+            boxCollider.enabled = false;
+
+            SpecialMoveHitVolume hitVolume = volumeObject.AddComponent<SpecialMoveHitVolume>();
+            hitVolume.Initialize(owner, damageSystem, boxCollider);
         }
 
         private static List<Collider> CollectBodyColliders(Transform stander)
@@ -431,7 +456,9 @@ namespace Adaptabrawl.Combat
 
             if (combined.Contains("hammer"))
                 return WeaponStrikeProfile.Hammer;
-            if (combined.Contains("spear") || combined.Contains("staff"))
+            if (combined.Contains("staff"))
+                return WeaponStrikeProfile.Staff;
+            if (combined.Contains("spear"))
                 return WeaponStrikeProfile.Spear;
             if (combined.Contains("dual") || combined.Contains("blade") || combined.Contains("sword") || combined.Contains("rapier") || combined.Contains("claymore"))
                 return WeaponStrikeProfile.Blade;
@@ -566,6 +593,8 @@ namespace Adaptabrawl.Combat
                     return 0.35f;
                 case WeaponStrikeProfile.Spear:
                     return 0.2f;
+                case WeaponStrikeProfile.Staff:
+                    return 0.72f;
                 case WeaponStrikeProfile.Blade:
                     return 0.55f;
                 default:
@@ -594,6 +623,7 @@ namespace Adaptabrawl.Combat
             Default,
             Hammer,
             Spear,
+            Staff,
             Blade
         }
     }

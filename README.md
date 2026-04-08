@@ -7,11 +7,11 @@
 [![Unity](https://img.shields.io/badge/Unity-6000.2.6f2-black?style=for-the-badge&logo=unity)](https://unity.com/)
 [![C#](https://img.shields.io/badge/C%23-12.0-239120?style=for-the-badge&logo=c-sharp)](https://docs.microsoft.com/en-us/dotnet/csharp/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-In%20Development-orange?style=for-the-badge)]()
+[![Status](https://img.shields.io/badge/Status-Spring%202026%20Final-blue?style=for-the-badge)]()
 
 **Senior Design Project | University of Cincinnati | Fall 2025 - Spring 2026**
 
-[📹 Watch Demo](#-demo-video) • [🚀 Quick Start](#-quick-start) • [📚 Documentation](#-table-of-contents) • [👥 Team](#-team)
+[⬇️ Download build](#-download-playable-build-windows) • [📹 Watch Demo](#-demo-video) • [🎪 Expo demo](#spring-2026-expo-demo) • [🚀 Quick Start](#-quick-start) • [📚 Documentation](#-table-of-contents) • [👥 Team](#-team)
 
 ---
 
@@ -20,6 +20,20 @@
 ## 📋 Project Abstract
 
 **Adaptabrawl** is a 2D multiplayer fighting game that blends attack, defense, and evasion into a fast, legible combat loop. Matches evolve through adaptive conditions—stage/weather/match modifiers—and clear status effects such as poison, stagger/heavy-attack windup, and low-HP state. The experience prioritizes readability (icons, timers, telegraphs) and fairness, ensuring competitive gameplay with accessible mechanics.
+
+**Course submission:** [Final Design Report (Spring 2026)](Homework%20Deliverables/Spring%202026/07%20-%20Final%20Design%20Report/Adaptabrawl_Final_Design_Report.md)
+
+---
+
+## ⬇️ Download playable build (Windows)
+
+**Direct download (zip):** [Adaptabrawl-Windows.zip](https://github.com/Kartavya904/Adaptabrawl-Senior-Design/releases/latest/download/Adaptabrawl-Windows.zip)
+
+**All releases:** [GitHub Releases](https://github.com/Kartavya904/Adaptabrawl-Senior-Design/releases/latest)
+
+Unpack the zip, then run `Adaptabrawl.exe`. Keep the `Adaptabrawl_Data` folder next to the executable.
+
+> **Maintainers:** Publish a Release on GitHub and attach a zip named `Adaptabrawl-Windows.zip` (or edit this README link to match your release asset filename). The repository also contains a local build tree under [`Adaptabrawl_Builds/`](Adaptabrawl_Builds/) for development; that folder is not a single-file download until zipped and uploaded to Releases.
 
 ---
 
@@ -40,20 +54,28 @@
 
 ### 📄 Core Documentation
 
+- [**Download playable build (Windows)**](#-download-playable-build-windows) — GitHub Releases zip
 - [**Project Description**](#-project-description) — Comprehensive overview and objectives
 - [**User Stories & Design Diagrams**](#-user-stories--design-diagrams) — Requirements and system architecture
 - [**Project Tasks & Timeline**](#-project-tasks--timeline) — Development roadmap and effort distribution
 
-### 🎓 Academic Deliverables
+### 🎓 Academic Deliverables (Fall 2025)
 
 1. [**Professional Biographies**](#1-professional-biographies) — Team member profiles and experience
 2. [**Project Description (Assignment #2)**](#2-project-description-assignment-2) — Detailed project scope
-3. [**Self-Assessment Essays (Assignment #3)**](#3-self-assessment-essays-assignment-3) — Individual reflections
+3. [**Team contract & reflections (Assignment #3)**](#3-team-contract--self-assessments-assignment-3) — Team agreement; self-assessment files where committed
 4. [**User Stories & Design Diagrams (Assignment #4)**](#4-user-stories--design-diagrams-assignment-4) — Requirements engineering
 5. [**Project Tasks & Timeline (Assignments #5-6)**](#5-project-tasks--timeline-assignments-5-6) — Planning and scheduling
 6. [**ABET Concerns Essay (Assignment #7)**](#6-abet-concerns-essay-assignment-7) — Professional constraints analysis
 7. [**Fall Design Presentation (Assignment #8)**](#7-fall-design-presentation-assignment-8) — Project presentation
 8. [**Video Presentation (Assignment #9)**](#8-video-presentation-assignment-9) — Demonstration and walkthrough
+
+### 🌸 Spring 2026 (final semester)
+
+- [**Final Design Report**](#spring-2026-final-deliverables) — Table of contents, hours, expenses, appendix
+- [**Test plan**](#spring-2026-final-deliverables) — Execution and test matrix
+- [**User manual & FAQ**](#spring-2026-final-deliverables) — Player-facing documentation
+- [**Expo presentation, poster & demo video**](#spring-2026-final-deliverables) — PPT, PDF poster, and [`Adaptabrawl_Expo_Demo.mp4`](Miscellaneous/Media/Video/Adaptabrawl_Expo_Demo.mp4)
 
 ### 💻 Technical Resources
 
@@ -83,15 +105,15 @@
    ```
 
 2. **Open in Unity Hub:**
-
    - Launch Unity Hub
-   - Click "Open" and select the cloned project folder
-   - Unity will load the project (this may take a few minutes on first load)
+   - Click **Add** / **Open** and select the Unity project folder:  
+     `Adaptabrawl/Adaptabrawl`  
+     (the directory that contains `Assets`, `Packages`, and `ProjectSettings`)
+   - Unity will load the project (this may take several minutes on first import)
 
-3. **Run the demo:**
-   - Navigate to `Adaptabrawl/Assets/Scenes/`
-   - Open any scene file
-   - Press the **Play** button in the Unity Editor
+3. **Run the game in the Editor:**
+   - Open `Assets/Scenes/StartScene.unity` (or your intended entry scene)
+   - Press **Play**
 
 ### 🎮 Controls
 
@@ -158,7 +180,7 @@ Our design is driven by user-centric requirements:
 
 High-level view showing players interacting with the game system through input devices and receiving audio/visual feedback.
 
-**[View Full Diagram](Homework%20Deliverables/04%20-%20Design%20Diagrams/Design_Diagrams_Adaptabrawl.pdf)**
+**[View Full Diagram](Homework%20Deliverables/Fall%202025/04%20-%20Design%20Diagrams/Design_Diagrams_Adaptabrawl.pdf)**
 
 </details>
 
@@ -167,7 +189,7 @@ High-level view showing players interacting with the game system through input d
 
 Shows major subsystems: Input Management, Game Logic, Rendering Engine, Physics System, and Network Layer.
 
-**[View Full Diagram](Homework%20Deliverables/04%20-%20Design%20Diagrams/Design_Diagrams_Adaptabrawl.pdf)**
+**[View Full Diagram](Homework%20Deliverables/Fall%202025/04%20-%20Design%20Diagrams/Design_Diagrams_Adaptabrawl.pdf)**
 
 </details>
 
@@ -176,7 +198,7 @@ Shows major subsystems: Input Management, Game Logic, Rendering Engine, Physics 
 
 Detailed component interactions including FighterController, MovementController, InputManager, and ScriptableObject data flow.
 
-**[View Full Diagram](Homework%20Deliverables/04%20-%20Design%20Diagrams/Design_Diagrams_Adaptabrawl.pdf)**
+**[View Full Diagram](Homework%20Deliverables/Fall%202025/04%20-%20Design%20Diagrams/Design_Diagrams_Adaptabrawl.pdf)**
 
 </details>
 
@@ -187,7 +209,7 @@ Detailed component interactions including FighterController, MovementController,
 - **Arrows:** Data flow and dependencies
 - **Dashed lines:** Optional or conditional connections
 
-**[📁 View Complete Design Diagrams](Homework%20Deliverables/04%20-%20Design%20Diagrams/Design_Diagrams_Adaptabrawl.pdf)**
+**[📁 View Complete Design Diagrams](Homework%20Deliverables/Fall%202025/04%20-%20Design%20Diagrams/Design_Diagrams_Adaptabrawl.pdf)** · [User stories (Markdown)](Homework%20Deliverables/Fall%202025/04%20-%20Design%20Diagrams/User_Stories.md) · [Diagram source (draw.io)](Homework%20Deliverables/Fall%202025/04%20-%20Design%20Diagrams/Design%20Diagrams/Adaptabrawl_Design_Diagrams.drawio)
 
 ---
 
@@ -223,8 +245,8 @@ Each team member has contributed **45+ hours** across:
 - Documentation and presentations
 - Team meetings and coordination
 
-**[📊 View Detailed Task List](Homework%20Deliverables/05%20-%20Tasklist/Tasklist_Adaptabrawl.pdf)**  
-**[📈 View Complete Timeline & Effort Matrix](Homework%20Deliverables/06%20-%20Milestone%2C%20Timeline%2C%20and%20Effort%20Matrix/Assignment_6_Adaptabrawl_Milestones_Timeline_Effort_Matrix.pdf)**
+**[📊 View Detailed Task List (PDF)](Homework%20Deliverables/Fall%202025/05%20-%20Tasklist/Tasklist_Adaptabrawl.pdf)** · [Task list (Markdown)](Homework%20Deliverables/Fall%202025/05%20-%20Tasklist/Tasklist.md)  
+**[📈 View Complete Timeline & Effort Matrix (PDF)](Homework%20Deliverables/Fall%202025/06%20-%20Milestone%2C%20Timeline%2C%20and%20Effort%20Matrix/Assignment_6_Adaptabrawl_Milestones_Timeline_Effort_Matrix.pdf)**
 
 ---
 
@@ -234,7 +256,7 @@ Each team member has contributed **45+ hours** across:
 
 Individual biographies detailing team members' education, work experience, project involvement, and areas of expertise.
 
-**[📂 View All Biographies](Homework%20Deliverables/01%20-%20Professional%20Biography/)**
+**[📂 View All Biographies](Homework%20Deliverables/Fall%202025/01%20-%20Professional%20Biography/)**
 
 ---
 
@@ -246,11 +268,12 @@ Comprehensive project description including problem statement, proposed solution
 
 ---
 
-### 3. Self-Assessment Essays (Assignment #3)
+### 3. Team Contract & Self-Assessments (Assignment #3)
 
-Individual reflections on project contributions, learning outcomes, and personal growth throughout the senior design experience.
+Team agreement and individual reflections (commit whatever your section submitted).
 
-**[📝 View Self-Assessment Essays](Homework%20Deliverables/03%20-%20Team%20Contract/)** _(Check folder for individual essays)_
+**[📝 Team contract (PDF)](Homework%20Deliverables/Fall%202025/03%20-%20Team%20Contract/Adaptabrawl_Team_Contract.pdf)** · [Team contract (DOCX)](Homework%20Deliverables/Fall%202025/03%20-%20Team%20Contract/Adaptabrawl_Team_Contract.docx)  
+**Spring 2026 final self-assessment (example):** [Final individual self-assessment (Singhk6)](Homework%20Deliverables/Spring%202026/06%20-%20Self%20Assessment/Final_Individual_Self_Assessment_Singhk6.txt)
 
 ---
 
@@ -262,7 +285,7 @@ Complete requirements engineering documentation including:
 - Level 0, 1, and 2 design diagrams
 - Diagram conventions and component descriptions
 
-**[📐 View Design Diagrams](Homework%20Deliverables/04%20-%20Design%20Diagrams/Design_Diagrams_Adaptabrawl.pdf)**
+**[📐 View Design Diagrams (PDF)](Homework%20Deliverables/Fall%202025/04%20-%20Design%20Diagrams/Design_Diagrams_Adaptabrawl.pdf)**
 
 ---
 
@@ -274,8 +297,8 @@ Detailed project planning documentation:
 - **Timeline:** Gantt chart showing task dependencies and schedule
 - **Effort Matrix:** Hour distribution across team members
 
-**[✅ View Task List](Homework%20Deliverables/05%20-%20Tasklist/Tasklist_Adaptabrawl.pdf)**  
-**[📅 View Timeline & Effort Matrix](Homework%20Deliverables/06%20-%20Milestone%2C%20Timeline%2C%20and%20Effort%20Matrix/Assignment_6_Adaptabrawl_Milestones_Timeline_Effort_Matrix.pdf)**
+**[✅ View Task List (PDF)](Homework%20Deliverables/Fall%202025/05%20-%20Tasklist/Tasklist_Adaptabrawl.pdf)** · [Markdown task list](Homework%20Deliverables/Fall%202025/05%20-%20Tasklist/Tasklist.md)  
+**[📅 View Timeline & Effort Matrix (PDF)](Homework%20Deliverables/Fall%202025/06%20-%20Milestone%2C%20Timeline%2C%20and%20Effort%20Matrix/Assignment_6_Adaptabrawl_Milestones_Timeline_Effort_Matrix.pdf)** · [Milestones (PDF)](Homework%20Deliverables/Fall%202025/06%20-%20Milestone%2C%20Timeline%2C%20and%20Effort%20Matrix/Assignment_6_Adaptabrawl_Milestones.pdf) · [Timeline (PDF)](Homework%20Deliverables/Fall%202025/06%20-%20Milestone%2C%20Timeline%2C%20and%20Effort%20Matrix/Assignment_6_Adaptabrawl_Timeline.pdf) · [Effort matrix (PDF)](Homework%20Deliverables/Fall%202025/06%20-%20Milestone%2C%20Timeline%2C%20and%20Effort%20Matrix/Assignment_6_Adaptabrawl_Effort_Matrix.pdf)
 
 ---
 
@@ -290,7 +313,7 @@ Analysis of professional constraints and considerations:
 - **Social:** Community building, toxicity mitigation
 - **Environmental:** Energy efficiency, sustainability
 
-**[📄 View ABET Concerns Essay](Homework%20Deliverables/07%20-%20Project%20Constraint%20Essay/Assignment_7_Adaptabrawl_Constraints_Essay.pdf)**
+**[📄 View ABET Concerns Essay (PDF)](Homework%20Deliverables/Fall%202025/07%20-%20Project%20Constraint%20Essay/Assignment_7_Adaptabrawl_Constraints_Essay.pdf)**
 
 ---
 
@@ -304,7 +327,7 @@ Comprehensive PowerPoint presentation covering:
 - ABET considerations
 - Future roadmap
 
-**[🎤 View Fall Design Presentation](Homework%20Deliverables/08%20-%20Fall%20Design%20Presentation/Assignment_8_Adaptabrawl_Fall_Design_Presentation.pptx)**
+**[🎤 View Fall Design Presentation](Homework%20Deliverables/Fall%202025/08%20-%20Fall%20Design%20Presentation/Assignment_8_Adaptabrawl_Fall_Design_Presentation.pptx)**
 
 ---
 
@@ -317,21 +340,41 @@ Recorded demonstration and walkthrough of the project, including:
 - Feature highlights
 - Team member contributions
 
-**[📹 Watch Video Presentation](Homework%20Deliverables/09%20-%20Video%20Presentation%20and%20Peer-Reviews/Adaptabrawl_Video_Presentation.mp4)**
+**[📹 Watch Video Presentation](Homework%20Deliverables/Fall%202025/09%20-%20Video%20Presentation%20and%20Peer-Reviews/Adaptabrawl_Video_Presentation.mp4)**
+
+---
+
+## Spring 2026 final deliverables
+
+| Artifact                | Link                                                                                                                                                                                                                                                                                                                                                             |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Final Design Report** | [Adaptabrawl_Final_Design_Report.md](Homework%20Deliverables/Spring%202026/07%20-%20Final%20Design%20Report/Adaptabrawl_Final_Design_Report.md)                                                                                                                                                                                                                  |
+| **Test plan**           | [TestPlan.md](Homework%20Deliverables/Spring%202026/01%20-%20Test%20Plan/TestPlan.md)                                                                                                                                                                                                                                                                            |
+| **User documentation**  | [User_Docs.md](Homework%20Deliverables/Spring%202026/02%20-%20User%20Docs/User_Docs.md) · [User manual](Homework%20Deliverables/Spring%202026/02%20-%20User%20Docs/User_Manual.md) · [Getting started](Homework%20Deliverables/Spring%202026/02%20-%20User%20Docs/Getting_Started.md) · [FAQ](Homework%20Deliverables/Spring%202026/02%20-%20User%20Docs/FAQ.md) |
+| **Expo presentation**   | [AdaptaBrawl_Expo_Presentation.pptx](Homework%20Deliverables/Spring%202026/03%20-%20Expo%20Presentation/AdaptaBrawl_Expo_Presentation.pptx)                                                                                                                                                                                                                      |
+| **Expo demo (video)**   | [Adaptabrawl_Expo_Demo.mp4](Miscellaneous/Media/Video/Adaptabrawl_Expo_Demo.mp4) — screen capture from the Spring 2026 Senior Design Expo / showcase                                                                                                                                                                                                             |
+| **Expo poster**         | [AdaptaBrawl_Expo_Poster.pdf](Homework%20Deliverables/Spring%202026/05%20-%20Expo%20Poster/AdaptaBrawl_Expo_Poster.pdf)                                                                                                                                                                                                                                          |
+| **Self assessments**    | [Spring 2026 folder](Homework%20Deliverables/Spring%202026/06%20-%20Self%20Assessment/)                                                                                                                                                                                                                                                                          |
 
 ---
 
 ## 📹 Demo Video
 
+### Fall 2025 — course video assignment
+
 <div align="center">
 
-### 🎬 See Adaptabrawl in Action!
+**[▶️ Watch Fall video presentation (MP4)](Homework%20Deliverables/Fall%202025/09%20-%20Video%20Presentation%20and%20Peer-Reviews/Adaptabrawl_Video_Presentation.mp4)**
 
-**[▶️ Watch Full Demo Video](Homework%20Deliverables/09%20-%20Video%20Presentation%20and%20Peer-Reviews/Adaptabrawl_Video_Presentation.mp4)**
-
-_Featuring gameplay, system architecture, and team presentations_
+_Gameplay, architecture overview, and team walkthrough (senior design fall deliverable)._
 
 </div>
+
+### Spring 2026 expo demo
+
+**[▶️ Adaptabrawl_Expo_Demo.mp4](Miscellaneous/Media/Video/Adaptabrawl_Expo_Demo.mp4)** — recording from the **Spring 2026 Senior Design Expo** (live booth / showcase demo). Use this clip when you need a short, event-focused demonstration of the final build.
+
+> On GitHub, open the file page and use the built-in player, or **Download** the raw file. Large videos may use [Git LFS](https://git-lfs.com/) if you push them to the remote.
 
 ---
 
@@ -339,11 +382,11 @@ _Featuring gameplay, system architecture, and team presentations_
 
 ### Financial Summary
 
-**Total Expenses to Date:** $0.00
+**Recorded project spend (Spring 2026 final report):** **$34** (e.g. asset purchase, poster printing). **Software stack:** $0 for Unity Personal, Mirror, GitHub free tier, and standard dev tools.
 
-This project has been developed entirely with free and open-source tools, requiring no monetary expenditure.
+See line-item detail in the [Final Design Report — Summary of Expenses](Homework%20Deliverables/Spring%202026/07%20-%20Final%20Design%20Report/Adaptabrawl_Final_Design_Report.md#9-summary-of-expenses).
 
-### Donated Resources
+### Donated / $0 resources
 
 | Resource                         | Monetary Value (Est.) | Source                |
 | -------------------------------- | --------------------- | --------------------- |
@@ -351,7 +394,7 @@ This project has been developed entirely with free and open-source tools, requir
 | Mirror Networking Framework      | $0 (Open Source)      | Mirror Community      |
 | Development Tools (VS Code, Git) | $0 (Free)             | Open Source Community |
 | GitHub Repository Hosting        | $0 (Free Tier)        | GitHub                |
-| **Total Value**                  | **$0**                | —                     |
+| **Total donated (software)**     | **$0**                | —                     |
 
 ---
 
@@ -363,7 +406,7 @@ This project has been developed entirely with free and open-source tools, requir
 
 ### 📖 References & Citations
 
-1. **Unity Documentation** — Unity Technologies. _Unity User Manual 2023 LTS_. [https://docs.unity3d.com/](https://docs.unity3d.com/)
+1. **Unity Documentation** — Unity Technologies. _Unity User Manual_ (6000.x / project LTS). [https://docs.unity3d.com/](https://docs.unity3d.com/)
 2. **Mirror Networking** — Mirror Community. _Mirror Networking Documentation_. [https://mirror-networking.com/](https://mirror-networking.com/)
 3. **C# Programming Guide** — Microsoft. _C# Documentation_. [https://docs.microsoft.com/en-us/dotnet/csharp/](https://docs.microsoft.com/en-us/dotnet/csharp/)
 4. **Game Design Patterns** — Nystrom, R. (2014). _Game Programming Patterns_. Genever Benning.
@@ -389,7 +432,7 @@ This project has been developed entirely with free and open-source tools, requir
 
 ### ⏱️ Effort Justification
 
-Each team member has contributed **numerous hours** throughout the Fall 2025 semester across multiple project activities:
+Each team member has contributed substantial time across **Fall 2025 and Spring 2026** (see the Final Design Report for per-semester hour summaries and evidence links).
 
 **Types of Contributions:**
 
@@ -406,7 +449,7 @@ Each team member has contributed **numerous hours** throughout the Fall 2025 sem
 - **Git Repository:** Commit history showing individual contributions ([GitHub Insights](https://github.com/Kartavya904/Adaptabrawl-Senior-Design/graphs/contributors))
 - **Homework Deliverables:** Individual assignments and essays documented in this repository
 - **Meeting Attendance:** Regular Friday/Sunday team meetings throughout the semester
-- **Assignment Submissions:** Timestamps and contribution records for all 9 assignments
+- **Assignment Submissions:** Timestamps and contribution records for fall and spring deliverables
 - **Self-Assessment Essays:** Individual reflections detailing personal contributions and time investment
 
 **Team Contribution Areas:**
@@ -420,13 +463,16 @@ Each team member has contributed **numerous hours** throughout the Fall 2025 sem
 
 ## 🔗 Quick Links
 
-| Resource                 | Link                                                                                  |
-| ------------------------ | ------------------------------------------------------------------------------------- |
-| 🌐 **GitHub Repository** | [Adaptabrawl-Senior-Design](https://github.com/Kartavya904/Adaptabrawl-Senior-Design) |
-| 📧 **Contact**           | singhk6@mail.uc.edu                                                                   |
-| 🎓 **University**        | [University of Cincinnati](https://www.uc.edu/)                                       |
-| 🎮 **Unity**             | [Unity Official Site](https://unity.com/)                                             |
-| 🔧 **Mirror Networking** | [Mirror Documentation](https://mirror-networking.com/)                                |
+| Resource                   | Link                                                                                                                                                   |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 🌐 **GitHub Repository**   | [Adaptabrawl-Senior-Design](https://github.com/Kartavya904/Adaptabrawl-Senior-Design)                                                                  |
+| ⬇️ **Windows build (zip)** | [Direct download — Adaptabrawl-Windows.zip](https://github.com/Kartavya904/Adaptabrawl-Senior-Design/releases/latest/download/Adaptabrawl-Windows.zip) |
+| 📄 **Final Design Report** | [Adaptabrawl_Final_Design_Report.md](Homework%20Deliverables/Spring%202026/07%20-%20Final%20Design%20Report/Adaptabrawl_Final_Design_Report.md)        |
+| 🎪 **Expo demo (MP4)**     | [Adaptabrawl_Expo_Demo.mp4](Miscellaneous/Media/Video/Adaptabrawl_Expo_Demo.mp4)                                                                       |
+| 📧 **Contact**             | singhk6@mail.uc.edu                                                                                                                                    |
+| 🎓 **University**          | [University of Cincinnati](https://www.uc.edu/)                                                                                                        |
+| 🎮 **Unity**               | [Unity Official Site](https://unity.com/)                                                                                                              |
+| 🔧 **Mirror Networking**   | [Mirror Documentation](https://mirror-networking.com/)                                                                                                 |
 
 ---
 
@@ -442,7 +488,7 @@ This project is developed as part of the University of Cincinnati Senior Design 
 
 **Made with ❤️ by Team Adaptabrawl**
 
-_Fall 2025 Senior Design Project_
+_Fall 2025 – Spring 2026 Senior Design Project_
 
 [⬆️ Back to Top](#-adaptabrawl)
 
